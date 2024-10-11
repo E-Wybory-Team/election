@@ -9,7 +9,8 @@ CREATE TABLE `People`(
 `surname` VARCHAR(50) NOT NULL,
 `pesel` CHAR(11) NOT NULL,
 `birthDate` DATE NOT NULL,
-CONSTRAINT `PkPeople` primary key(`idPerson`)
+CONSTRAINT `PkPeople` primary key(`idPerson`),
+CONSTRAINT `uniquePesel` UNIQUE (`pesel`)
 );
 
 DROP TABLE IF EXISTS `Parties`;
@@ -114,7 +115,7 @@ CONSTRAINT `FkDistrictsCandidates` FOREIGN KEY (`idDistrict`)
     ON DELETE RESTRICT,
 CONSTRAINT `FkPartiesCandidates` FOREIGN KEY (`partyName`)
 	REFERENCES `Parties`(`partyName`)
-    ON DELETE RESTRICT,
+    ON DELETE SET NULL,
 CONSTRAINT `PkCandidates` primary key(`idCandidate`)
 );
 
