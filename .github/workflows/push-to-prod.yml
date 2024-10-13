@@ -17,7 +17,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Install GlobalProtect CLI (assuming Ubuntu runner)
+    # Step 2: Install GlobalProtect CLI
     - name: Install GlobalProtect CLI
       run: |
         sudo apt-get update
