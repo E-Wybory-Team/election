@@ -1,0 +1,94 @@
+name: Build and Deploy Blazor Web App
+
+on:
+  push:
+    branches:
+      - kw-orm-domain  # Deploys on push to the 'kw-orm-domain' branch
+  pull_request:
+    branches:
+      - kw-orm-domain
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Install GlobalProtect CLI (assuming Ubuntu runner)
+    - name: Install GlobalProtect CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y globalprotect
+
+    # Step 3: Connect to GlobalProtect VPN
+    - name: Connect to VPN
+      env:
+        VPN_USERNAME: ${{ secrets.VPN_USERNAME }}
+        VPN_PASSWORD: ${{ secrets.VPN_PASSWORD }}
+        VPN_GATEWAY: ${{ secrets.VPN_GATEWAY }}
+      run: |
+        # Install expect to handle interactive prompts
+        sudo apt-get install -y expect
+
+        # Create an expect script to handle the GlobalProtect connection
+        echo "
+        spawn globalprotect connect --portal $VPN_GATEWAY
+        expect \"Username:\"
+        send \"$VPN_USERNAME\r\"
+        expect \"Password:\"
+        send \"$VPN_PASSWORD\r\"
+        interact
+        " > gp-connect.exp
+
+        # Run the script to connect to the VPN
+        expect gp-connect.exp
+
+    # Step 4: Set up .NET 8 SDK
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.x'
+
+    # Step 5: Restore dependencies
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # Step 6: Build the project in Release mode
+    - name: Build in Release mode
+      run: dotnet build --configuration Release
+
+    # Step 7: Publish the project
+    - name: Publish the project
+      run: dotnet publish --configuration Release --output /apps/e-wybory/publish
+
+    # Step 8: Deploy to remote server
+    - name: Deploy to server via SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      run: |
+        # Prepare the SSH key
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+        # Copy the published app to the server
+        scp -r ./publish/* $SSH_USER@$SERVER_IP:$DEPLOY_PATH
+
+        # Restart the application service on the server
+        ssh $SSH_USER@$SERVER_IP << 'EOF'
+          # Navigate to the deployment directory
+          cd $DEPLOY_PATH
+          
+          # Optionally, stop the existing service and restart it
+          # sudo systemctl stop my-blazor-app
+          # sudo systemctl start my-blazor-app
+
+          # Ensure the app has the right permissions
+          sudo chmod -R 755 $DEPLOY_PATH
+        EOF
