@@ -14,6 +14,14 @@ builder.Services
     .AddInfrastructure()
     .AddApplication();
 
+// Conditionally configure Data Protection only in Release builds (C# preprocessor directive)
+#if !DEBUG
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"/var/aspnetcore/dataprotection-keys"))
+    .SetApplicationName("E-Wybory");
+#endif
+
+
 
 var app = builder.Build();
 
