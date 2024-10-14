@@ -3,6 +3,7 @@ using E_Wybory.Components;
 using E_Wybory.Application;
 using E_Wybory.Infrastructure;
 using System;
+using System.Security.Cryptography.X509Certificates;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -49,9 +50,15 @@ if (environment.IsProduction())
         // Check if certificate path and key path are configured
         if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certKeyPath))
         {
+            //Added X509Certificate2 conversion
+            var certificate = new X509Certificate2(certPath);
+            var privateKey = File.ReadAllText(certKeyPath);
+            var certWithKey = new X509Certificate2(certificate.Export(X509ContentType.Pfx), privateKey,
+                X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
+
             options.ListenAnyIP(443, listenOptions =>
             {
-                listenOptions.UseHttps(certPath, certKeyPath);
+                listenOptions.UseHttps(certWithKey);
             });
         }
 
