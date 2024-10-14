@@ -21,7 +21,7 @@ jobs:
     - name: Install GlobalProtect CLI
       run: |
         sudo apt-get update
-        sudo apt-get install -y globalprotect
+        sudo apt-get install -y openconnect
 
     # Step 3: Connect to GlobalProtect VPN
     - name: Connect to VPN

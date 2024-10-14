@@ -2,6 +2,7 @@ using E_Wybory.Client.Pages;
 using E_Wybory.Components;
 using E_Wybory.Application;
 using E_Wybory.Infrastructure;
+using System;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,12 +15,49 @@ builder.Services
     .AddInfrastructure()
     .AddApplication();
 
+
+
+
+
 // Conditionally configure Data Protection only in Release builds (C# preprocessor directive)
-#if !DEBUG
-builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(@"/var/aspnetcore/dataprotection-keys"))
-    .SetApplicationName("E-Wybory");
-#endif
+//#if !DEBUG
+//builder.Services.AddDataProtection()
+//    .PersistKeysToFileSystem(new DirectoryInfo(@"/var/aspnetcore/dataprotection-keys"))
+//    .SetApplicationName("E-Wybory");
+//#endif
+
+
+//Configure Kestrel for https with certificates forrelease build
+var environment = builder.Environment;
+
+if (environment.IsProduction())
+{
+
+    builder.WebHost.ConfigureKestrel((context, options) =>
+    {
+
+        
+
+        var kestrelConfig = context.Configuration.GetSection("Kestrel");
+
+        // Always configure the endpoints
+        options.Configure(kestrelConfig);
+
+        var certPath = Environment.GetEnvironmentVariable("CERTIFICATE_PATH_VOTING");
+        var certKeyPath = Environment.GetEnvironmentVariable("CERTIFICATE_KEY_PATH_VOTING");
+
+        // Check if certificate path and key path are configured
+        if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certKeyPath))
+        {
+            options.ListenAnyIP(443, listenOptions =>
+            {
+                listenOptions.UseHttps(certPath, certKeyPath);
+            });
+        }
+
+
+    });
+}
 
 
 
