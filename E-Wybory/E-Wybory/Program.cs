@@ -51,10 +51,12 @@ if (environment.IsProduction())
         if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certKeyPath))
         {
             //Added X509Certificate2 conversion
-            var certificate = new X509Certificate2(certPath);
-            var privateKey = File.ReadAllText(certKeyPath);
-            var certWithKey = new X509Certificate2(certificate.Export(X509ContentType.Pfx), privateKey,
-                X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
+            var certPem = System.IO.File.ReadAllText(certPath);
+            var keyPem = System.IO.File.ReadAllText(certKeyPath);
+
+            // Create the X509Certificate2 from both
+            var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
+
 
             options.ListenAnyIP(443, listenOptions =>
             {
