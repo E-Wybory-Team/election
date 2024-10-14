@@ -20,7 +20,7 @@ builder.Services
 
 
 
-// Conditionally configure Data Protection only in Release builds (C# preprocessor directive)
+// Conditionally configure Data Protection only in Release builds (C# preprocessor directive) TODO: Fix
 //#if !DEBUG
 //builder.Services.AddDataProtection()
 //    .PersistKeysToFileSystem(new DirectoryInfo(@"/var/aspnetcore/dataprotection-keys"))
@@ -28,9 +28,9 @@ builder.Services
 //#endif
 
 
-//Configure Kestrel for https with certificates forrelease build
 var environment = builder.Environment;
 
+//Kestrel server config
 if (environment.IsProduction())
 {
 
@@ -41,7 +41,6 @@ if (environment.IsProduction())
 
         var kestrelConfig = context.Configuration.GetSection("Kestrel");
 
-        // Always configure the endpoints
         options.Configure(kestrelConfig);
 
         var certPath = Environment.GetEnvironmentVariable("CERTIFICATE_PATH_VOTING");
