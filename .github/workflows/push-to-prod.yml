@@ -33,18 +33,16 @@ jobs:
         # Install expect to handle interactive prompts
         sudo apt-get install -y expect
 
-        # Create an expect script to handle the GlobalProtect connection
+         # Create an expect script to handle OpenConnect connection
         echo "
-        spawn globalprotect connect --portal $VPN_GATEWAY
-        expect \"Username:\"
-        send \"$VPN_USERNAME\r\"
+        spawn sudo openconnect --user=$VPN_USERNAME $VPN_GATEWAY
         expect \"Password:\"
         send \"$VPN_PASSWORD\r\"
         interact
-        " > gp-connect.exp
+        " > vpn-connect.exp
 
-        # Run the script to connect to the VPN
-        expect gp-connect.exp
+        # Run the expect script to connect to the VPN
+        expect vpn-connect.exp
 
     # Step 4: Set up .NET 8 SDK
     - name: Setup .NET 8
@@ -90,5 +88,8 @@ jobs:
           # sudo systemctl start my-blazor-app
 
           # Ensure the app has the right permissions
-          sudo chmod -R 755 $DEPLOY_PATH
+          #sudo chmod -R 755 $DEPLOY_PATH
+
+          #Run app
+          dotnet E-Wybory.dll
         EOF
