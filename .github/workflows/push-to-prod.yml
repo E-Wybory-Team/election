@@ -84,9 +84,7 @@ jobs:
           cd $DEPLOY_PATH
           
           # Optionally, stop the existing service and restart it
-          # sudo systemctl stop my-blazor-app
-          # sudo systemctl start my-blazor-app
-
+          pkill -f E-Wybory.dll
           # Ensure the app has the right permissions
           #sudo chmod -R 755 $DEPLOY_PATH
 
