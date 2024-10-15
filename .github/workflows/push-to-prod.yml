@@ -17,13 +17,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Install GlobalProtect CLI
-    - name: Install GlobalProtect CLI
+    # Step 2: Install GlobalProtect CLI and nohup
+    - name: Install GlobalProtect CLI and nohup
       run: |
         sudo apt-get update
-        sudo apt-get install -y openconnect
+        sudo apt-get install -y openconnect nohup
 
-    # Step 3: Connect to GlobalProtect VPN
+    # Step 3: Connect to GlobalProtect VPN in background using nohup
     - name: Connect to VPN
       env:
         VPN_USERNAME: ${{ secrets.VPN_USERNAME }}
@@ -33,7 +33,7 @@ jobs:
         # Install expect to handle interactive prompts
         sudo apt-get install -y expect
 
-         # Create an expect script to handle OpenConnect connection
+        # Create an expect script to handle OpenConnect connection
         echo "
         spawn sudo openconnect --protocol=gp --user=$VPN_USERNAME $VPN_GATEWAY
         expect {
@@ -43,8 +43,22 @@ jobs:
         interact
         " > vpn-connect.exp
 
-        # Run the expect script to connect to the VPN
-        expect vpn-connect.exp
+        # Run the VPN connection in the background using nohup
+        nohup expect vpn-connect.exp > vpn.log 2>&1 &
+
+        # Sleep to allow the VPN to establish
+        sleep 10
+
+        # Check if the VPN process is still running
+        ps aux | grep "[o]penconnect" > /dev/null
+        if [ $? -ne 0 ]; then
+          echo "VPN connection failed. Printing vpn.log for debugging:"
+          cat vpn.log
+          exit 1
+        fi
+
+        # Confirm VPN connection established
+        ifconfig
 
     # Step 4: Set up .NET 8 SDK
     - name: Setup .NET 8
