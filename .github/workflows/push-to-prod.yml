@@ -17,11 +17,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Install GlobalProtect CLI and nohup
-    - name: Install GlobalProtect CLI and nohup
+    # Step 2: Install openconnect
+    - name: Install 
       run: |
         sudo apt-get update
-        sudo apt-get install -y openconnect nohup
+        sudo apt-get install -y openconnect
 
     # Step 3: Connect to GlobalProtect VPN in background using nohup
     - name: Connect to VPN
