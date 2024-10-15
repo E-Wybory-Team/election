@@ -35,9 +35,11 @@ jobs:
 
          # Create an expect script to handle OpenConnect connection
         echo "
-        spawn sudo openconnect --user=$VPN_USERNAME $VPN_GATEWAY
-        expect \"Password:\"
-        send \"$VPN_PASSWORD\r\"
+        spawn sudo openconnect --protocol=gp --user=$VPN_USERNAME $VPN_GATEWAY
+        expect {
+            \"Password:\" { send \"$VPN_PASSWORD\r\"; exp_continue }
+            timeout { send_user \"Timeout occurred, check your connection.\r\"; exit 1 }
+        }
         interact
         " > vpn-connect.exp
 
