@@ -76,7 +76,7 @@ jobs:
 
     # Step 7: Publish the project
     - name: Publish the project
-      run: dotnet publish --configuration Release --output /apps/e-wybory/publish
+      run: dotnet publish --configuration Release --output  /home/runner/work/publish
 
     # Step 8: Deploy to remote server
     - name: Deploy to server via SSH
@@ -92,7 +92,7 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
 
         # Copy the published app to the server
-        scp -r ./publish/* $SSH_USER@$SERVER_IP:$DEPLOY_PATH
+        scp -r /home/runner/work/publish/* $SSH_USER@$SERVER_IP:$DEPLOY_PATH
 
         # Restart the application service on the server
         ssh $SSH_USER@$SERVER_IP << 'EOF'
