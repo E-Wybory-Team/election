@@ -2,8 +2,12 @@ using E_Wybory.Client.Pages;
 using E_Wybory.Components;
 using E_Wybory.Application;
 using E_Wybory.Infrastructure;
-using System;
-using System.Security.Cryptography.X509Certificates;
+using E_Wybory.ExtensionMethods;
+using E_Wybory.Infrastructure.DbContext;
+using Microsoft.EntityFrameworkCore;
+
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,9 +21,6 @@ builder.Services
     .AddApplication();
 
 
-
-
-
 // Conditionally configure Data Protection only in Release builds (C# preprocessor directive) TODO: Fix
 //#if !DEBUG
 //builder.Services.AddDataProtection()
@@ -28,44 +29,8 @@ builder.Services
 //#endif
 
 
-var environment = builder.Environment;
-
-//Kestrel server config
-if (environment.IsProduction())
-{
-
-    builder.WebHost.ConfigureKestrel((context, options) =>
-    {
-
-        
-
-        var kestrelConfig = context.Configuration.GetSection("Kestrel");
-
-        options.Configure(kestrelConfig);
-
-        var certPath = Environment.GetEnvironmentVariable("CERTIFICATE_PATH_VOTING");
-        var certKeyPath = Environment.GetEnvironmentVariable("CERTIFICATE_KEY_PATH_VOTING");
-
-        // Check if certificate path and key path are configured
-        if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certKeyPath))
-        {
-            //Added X509Certificate2 conversion
-            var certPem = System.IO.File.ReadAllText(certPath);
-            var keyPem = System.IO.File.ReadAllText(certKeyPath);
-
-            // Create the X509Certificate2 from both
-            var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
-
-
-            options.ListenAnyIP(443, listenOptions =>
-            {
-                listenOptions.UseHttps(certWithKey);
-            });
-        }
-
-
-    });
-}
+builder.ConfigureKestrel()
+       .ConfigureAndAddDbContext();
 
 
 
