@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>E_Wybory</RootNamespace>
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+    <UserSecretsId>8067a524-d11a-46e4-b2ee-fb82868ddcf8</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

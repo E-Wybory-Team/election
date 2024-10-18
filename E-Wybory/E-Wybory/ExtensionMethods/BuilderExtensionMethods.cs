@@ -59,18 +59,25 @@ namespace E_Wybory.ExtensionMethods {
 
             if (connectionString == null) throw new ArgumentNullException("Cannot localize the connection string");
 
+            string dbPassword;
+
             // Check if the environment is Production
             if (environment.IsProduction())
             {
                 // Get the password from the environment variable DB_PASSWORD
-                var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+                dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-                // Replace the {DbPassword} placeholder in the connection string with the actual password
-                if (!string.IsNullOrEmpty(dbPassword))
-                {
-                    connectionString = connectionString.Replace("{DbPassword}", dbPassword);
-                }
+            } else
+            {
+                //Get the password from users secret
+                dbPassword = builder.Configuration["ConnectionStrings:ElectionDbConnection:DbPassword"];
             }
+
+            if (!string.IsNullOrEmpty(dbPassword))
+            {
+                connectionString = connectionString.Replace("{DbPassword}", dbPassword);
+            }
+            else throw new ArgumentException($"Cannot obtain password from source: {(environment.IsProduction() ? "PRODUCTION" : "DEVELOPMENT")}");
 
             // Add the DbContext to the service collection using the (possibly) modified connection string
             builder.Services.AddDbContext<ElectionDbContext>(options =>
