@@ -5,4 +5,4 @@ dotnet ef dbcontext scaffold "Server=10.90.50.20,6446;Database=ElectionDB;User=w
 -2-
 Commands to clear nuget packages and nuget cache locally, and to restore them 
 dotnet nuget locals all --clear
-dotnetrestore
+dotnet restore

@@ -7,7 +7,7 @@ namespace E_Wybory.ExtensionMethods {
 
     public static class BuilderExtensionMethods
     {
-        public static WebApplicationBuilder ConfigureKestrel(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder ConfigureAndAddKestrel(this WebApplicationBuilder builder)
         {
             var environment = builder.Environment;
 
