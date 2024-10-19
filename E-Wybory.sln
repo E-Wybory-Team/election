@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E-Wybory", "E-Wybory\E-Wybo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E-Wybory.Client", "E-Wybory\E-Wybory.Client\E-Wybory.Client.csproj", "{5EC42E4E-13E4-4D9E-814B-E76B5EEB889C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Wybory.Domain", "Domain\E-Wybory.Domain.csproj", "{AF43CF03-1175-487E-BF99-C0CFD7402EC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E-Wybory.Domain", "Domain\E-Wybory.Domain.csproj", "{AF43CF03-1175-487E-BF99-C0CFD7402EC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Wybory.Infrastructure", "E-Wybory.Infrastructure\E-Wybory.Infrastructure.csproj", "{7B58A977-AA77-4709-AD00-194A4D1E2934}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E-Wybory.Infrastructure", "E-Wybory.Infrastructure\E-Wybory.Infrastructure.csproj", "{7B58A977-AA77-4709-AD00-194A4D1E2934}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E-Wybory.Application", "E-Wybory.Application\E-Wybory.Application.csproj", "{48E88345-3562-4BCD-9FC3-5A6B436C2A00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E-Wybory.Application", "E-Wybory.Application\E-Wybory.Application.csproj", "{48E88345-3562-4BCD-9FC3-5A6B436C2A00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

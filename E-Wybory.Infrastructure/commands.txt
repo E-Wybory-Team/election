@@ -1,0 +1,16 @@
+﻿-1-
+Command used for scaffolding database EwyboryDB (in shell user must be in <ProjectDirectory>\E-Wybory\E-Wybory.Infrastructure)
+dotnet ef dbcontext scaffold "Server=10.90.50.20,6446;Database=ElectionDB;User=wybory;Password=******;" MySql.EntityFrameworkCore -o DbContext -f
+
+-2-
+Commands to clear nuget packages and nuget cache locally, and to restore them 
+dotnet nuget locals all --clear
+dotnet restore
+
+
+-3-
+Commands for creating user secrets with database password, must be in <ProjectDirecory\E-Wybory\E-Wybory\E-Wybory>
+dotnet user-secrets init   - (Might not be neccesery)
+dotnet user-secrets set "ConnectionStrings:ElectionDbConnection:DbPassword" "PutPasswordHere" - replace with real password
+
+

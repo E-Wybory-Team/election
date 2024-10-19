@@ -2,6 +2,12 @@ using E_Wybory.Client.Pages;
 using E_Wybory.Components;
 using E_Wybory.Application;
 using E_Wybory.Infrastructure;
+using E_Wybory.ExtensionMethods;
+using E_Wybory.Infrastructure.DbContext;
+using Microsoft.EntityFrameworkCore;
+
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -15,12 +21,32 @@ builder.Services
     .AddApplication();
 
 
+// Conditionally configure Data Protection only in Release builds (C# preprocessor directive) TODO: Fix
+//#if !DEBUG
+//builder.Services.AddDataProtection()
+//    .PersistKeysToFileSystem(new DirectoryInfo(@"/var/aspnetcore/dataprotection-keys"))
+//    .SetApplicationName("E-Wybory");
+//#endif
+
+
+builder.ConfigureAndAddKestrel()
+       .ConfigureAndAddDbContext();
+
+
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -33,6 +59,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
