@@ -1,0 +1,40 @@
+﻿@page "/login"
+
+<h2>Login</h2>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="loginModel.Username" placeholder="Enter your username" />
+    </div>
+    <br>
+
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="loginModel.Password" placeholder="Enter your password" type="password" />
+    </div>
+    <br>
+
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private void HandleValidSubmit()
+    {
+        // Here you can handle the form submission
+        // For example, authenticate the user or redirect
+        Console.WriteLine($"Username: {loginModel.Username}, Password: {loginModel.Password}");
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}
+
