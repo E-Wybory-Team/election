@@ -1,7 +1,13 @@
 ﻿using E_Wybory.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace E_Wybory.ExtensionMethods {
 
@@ -85,6 +91,68 @@ namespace E_Wybory.ExtensionMethods {
 
             return builder;
         }
+    }
+
+    public static class JWTMethods
+    {
+        public const int JWT_TOKEN_VALIDATION_MINS = 10;
+        public static void CreateRSAPrivateKey()
+        {
+            var rsaKey = RSA.Create();
+            var privateKey = rsaKey.ExportRSAPrivateKey();
+            File.WriteAllBytes("key", privateKey);
+        }
+
+        public static string createToken(RSA rsaPrivateKey, string username)
+        {
+            var handler = new JsonWebTokenHandler();
+            var key = new RsaSecurityKey(rsaPrivateKey);
+            var token = handler.CreateToken(new SecurityTokenDescriptor()
+            {
+                Issuer = "https://localhost:8443",
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim("sub", Guid.NewGuid().ToString()),
+            new Claim("name", username)
+            }),
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
+                Expires = DateTime.Now.AddMinutes(JWT_TOKEN_VALIDATION_MINS)
+            }) ;
+            return token;
+        }
+
+        public static JsonWebKey CreateJwkPublic(RSA rsaPrivateKey) 
+        {
+            var publicKey = RSA.Create();
+            publicKey.ImportRSAPublicKey(rsaPrivateKey.ExportRSAPublicKey(), out _);
+
+            var key = new RsaSecurityKey(publicKey);
+            return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+        }
+
+        public static JsonWebKey CreateJwkPrivate(RSA rsaPrivateKey)
+        {
+            var key = new RsaSecurityKey(rsaPrivateKey);
+            return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+        }
+
+        public static string Authenticate(string email, string password)
+        {
+            if (email != "admin" || password != "admin")
+            {
+                return null;
+            }
+            CreateRSAPrivateKey();
+            var rsaKey = RSA.Create();
+            rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
+            return createToken(rsaKey, email);
+        }
+    }
+
+    public class AuthenticationRequest
+    {
+        public string email { set; get; }
+        public string password { set; get; }
     }
 }
 

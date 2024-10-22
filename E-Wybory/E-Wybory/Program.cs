@@ -12,12 +12,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-/*
- //Key creation
-var rsaKey = RSA.Create();
-var privateKey = rsaKey.ExportRSAPrivateKey();
-File.WriteAllBytes("key", privateKey);
-*/
 
 var rsaKey = RSA.Create();
 rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
@@ -65,7 +59,6 @@ builder.Services
 builder.Services
     .AddInfrastructure()
     .AddApplication();
-
 
 // Conditionally configure Data Protection only in Release builds (C# preprocessor directive) TODO: Fix
 //#if !DEBUG
@@ -118,6 +111,7 @@ app.UseAuthentication();
 
 app.MapGet("/userInfo", (HttpContext ctx) => ctx.User.FindFirst("sub")?.Value ?? "Empty");
 
+/*
 app.MapGet("/jwt", () =>
 {
     var handler = new JsonWebTokenHandler();
@@ -135,7 +129,6 @@ app.MapGet("/jwt", () =>
     return token;
 });
 
-
 app.MapGet("/jwk", () =>
 {
     var publicKey = RSA.Create();
@@ -151,5 +144,7 @@ app.MapGet("/jwk-private", () =>
     var key = new RsaSecurityKey(rsaKey);
     return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
 });
+
+*/
 
 app.Run();
