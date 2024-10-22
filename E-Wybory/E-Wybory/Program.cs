@@ -46,7 +46,7 @@ builder.Services.AddAuthentication("jwt")
                     new RsaSecurityKey(rsaKey)
                 }
             };
-
+            options.SaveToken = true;
             options.MapInboundClaims = false;
         });
 
