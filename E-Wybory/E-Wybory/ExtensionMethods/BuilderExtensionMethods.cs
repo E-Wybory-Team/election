@@ -77,7 +77,7 @@ namespace E_Wybory.ExtensionMethods {
             {
                 connectionString = connectionString.Replace("{DbPassword}", dbPassword);
             }
-            else throw new ArgumentException($"Cannot obtain password from source: {(environment.IsProduction() ? "PRODUCTION" : "DEVELOPMENT")}");
+            //else throw new ArgumentException($"Cannot obtain password from source: {(environment.IsProduction() ? "PRODUCTION" : "DEVELOPMENT")}");  KOMENTARZ
 
             // Add the DbContext to the service collection using the (possibly) modified connection string
             builder.Services.AddDbContext<ElectionDbContext>(options =>

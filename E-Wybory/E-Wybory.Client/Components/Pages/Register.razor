@@ -1,0 +1,84 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="registration-form">
+    <div class="icon">
+        <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
+    </div>
+    
+    <EditForm Model="@registrationModel" OnValidSubmit="HandleRegistration">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                <InputText  @bind-Value="registrationModel.FirstName" placeholder="IMIĘ" />
+            </div>
+            <div class="input-group">
+                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                <InputText @bind-Value="registrationModel.LastName" placeholder="NAZWISKO" />
+            </div>
+        </div>
+         
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/cards.png" alt="Ikona identyfikacyjna" class="input-icon" />
+                <InputText @bind-Value="registrationModel.PESEL" placeholder="PESEL" />
+            </div>
+            <div class="input-group">
+                <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
+                <InputDate @bind-Value="registrationModel.DateOfBirth" placeholder="DATA URODZENIA"  />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/envelope.png" alt="Ikona email" class="input-icon" />
+                <InputText @bind-Value="registrationModel.Email" type="email" placeholder="ADRES EMAIL" />
+            </div>
+            <div class="input-group">
+                <img src="images/phone.png" alt="Ikona telefonu" class="input-icon" />
+                <InputText @bind-Value="registrationModel.PhoneNumber" placeholder="NUMER TELEFONU" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                <InputText @bind-Value="registrationModel.Password" type="password" placeholder="HASŁO" />
+            </div>
+            <div class="input-group">
+                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                <InputText @bind-Value="registrationModel.ConfirmPassword" type="password" placeholder="POTWIERDŹ HASŁO" />
+            </div>
+        </div>
+
+        <button type="submit" class="submit-button">ZAREJESTRUJ</button>
+    </EditForm>
+
+</div>
+
+@code {
+    private RegistrationModel registrationModel = new RegistrationModel();
+
+    private void HandleRegistration()
+    {
+        // Logika rejestracji
+        Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+    }
+
+    public class RegistrationModel
+    {
+        [Required] public string FirstName { get; set; }
+        [Required] public string LastName { get; set; }
+        [Required] public string PESEL { get; set; }
+        [Required] public DateTime DateOfBirth { get; set; }
+        [Required, EmailAddress] public string Email { get; set; }
+        [Required] public string PhoneNumber { get; set; }
+        [Required] public string Password { get; set; }
+        [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
+        public string ConfirmPassword { get; set; }
+    }
+}

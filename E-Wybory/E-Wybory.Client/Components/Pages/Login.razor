@@ -1,0 +1,52 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="login-form">
+    <div class="icon">
+        <img src="images/profile-tick.png" alt="Ikona logowania" width="400" height="400" />
+    </div>
+
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                <InputText @bind-Value="loginModel.Username" placeholder="E-MAIL lub TELEFON" class="form-input" />
+            </div>
+
+            <div class="input-group">
+                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                <InputText @bind-Value="loginModel.Password" type="password" placeholder="HASŁO" class="form-input" />
+            </div>
+        </div>
+
+        <button type="submit" class="submit-button">ZALOGUJ</button>
+        <div class="login-links">
+            <a href="/forgot-password">Nie pamiętasz hasła?</a>
+            <a href="/register">Nie masz konta?</a>
+        </div>
+
+    </EditForm>
+</div>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private void HandleLogin()
+    {
+        // Logika logowania
+        Console.WriteLine($"Logowanie dla: {loginModel.Username}");
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Nazwa użytkownika jest wymagana.")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Hasło jest wymagane.")]
+        public string Password { get; set; }
+    }
+}
