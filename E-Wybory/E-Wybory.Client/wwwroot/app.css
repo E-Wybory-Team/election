@@ -51,8 +51,25 @@ h1:focus {
     border-color: #929292;
 }
 
-.valid {
+.input-group .valid {
     min-width: 80%;
     background-color: #bad5f3;
     border: none;
 }
+
+
+.vote-page .form-group .valid {
+    min-width: 80%;
+    background-color: #fff;
+    border: none;
+        
+}
+
+input.checkbox { /* bigger checkbox */
+    margin: 0;   
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    scale: 1.5;
+}
+
