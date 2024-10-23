@@ -1,0 +1,68 @@
+﻿@page "/vote"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="vote-page">
+    <h1>Oddawanie Głosu</h1>
+
+    <EditForm Model="@voteModel" OnValidSubmit="HandleVoteSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="komitet">Komitet Wyborczy</label>
+            <InputSelect @bind-Value="voteModel.Komitet" id="komitet" class="form-select">
+                <option value="" disabled>Wybierz komitet wyborczy</option>
+                <option value="Komitet 1">Komitet 1</option>
+                <option value="Komitet 2">Komitet 2</option>
+                
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label for="kandydat">Kandydat</label>
+            <InputSelect @bind-Value="voteModel.Kandydat" id="kandydat" class="form-select">
+                <option value="" disabled>Wybierz kandydata</option>
+                <option value="Kandydat 1">Kandydat 1</option>
+                <option value="Kandydat 2">Kandydat 2</option>
+                
+            </InputSelect>
+        </div>
+
+        <div class="checkbox-group">
+            <InputCheckbox class="checkbox" @bind-Value="voteModel.OtrzymacZaswiadczenie" id="zaswiadczenie" />
+            <label for="zaswiadczenie" class="checkbox-label">Chcę otrzymać zaświadczenie o głosowaniu</label>
+        </div>
+
+        <div class="checkbox-group">
+            <InputCheckbox class="checkbox" @bind-Value="voteModel.GlosaNiewazny" id="niewazny" />
+            <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
+        </div>
+
+
+        <button type="submit" class="submit-button">ZAGŁOSUJ</button>
+
+    </EditForm>
+</div>
+
+@code {
+    private VoteModel voteModel = new VoteModel();
+
+    private void HandleVoteSubmit()
+    {
+       
+        Console.WriteLine($"Głosowanie: {voteModel.Komitet}, {voteModel.Kandydat}, Nieważny: {voteModel.GlosaNiewazny}");
+    }
+
+    public class VoteModel
+    {
+        [Required(ErrorMessage = "Wybór komitetu jest wymagany.")]
+        public string Komitet { get; set; }
+
+        [Required(ErrorMessage = "Wybór kandydata jest wymagany.")]
+        public string Kandydat { get; set; }
+
+        public bool OtrzymacZaswiadczenie { get; set; }
+        public bool GlosaNiewazny { get; set; }
+    }
+}
