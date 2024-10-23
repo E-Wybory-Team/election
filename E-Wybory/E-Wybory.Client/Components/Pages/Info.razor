@@ -1,0 +1,33 @@
+﻿@page "/info"
+
+<h2 class="title">INFORMATOR WYBORCZY</h2>
+
+<div class="info-body">
+    @foreach (var item in faqItems)
+    {
+            <details class="faq-item">
+                <summary class="faq-question"> @item.Question</summary>
+                <p class=" "faq-answer"> @item.Answer</p>
+            
+            </details>
+       
+    }
+</div>
+
+@code {
+    private List<FaqItem> faqItems = new List<FaqItem>
+    {
+        new FaqItem { Question = "Faq Question 1?", Answer = "Answer 1" },
+        new FaqItem { Question = "Faq Question 2?", Answer = "Answer 2" },
+        new FaqItem { Question = "Faq Question 3?", Answer = "Answer 3" },
+        new FaqItem { Question = "Faq Question 4?", Answer = "Answer 4" },
+        new FaqItem { Question = "Faq Question 5?", Answer = "Answer 5" },
+        
+    };
+
+    private class FaqItem
+    {
+        public string Question { get; set; }
+        public string Answer { get; set; }
+    }
+}
