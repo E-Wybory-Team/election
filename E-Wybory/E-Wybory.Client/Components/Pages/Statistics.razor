@@ -1,0 +1,146 @@
+﻿@page "/statistics"
+@using System.ComponentModel.DataAnnotations
+
+<h2 class="title">STATYSTYKI WYBORCZE</h2>
+
+<div class="filters">
+    <div class="filter-group">
+        <label>Rodzaj wyborów</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz rodzaj wyborów</option>
+            @foreach (var electionType in electionTypes)
+            {
+                <option value="@electionType">@electionType</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Województwo</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in voivodeships)
+            {
+                <option value="@voivodeship">@voivodeship</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Powiat</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in counties)
+            {
+                <option value="@county">@county</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Gmina</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in provinces)
+            {
+                <option value="@province">@province</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Frekwencja</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz rodzaj frekwencji</option>
+            @foreach (var attendance in attendances)
+            {
+                <option value="@attendance">@attendance</option>
+            }
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Numer komisji</th>
+            <th>Obwodowa komisja wyborcza</th>
+            <th>Liczba uprawnionych</th>
+            <th>Liczba głosów elektronicznych</th>
+            <th>Liczba głosów elektronicznych * 100 / liczba uprawnionych do głosowania</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var district in filteredDistricts)
+        {
+            <tr>
+                <td>@district.IdDistrict</td>
+                <td>@district.DistrictHeadquarters</td>
+                <td>@GetVotersNumber(district)</td>
+                <td>@GetVotersThatVoted(district)</td>
+                <td>@GetAttendancePercentage(district)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
+
+    private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
+    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> attendances = new() { "Do godziny 12:00", "Do godziny 17:00", "Całkowita" };
+    private List<District> districts = new()
+    {
+        new District { IdDistrict = 1, DistrictName = "Obwodowa komisja nr 1", DisabledFacilities = 1, DistrictHeadquarters = "Wrocław ul. Kościuszki 1", IdConstituency = 1, IdProvince = 1},
+        new District { IdDistrict = 2, DistrictName = "Obwodowa komisja nr 2", DisabledFacilities = 0, DistrictHeadquarters = "Wrocław ul. Plac Grunwaldzki 1", IdConstituency = 1, IdProvince = 1},
+    };
+
+
+    private List<District> filteredDistricts = new();
+
+
+    private void FilterTable()
+    {
+
+        filteredDistricts = districts; // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie ( Count'a na liczbie userów którzy są powiązani itp)
+    }
+
+    protected override void OnInitialized()
+    {
+
+        filteredDistricts = districts;
+    }
+
+    protected int GetVotersNumber(District district)
+    {
+        int VotersNumber = 100; // Tutaj znowu tak tylko hardtypowane bo też potrzeba jakiegoś sql który wyciągnie tą liczbę votersów w danym obwodzie
+
+        return VotersNumber;
+    }
+
+    protected int GetVotersThatVoted(District district)
+    {
+        int Votes = 10; // Tutaj znowu tak tylko hardtypowane bo też potrzeba jakiegoś sql który wyciągnie tą liczbę ile votersów jest już oflagowany z hasVoted i to jeszcze w zależności od godzin
+
+        return Votes;
+    }
+
+    protected float GetAttendancePercentage(District district)
+    {
+        int Percentage = 10; // Tutaj znowu tak tylko hardtypowane bo też potrzeba jakieś sposobu wyliczania
+
+
+        return Percentage;
+    }
+
+    public class District
+    {
+        public int IdDistrict { get; set; }
+        public string DistrictName { get; set; }
+        public int DisabledFacilities { get; set; }
+        public string DistrictHeadquarters { get; set; }
+        public int IdConstituency { get; set; }
+        public int IdProvince { get; set; }
+
+    }
+}
