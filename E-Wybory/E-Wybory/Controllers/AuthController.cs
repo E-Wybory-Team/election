@@ -10,6 +10,10 @@ using E_Wybory.Infrastructure.DbContext;
 using System.Diagnostics;
 using System.Text;
 using System.Collections;
+using E_Wybory.Domain.Entities;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Xml.Linq;
+
 
 namespace E_Wybory.Controllers
 {
@@ -69,7 +73,6 @@ namespace E_Wybory.Controllers
             {
                 hexString.AppendFormat("{0:x2}", b);
             }
-            Debug.WriteLine("Hashed password: " + hexString);
 
             if (context.ElectionUsers.Any(user => user.Email == email) &&
                 context.ElectionUsers
@@ -85,6 +88,65 @@ namespace E_Wybory.Controllers
             }
             return null;
         }
+
+        public static void Register(string name, string surname, string PESEL, DateTime birthdate, string email, 
+            string phoneNumber, string password, int idDistrict, ElectionDbContext context)
+        {
+            SHA256 sha = SHA256.Create();
+            UTF8Encoding objUtf8 = new UTF8Encoding();
+            byte[] hashedPassword = sha.ComputeHash(objUtf8.GetBytes(password));
+
+            //convert hashed password from byte[] to string to store as string in db
+            StringBuilder hexString = new StringBuilder(hashedPassword.Length * 2);
+            foreach (byte b in hashedPassword)
+            {
+                hexString.AppendFormat("{0:x2}", b);
+            }
+
+            //add new People's record
+            var person = new Person();
+
+            person.Name = name;
+            person.Surname = surname;
+            person.Pesel = PESEL;
+            person.BirthDate = birthdate;
+
+            context.People.Add(person);
+            context.SaveChanges();
+            var newPersonId = person.IdPerson; //save to use in user
+
+            //add new user
+            var user = new ElectionUser();
+            user.Email = email;
+            user.PhoneNumber = phoneNumber;
+            user.Password = hexString.ToString();
+            user.IdPerson = newPersonId;
+            user.IdDistrict = idDistrict;
+
+            context.ElectionUsers.Add(user);
+            context.SaveChanges();
+
+            var userId = user.IdElectionUser; //save to use in voter
+            //add new voter(every user(person) is voter too)
+            var voter = new Voter();
+            voter.IdDistrict = idDistrict;
+            voter.IdElectionUser = userId;
+
+            context.Voters.Add(voter);
+            context.SaveChanges();
+        }
+    }
+
+    public class RegistrationRequest
+    {
+        public string name { get; set; }
+        public string surname { get; set; }
+        public string PESEL { get; set; }
+        public DateTime birthdate { get; set; }
+        public string email { get; set; }
+        public string phoneNumber { get; set; }
+        public string password { get; set; }
+        public int idDistrict { get; set; }
     }
 
     public class AuthenticationRequest
@@ -114,6 +176,17 @@ namespace E_Wybory.Controllers
                 return Unauthorized();
 
             return Ok(authResult);
+        }
+
+        [HttpPost]
+        [Route("api/register")]
+        [AllowAnonymous]
+        public IActionResult Register([FromForm] RegistrationRequest request)
+        {
+            JWTMethods.Register(request.name, request.surname, request.PESEL, request.birthdate, request.email,
+            request.phoneNumber, request.password, request.idDistrict, context);
+
+            return Ok();
         }
     }
 }

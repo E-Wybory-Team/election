@@ -77,6 +77,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient("WebAPI", client =>
+    client.BaseAddress = new Uri("https://localhost:5001"));
+
 
 var app = builder.Build();
 

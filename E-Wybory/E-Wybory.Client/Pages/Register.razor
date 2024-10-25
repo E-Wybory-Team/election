@@ -1,0 +1,113 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@code {
+
+    public class RegistrationModel
+    {
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string PESEL { get; set; }
+        public DateTime Birthdate { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Password { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+
+
+    private RegistrationModel registrationModel = new RegistrationModel();
+    private bool formSubmitted = false;
+    private string errorMessage = "";
+
+    private async Task HandleSubmit()
+    {
+        // Simulate registration logic here
+        formSubmitted = false;
+        errorMessage = "";
+
+        if (registrationModel.Password != registrationModel.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        // Perform registration API call or logic here
+        // For now, we'll just simulate a successful registration
+        formSubmitted = true;
+
+        // Reset form (optional)
+        registrationModel = new RegistrationModel();
+    }
+}
+
+<h3>Registration</h3>
+
+@if (formSubmitted)
+{
+    <div class="alert alert-success">
+        Registration successful! Welcome, @registrationModel.Name.
+    </div>
+}
+else
+{
+    <EditForm Model="registrationModel" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <InputText id="name" @bind-Value="registrationModel.Name" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Name)" />
+        </div>
+
+        <div class="form-group">
+            <label for="surname">Surname</label>
+            <InputText id="surname" @bind-Value="registrationModel.Surname" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Surname)" />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL</label>
+            <InputText id="pesel" @bind-Value="registrationModel.PESEL" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.PESEL)" />
+        </div>
+
+        <div class="form-group">
+            <label for="birthdate">Birthdate</label>
+            <InputDate id="birthdate" @bind-Value="registrationModel.Birthdate" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Birthdate)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="registrationModel.Email" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Email)" />
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <InputText id="phone" @bind-Value="registrationModel.PhoneNumber" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.PhoneNumber)" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <InputText id="password" @bind-Value="registrationModel.Password" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Password)" />
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <InputText id="confirmPassword" @bind-Value="registrationModel.ConfirmPassword" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.ConfirmPassword)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3">@errorMessage</div>
+        }
+    </EditForm>
+}
+
