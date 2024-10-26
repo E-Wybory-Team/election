@@ -90,7 +90,7 @@ namespace E_Wybory.Controllers
             return null;
         }
 
-        public static void Register(string name, string surname, string PESEL, DateTime birthdate, string email, 
+        public static bool Register(string name, string surname, string PESEL, DateTime birthdate, string email, 
             string phoneNumber, string password, int idDistrict, ElectionDbContext context)
         {
             SHA256 sha = SHA256.Create();
@@ -104,6 +104,12 @@ namespace E_Wybory.Controllers
                 hexString.AppendFormat("{0:x2}", b);
             }
 
+            if (context.People.Any(person => person.Pesel == PESEL)
+                || context.ElectionUsers.Any(user => user.Email == email))
+            {
+                return false;
+            }
+
             //add new People's record
             var person = new Person();
 
@@ -112,6 +118,7 @@ namespace E_Wybory.Controllers
             person.Pesel = PESEL;
             person.BirthDate = birthdate;
 
+            Console.Write(idDistrict);
             context.People.Add(person);
             context.SaveChanges();
             var newPersonId = person.IdPerson; //save to use in user
@@ -137,14 +144,12 @@ namespace E_Wybory.Controllers
 
             context.Voters.Add(voter);
             context.SaveChanges();
+
+            return true;
         }
     }
 
     
-    
-    
-
-
     [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -165,8 +170,8 @@ namespace E_Wybory.Controllers
             var authResult = JWTMethods.Authenticate(request.Username, request.Password, context);
             if (authResult == null)
                 return Unauthorized();
-
-            return Ok(authResult);
+            else
+                return Ok(authResult);
         }
 
         [HttpPost]
@@ -174,10 +179,13 @@ namespace E_Wybory.Controllers
         [AllowAnonymous]
         public IActionResult Register([FromBody] RegisterViewModel request)
         {
-            JWTMethods.Register(request.Name, request.Surname, request.PESEL, request.Birthdate, request.Email,
+            bool registerResult = JWTMethods.Register(request.Name, request.Surname, request.PESEL, request.Birthdate, request.Email,
             request.PhoneNumber, request.Password, request.idDistrict, context);
 
-            return Ok();
+            if (registerResult)
+                return Ok();
+            else
+                return Conflict();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations
-@using E_Wybory.Client.ViewModels
+@using E_Wybory.Client.ViewModels;
 @rendermode InteractiveWebAssembly
 
 @inject IAuthService AuthService
@@ -68,6 +68,25 @@ else
             <ValidationMessage For="@(() => registrationModel.ConfirmPassword)" />
         </div>
 
+        <div class="form-group">
+            <label for="districtId">District</label>
+            @if (districts == null)
+            {
+                <p>Loading districts...</p>
+            }
+            else
+            {
+                <InputSelect id="districtId" @bind-Value="registrationModel.idDistrict">
+                    <option value="">-- Select a District --</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">@district.DistrictName</option>
+                    }
+                </InputSelect>
+            }
+            <ValidationMessage For="@(() => registrationModel.idDistrict)" />
+        </div>
+
         <button type="submit" class="btn btn-primary">Register</button>
 
         @if (!string.IsNullOrEmpty(errorMessage))
@@ -79,7 +98,14 @@ else
 
 @code {
 
+    private List<DistrictViewModel> districts;
+    private int districtId;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch districts from the AuthService
+        districts = await AuthService.Districts();
+    }
 
     private RegisterViewModel registrationModel = new RegisterViewModel();
     private bool formSubmitted = false;
