@@ -1,44 +1,10 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations
-@code {
+@using E_Wybory.Client.ViewModels
+@rendermode InteractiveWebAssembly
 
-    public class RegistrationModel
-    {
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string PESEL { get; set; }
-        public DateTime Birthdate { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
-    }
+@inject IAuthService AuthService
 
-
-    private RegistrationModel registrationModel = new RegistrationModel();
-    private bool formSubmitted = false;
-    private string errorMessage = "";
-
-    private async Task HandleSubmit()
-    {
-        // Simulate registration logic here
-        formSubmitted = false;
-        errorMessage = "";
-
-        if (registrationModel.Password != registrationModel.ConfirmPassword)
-        {
-            errorMessage = "Passwords do not match.";
-            return;
-        }
-
-        // Perform registration API call or logic here
-        // For now, we'll just simulate a successful registration
-        formSubmitted = true;
-
-        // Reset form (optional)
-        registrationModel = new RegistrationModel();
-    }
-}
 
 <h3>Registration</h3>
 
@@ -50,7 +16,7 @@
 }
 else
 {
-    <EditForm Model="registrationModel" OnValidSubmit="HandleSubmit">
+    <EditForm FormName="Reg" Model="registrationModel" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -111,3 +77,36 @@ else
     </EditForm>
 }
 
+@code {
+
+
+
+    private RegisterViewModel registrationModel = new RegisterViewModel();
+    private bool formSubmitted = false;
+    private string errorMessage = "";
+
+    private async Task HandleSubmit()
+    {
+        formSubmitted = false;
+        errorMessage = "";
+
+        if (registrationModel.Password != registrationModel.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+
+        formSubmitted = await AuthService.Register(registrationModel);
+
+        if (!formSubmitted)
+        {
+            errorMessage = "Registration failes";
+            return;
+
+        }
+
+        // Reset form (optional)
+        registrationModel = new RegisterViewModel();
+    }
+}

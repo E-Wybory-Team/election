@@ -122,6 +122,8 @@ namespace E_Wybory.Controllers
             user.PhoneNumber = phoneNumber;
             user.Password = hexString.ToString();
             user.IdPerson = newPersonId;
+
+            //idDistrict = 1;
             user.IdDistrict = idDistrict;
 
             context.ElectionUsers.Add(user);
@@ -138,18 +140,8 @@ namespace E_Wybory.Controllers
         }
     }
 
-    public class RegistrationRequest
-    {
-        public string name { get; set; }
-        public string surname { get; set; }
-        public string PESEL { get; set; }
-        public DateTime birthdate { get; set; }
-        public string email { get; set; }
-        public string phoneNumber { get; set; }
-        public string password { get; set; }
-        public int idDistrict { get; set; }
-    }
-
+    
+    
     
 
 
@@ -163,6 +155,8 @@ namespace E_Wybory.Controllers
             this.context = context;
         }
 
+
+        //For now for this endpoints use viewmodels, maybe the better options are DTO
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
@@ -178,10 +172,10 @@ namespace E_Wybory.Controllers
         [HttpPost]
         [Route("register")]
         [AllowAnonymous]
-        public IActionResult Register([FromForm] RegistrationRequest request)
+        public IActionResult Register([FromBody] RegisterViewModel request)
         {
-            JWTMethods.Register(request.name, request.surname, request.PESEL, request.birthdate, request.email,
-            request.phoneNumber, request.password, request.idDistrict, context);
+            JWTMethods.Register(request.Name, request.Surname, request.PESEL, request.Birthdate, request.Email,
+            request.PhoneNumber, request.Password, request.idDistrict, context);
 
             return Ok();
         }
