@@ -1,8 +1,11 @@
 ﻿@page "/login"
+@using E_Wybory.Client.ViewModels
+@rendermode InteractiveWebAssembly
+@inject E_Wybory.Client.Services.IAuthService AuthService
 
 <h2>Login</h2>
 
-<EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmit">
+<EditForm FormName="Auth" Model="@loginModel" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -21,19 +24,28 @@
     <button type="submit">Login</button>
 </EditForm>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
 @code {
-    private LoginModel loginModel = new LoginModel();
+    private LoginViewModel loginModel = new LoginViewModel();
+    private string errorMessage;
 
-    private void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
-        
+        var token = await AuthService.Login(loginModel);
 
-    }
+        if (!string.IsNullOrEmpty(token))
+        {
+            errorMessage = "Login successful!";
+        }
+        else
+        {
+            errorMessage = "Invalid username or password.";
+        }
 
-    public class LoginModel
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
     }
 }
 

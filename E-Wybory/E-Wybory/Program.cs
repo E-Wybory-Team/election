@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using E_Wybory.Client.BuilderClientExtensionMethods;
 
 
 var rsaKey = RSA.Create();
@@ -50,6 +51,10 @@ builder.Services.AddAuthentication("jwt")
             options.MapInboundClaims = false;
         });
 
+
+
+
+
 // Add services to the container.
 builder.Services
     .AddRazorComponents()
@@ -71,14 +76,17 @@ builder.Services
 builder.ConfigureAndAddKestrel()
        .ConfigureAndAddDbContext();
 
+//builder.Services.AddAuthorizationCore();
 
+//Add client services
+builder.Services.AddClientServices(builder.Configuration["Kestrel:Endpoints:Https:Url"]);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient("WebAPI", client =>
-    client.BaseAddress = new Uri("https://localhost:5001"));
+//builder.Services.AddHttpClient("WebAPI", client =>
+//    client.BaseAddress = new Uri("https://localhost:5001"));
 
 
 var app = builder.Build();

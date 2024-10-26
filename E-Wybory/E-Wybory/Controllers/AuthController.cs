@@ -13,6 +13,7 @@ using System.Collections;
 using E_Wybory.Domain.Entities;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Xml.Linq;
+using E_Wybory.Client.ViewModels;
 
 
 namespace E_Wybory.Controllers
@@ -149,14 +150,10 @@ namespace E_Wybory.Controllers
         public int idDistrict { get; set; }
     }
 
-    public class AuthenticationRequest
-    {
-        public string email { set; get; }
-        public string password { set; get; }
-    }
+    
 
 
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -167,11 +164,11 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost]
-        [Route("api/login")]
+        [Route("login")]
         [AllowAnonymous]
-        public IActionResult Login([FromForm] AuthenticationRequest request)
+        public IActionResult Login([FromBody] LoginViewModel request)
         {
-            var authResult = JWTMethods.Authenticate(request.email, request.password, context);
+            var authResult = JWTMethods.Authenticate(request.Username, request.Password, context);
             if (authResult == null)
                 return Unauthorized();
 
@@ -179,7 +176,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost]
-        [Route("api/register")]
+        [Route("register")]
         [AllowAnonymous]
         public IActionResult Register([FromForm] RegistrationRequest request)
         {
