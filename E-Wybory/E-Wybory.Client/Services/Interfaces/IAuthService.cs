@@ -6,6 +6,5 @@ namespace E_Wybory.Client.Services
         Task<string?> Login(LoginViewModel login);
 
         Task<bool> Register(RegisterViewModel register);
-        Task<List<DistrictViewModel>> Districts();
     }
 }
