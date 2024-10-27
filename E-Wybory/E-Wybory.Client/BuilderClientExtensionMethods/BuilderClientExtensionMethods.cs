@@ -1,4 +1,5 @@
 ﻿using E_Wybory.Client.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace E_Wybory.Client.BuilderClientExtensionMethods
 {
@@ -18,6 +19,8 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
             });
 
             services.AddScoped<IAuthService, AuthService>();
+
+            services.AddScoped<AuthenticationStateProvider, ElectionAuthStateProvider>();
         }
     }
 }
