@@ -167,6 +167,9 @@ namespace E_Wybory.Controllers
         [AllowAnonymous]
         public IActionResult Login([FromBody] LoginViewModel request)
         {
+            if (request.Username == String.Empty || request.Password == String.Empty)
+                return BadRequest("Not entered data to all required fields");
+
             var authResult = JWTMethods.Authenticate(request.Username, request.Password, context);
             if (authResult == null)
                 return Unauthorized();
@@ -179,6 +182,13 @@ namespace E_Wybory.Controllers
         [AllowAnonymous]
         public IActionResult Register([FromBody] RegisterViewModel request)
         {
+            if (request.Name == String.Empty || request.Surname == String.Empty || request.PESEL == String.Empty
+                || request.Birthdate == DateTime.MinValue || request.Email == String.Empty
+                || request.PhoneNumber == String.Empty || request.Password == String.Empty
+                || request.idDistrict == 0)
+
+                return BadRequest("Not entered data to all required fields"); 
+
             bool registerResult = JWTMethods.Register(request.Name, request.Surname, request.PESEL, request.Birthdate, request.Email,
             request.PhoneNumber, request.Password, request.idDistrict, context);
 

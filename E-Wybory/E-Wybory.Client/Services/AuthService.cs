@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using E_Wybory.Client.Pages;
 using E_Wybory.Client.ViewModels;
 
@@ -22,20 +23,17 @@ namespace E_Wybory.Client.Services
 
         public async Task<bool> Register(RegisterViewModel register)
         {
+            //Properly validate model before that 
+            //All properties must be innitialize
+            //register.idDistrict = 1;
             var response = await _httpClient.PostAsJsonAsync("/api/auth/register", register);
 
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
 
-        public async Task<List<DistrictViewModel>> Districts()
-        {
-            
-            var response = await _httpClient.GetFromJsonAsync<List<DistrictViewModel>>("/api/District");
-
-            return await Task.FromResult(response);
+            return await Task.FromResult(response.IsSuccessStatusCode);
         }
-
     }
 
 }

@@ -25,6 +25,7 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<AuthenticationStateProvider, ElectionAuthStateProvider>();
+            services.AddScoped<IDistrictManagementService, DistrictManagementService>();
         }
     }
 }
