@@ -4,9 +4,9 @@ using E_Wybory.Client.ViewModels;
 
 namespace E_Wybory.Client.Services
 {
-    public class AuthService(HttpClient httpClient) : IAuthService
+    public class AuthService(IHttpClientFactory clientFactory) : IAuthService
     {
-        private HttpClient _httpClient = httpClient;
+        private HttpClient _httpClient = clientFactory.CreateClient("ElectionHttpClient");
         public async Task<string?> Login(LoginViewModel login)
         {
             var response =  await _httpClient.PostAsJsonAsync("/api/auth/login", login);

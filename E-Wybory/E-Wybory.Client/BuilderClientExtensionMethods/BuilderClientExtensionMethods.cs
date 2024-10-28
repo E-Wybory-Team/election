@@ -1,5 +1,6 @@
 ﻿using E_Wybory.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+//using Microsoft.Extensions.Http;
 
 namespace E_Wybory.Client.BuilderClientExtensionMethods
 {
@@ -12,11 +13,14 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
                 "https://localhost:8443"  : 
                 endpointUri;
 
-            services.AddScoped(sp =>
-            new HttpClient                    //builder.Configuration["FrontendUrl"]
+            services.AddScoped<AuthHttpMessageHandler>();
+
+            services.AddHttpClient("ElectionHttpClient", client =>
             {
-                BaseAddress = new Uri(endpointUri)
-            });
+                client.BaseAddress = new Uri(endpointUri);
+            })
+            .AddHttpMessageHandler<AuthHttpMessageHandler>();
+           
 
             services.AddScoped<IAuthService, AuthService>();
 
