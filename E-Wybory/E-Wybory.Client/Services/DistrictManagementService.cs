@@ -4,9 +4,9 @@ using System.Net.Http.Json;
 
 namespace E_Wybory.Client.Services
 {
-    public class DistrictManagementService(HttpClient httpClient) : IDistrictManagementService
+    public class DistrictManagementService(IHttpClientFactory clientFactory) : IDistrictManagementService
     {
-        private HttpClient _httpClient = httpClient;
+        private HttpClient _httpClient = clientFactory.CreateClient("ElectionHttpClient");
 
         public async Task<List<DistrictViewModel>> Districts()
         {

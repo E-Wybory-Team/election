@@ -22,18 +22,10 @@ namespace E_Wybory.Client.Services
         }
 
         public async Task<bool> Register(RegisterViewModel register)
-        {
-            //Properly validate model before that 
-            //All properties must be innitialize
-            //register.idDistrict = 1;
+        { 
             var response = await _httpClient.PostAsJsonAsync("/api/auth/register", register);
 
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
-
-
-            return await Task.FromResult(response.IsSuccessStatusCode);
-        }
     }
-
 }

@@ -92,6 +92,48 @@ namespace E_Wybory.ExtensionMethods {
 
             return builder;
         }
+
+        public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder)
+        {
+            var rsaKey = RSA.Create();
+            rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    RoleClaimType = "Roles"
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = (ctx) =>
+                    {
+                        if (ctx.Request.Query.ContainsKey("t"))
+                        {
+                            ctx.Token = ctx.Request.Query["t"];
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
+                options.Configuration = new OpenIdConnectConfiguration
+                {
+                    SigningKeys = { new RsaSecurityKey(rsaKey) }
+                };
+                options.SaveToken = true;
+                options.MapInboundClaims = false;
+            });
+
+            return builder;
+        }
     }
 }
 

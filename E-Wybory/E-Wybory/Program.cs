@@ -14,46 +14,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using E_Wybory.Client.BuilderClientExtensionMethods;
 
 
-var rsaKey = RSA.Create();
-rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
-
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddAuthentication("jwt")
-    .AddJwtBearer("jwt", options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false
-            };
-
-            options.Events = new JwtBearerEvents()
-            {
-                OnMessageReceived = (ctx) =>
-                {
-                    if (ctx.Request.Query.ContainsKey("t"))
-                    {
-                        ctx.Token = ctx.Request.Query["t"];
-                    }
-                    return Task.CompletedTask;
-                }
-            };
-
-            options.Configuration = new OpenIdConnectConfiguration()
-            {
-                SigningKeys =
-                {
-                    new RsaSecurityKey(rsaKey)
-                }
-            };
-            options.SaveToken = true;
-            options.MapInboundClaims = false;
-        });
-
-
-
-
 
 // Add services to the container.
 builder.Services
@@ -76,6 +37,9 @@ builder.Services
 builder.ConfigureAndAddKestrel()
        .ConfigureAndAddDbContext();
 
+//Added JWT Bearer configuration
+builder.ConfigureAuth();
+
 //builder.Services.AddAuthorizationCore();
 
 //Add client services
@@ -85,8 +49,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//builder.Services.AddHttpClient("WebAPI", client =>
-//    client.BaseAddress = new Uri("https://localhost:5001"));
 
 
 var app = builder.Build();
@@ -119,6 +81,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(E_Wybory.Client._Imports).Assembly);
 
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/userInfo", (HttpContext ctx) => ctx.User.FindFirst("sub")?.Value ?? "Empty");
 

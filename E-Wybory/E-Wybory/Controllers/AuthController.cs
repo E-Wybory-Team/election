@@ -38,7 +38,8 @@ namespace E_Wybory.Controllers
                 Subject = new ClaimsIdentity(new[]
                 {
             new Claim("sub", Guid.NewGuid().ToString()),
-            new Claim("name", username)
+            new Claim("name", username),
+            new Claim("Roles", "Administrator") //Added for testing
 
             }),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
@@ -82,7 +83,7 @@ namespace E_Wybory.Controllers
                 .FirstOrDefault() == hexString.ToString()
                 )
             {
-                CreateRSAPrivateKey();
+                //CreateRSAPrivateKey();
                 var rsaKey = RSA.Create();
                 rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
                 return createToken(rsaKey, email);
@@ -179,9 +180,10 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("register")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Register([FromBody] RegisterViewModel request)
         {
+            //if(ModelState.IsValid)
             if (request.Name == String.Empty || request.Surname == String.Empty || request.PESEL == String.Empty
                 || request.Birthdate == DateTime.MinValue || request.Email == String.Empty
                 || request.PhoneNumber == String.Empty || request.Password == String.Empty
