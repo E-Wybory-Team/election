@@ -4,7 +4,7 @@
     font-variant-caps: titling-caps;
     margin-bottom: 20px;
     color: black;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 .filters {
@@ -53,3 +53,6 @@
     .candidate-table td {
         background-color: #f9f9f9;
     }
+
+
+

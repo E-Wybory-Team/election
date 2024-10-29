@@ -30,7 +30,7 @@
             </div>
             <div class="input-group">
                 <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
-                <InputDate @bind-Value="registrationModel.DateOfBirth" placeholder="DATA URODZENIA"  />
+                <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" placeholder="DATA URODZENIA" />
             </div>
         </div>
 
@@ -56,6 +56,21 @@
             </div>
         </div>
 
+        <div class="form-row double-column">
+            <div class="input-group">
+                <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
+                <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
+                    <option value="">Wybierz Obwód</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+
         <button type="submit" class="submit-button">ZAREJESTRUJ</button>
     </EditForm>
 
@@ -69,6 +84,13 @@
         Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
     }
 
+    private List<District> districts = new List<District>
+    {
+        new District { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
+        new District { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
+        new District { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
+    };
+
     public class RegistrationModel
     {
         [Required] public string FirstName { get; set; }
@@ -80,5 +102,26 @@
         [Required] public string Password { get; set; }
         [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
         public string ConfirmPassword { get; set; }
+        [Required] public int SelectedDistrictId { get; set; }
+
+        public string DateOfBirthString
+        {
+            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    DateOfBirth = DateTime.Parse(value);
+                }
+            }
+        }
+    }
+
+    public class District
+    {
+        [Required] public int IdDistrict { get; set; }
+        [Required] public string DistrictName { get; set; }
+        [Required] public bool DisabledFacilities { get; set; }
+        [Required] public string DistrictHeadquarters { get; set; }
     }
 }
