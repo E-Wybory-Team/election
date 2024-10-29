@@ -2,6 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
+
 <div class="registration-form">
     <div class="icon">
         <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
@@ -65,7 +66,6 @@
 
     private void HandleRegistration()
     {
-        // Logika rejestracji
         Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
     }
 

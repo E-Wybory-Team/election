@@ -2,6 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
+
 <div class="login-form">
     <div class="icon">
         <img src="images/profile-tick.png" alt="Ikona logowania" width="400" height="400" />
@@ -37,7 +38,6 @@
 
     private void HandleLogin()
     {
-        // Logika logowania
         Console.WriteLine($"Logowanie dla: {loginModel.Username}");
     }
 

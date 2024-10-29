@@ -1,0 +1,161 @@
+﻿@page "/add-candidate"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>DODAWANIE KANDYDATA W WYBORACH</h1>
+
+    <EditForm Model="@candidateModel" OnValidSubmit="HandleAddCandidate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="firstName">IMIĘ</label>
+                <InputText id="firstName" @bind-Value="candidateModel.FirstName" placeholder="Wprowadź imię kandydata" />
+            </div>
+            <div class="form-group">
+                <label for="middleName">DRUGIE IMIĘ</label>
+                <InputText id="middleName" @bind-Value="candidateModel.MiddleName" placeholder="Wprowadź drugie imię kandydata" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="lastName">NAZWISKO</label>
+                <InputText id="lastName" @bind-Value="candidateModel.LastName" placeholder="Wprowadź nazwisko kandydata" />
+            </div>
+            <div class="form-group">
+                <label for="occupation">ZAWÓD</label>
+                <InputText id="occupation" @bind-Value="candidateModel.Occupation" placeholder="Wprowadź zawód kandydata" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="workplace">MIEJSCE PRACY</label>
+                <InputText id="workplace" @bind-Value="candidateModel.Workplace" placeholder="Wprowadź miejsce pracy kandydata" />
+            </div>
+            <div class="form-group">
+                <label for="listNumber">NUMER NA LIŚCIE</label>
+                <InputNumber id="listNumber" @bind-Value="candidateModel.ListNumber" placeholder="Wprowadź numer na liście" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="education">WYKSZTAŁCENIE</label>
+                <InputSelect id="education" @bind-Value="candidateModel.Education">
+                    <option value="">Wybierz wykształcenie</option>
+                    <option value="Podstawowe">Podstawowe</option>
+                    <option value="Średnie">Średnie</option>
+                    <option value="Wyższe">Wyższe</option>
+                </InputSelect>
+            </div>
+            <div class="form-group">
+                <label for="partyAffiliation">PRZYNALEŻNOŚĆ DO PARTII</label>
+                <InputSelect id="partyAffiliation" @bind-Value="candidateModel.PartyAffiliation">
+                    <option value="">Wybierz partię</option>
+                    @foreach (var party in parties)
+                    {
+                        <option value="@party.IdParty">
+                            @party.PartyName
+                        </option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
+                <InputText id="placeOfResidence" @bind-Value="candidateModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
+            </div>
+            <div class="form-group">
+                <label for="districtNumber">OBWÓD WYBORCZY</label>
+                <InputSelect id="districtNumber" @bind-Value="candidateModel.SelectedDistrictId">
+                    <option value="">Wybierz obwód wyborczy</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-button">DODAJ</button>
+    </EditForm>
+</div>
+
+@code {
+    private CandidateModel candidateModel = new CandidateModel();
+
+    private void HandleAddCandidate()
+    {
+        Console.WriteLine($"Dodano kandydata: {candidateModel.FirstName} {candidateModel.LastName}");
+    }
+    private List<Party> parties = new List<Party>
+    {
+        new Party { IdParty = 1, PartyName = "Partia 1" },
+        new Party { IdParty = 2, PartyName = "Partia 2" },
+        new Party { IdParty = 3, PartyName = "Partia 3" }
+    };
+
+    private List<District> districts = new List<District>
+    {
+        new District { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
+        new District { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
+        new District { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
+    };
+
+    public class CandidateModel
+    {
+        [Required(ErrorMessage = "Imię jest wymagane")]
+        public string FirstName { get; set; }
+
+        public string MiddleName { get; set; }
+
+        [Required(ErrorMessage = "Nazwisko jest wymagane")]
+        public string LastName { get; set; }
+
+        [Required(ErrorMessage = "Zawód jest wymagany")]
+        public string Occupation { get; set; }
+
+        [Required(ErrorMessage = "Miejsce pracy jest wymagane")]
+        public string Workplace { get; set; }
+
+        [Required(ErrorMessage = "Numer na liście jest wymagany")]
+        public int ListNumber { get; set; }
+
+        [Required(ErrorMessage = "Wykształcenie jest wymagane")]
+        public string Education { get; set; }
+
+        [Required(ErrorMessage = "Przynależność do partii jest wymagana")]
+        public string PartyAffiliation { get; set; }
+
+        [Required(ErrorMessage = "Miejsce zamieszkania jest wymagane")]
+        public string PlaceOfResidence { get; set; }
+
+        [Required(ErrorMessage = "Obwód wyborczy jest wymagany")]
+        public int SelectedDistrictId { get; set; }
+    }
+
+    public class District
+    {
+        [Required] public int IdDistrict { get; set; }
+        [Required] public string DistrictName { get; set; }
+        [Required] public bool DisabledFacilities { get; set; }
+        [Required] public string DistrictHeadquarters { get; set; }
+    }
+
+    public class Party
+    {
+        [Required] public int IdParty { get; set; }
+        [Required] public string PartyName { get; set; }
+    }
+}

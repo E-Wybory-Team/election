@@ -64,7 +64,7 @@ app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode();
-    //.AddAdditionalAssemblies(typeof(E_Wybory.Client._Imports).Assembly);                 
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(E_Wybory.Client._Imports).Assembly);    // TODO: commented because error 'Assembly already defined'            
 
 app.Run();
