@@ -29,7 +29,7 @@
             </div>
             <div class="input-group">
                 <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
-                <InputDate @bind-Value="registrationModel.DateOfBirth" placeholder="DATA URODZENIA"  />
+                <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" placeholder="DATA URODZENIA" />
             </div>
         </div>
 
@@ -103,6 +103,18 @@
         [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
         public string ConfirmPassword { get; set; }
         [Required] public int SelectedDistrictId { get; set; }
+
+        public string DateOfBirthString
+        {
+            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    DateOfBirth = DateTime.Parse(value);
+                }
+            }
+        }
     }
 
     public class District
