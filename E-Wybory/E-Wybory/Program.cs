@@ -5,7 +5,13 @@ using E_Wybory.Infrastructure;
 using E_Wybory.ExtensionMethods;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
-
+using System.Security.Cryptography;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using E_Wybory.Client.BuilderClientExtensionMethods;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +26,6 @@ builder.Services
     .AddInfrastructure()
     .AddApplication();
 
-
 // Conditionally configure Data Protection only in Release builds (C# preprocessor directive) TODO: Fix
 //#if !DEBUG
 //builder.Services.AddDataProtection()
@@ -32,11 +37,18 @@ builder.Services
 builder.ConfigureAndAddKestrel()
        .ConfigureAndAddDbContext();
 
+//Added JWT Bearer configuration
+builder.ConfigureAuth();
 
+//builder.Services.AddAuthorizationCore();
+
+//Add client services
+builder.Services.AddClientServices(builder.Configuration["Kestrel:Endpoints:Https:Url"]);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 
 var app = builder.Build();
@@ -55,6 +67,7 @@ else
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -66,5 +79,46 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode();
     //.AddAdditionalAssemblies(typeof(E_Wybory.Client._Imports).Assembly);    // TODO: commented because error 'Assembly already defined'            
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGet("/userInfo", (HttpContext ctx) => ctx.User.FindFirst("sub")?.Value ?? "Empty");
+
+/*
+app.MapGet("/jwt", () =>
+{
+    var handler = new JsonWebTokenHandler();
+    var key = new RsaSecurityKey(rsaKey);
+    var token = handler.CreateToken(new SecurityTokenDescriptor()
+    {
+        Issuer = "https://localhost:8443",
+        Subject = new ClaimsIdentity(new[]
+        {
+            new Claim("sub", Guid.NewGuid().ToString()),
+            new Claim("name", "coœ")
+        }),
+        SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
+    }) ;
+    return token;
+});
+
+app.MapGet("/jwk", () =>
+{
+    var publicKey = RSA.Create();
+    publicKey.ImportRSAPublicKey(rsaKey.ExportRSAPublicKey(), out _);
+
+    var key = new RsaSecurityKey(publicKey);
+    return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+});
+
+
+app.MapGet("/jwk-private", () =>
+{
+    var key = new RsaSecurityKey(rsaKey);
+    return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+});
+
+*/
 
 app.Run();
