@@ -12,7 +12,7 @@
         <img src="images/profile-tick.png" alt="Ikona logowania" width="400" height="400" />
     </div>
 
-    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <EditForm FormName="Auth" Model="@loginModel" OnValidSubmit="HandleLogin">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
