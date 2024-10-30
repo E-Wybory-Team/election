@@ -1,0 +1,144 @@
+﻿@page "/voterslist"
+@using System.ComponentModel.DataAnnotations
+<link href="tables.css" rel="stylesheet" />
+
+<h2 class="title">SPIS WYBORCÓW</h2>
+
+<div class="filters">
+    <div class="filter-group">
+        <label>Województwo</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in voivodeships)
+            {
+                <option value="@voivodeship">@voivodeship</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Powiat</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in counties)
+            {
+                <option value="@county">@county</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Gmina</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in provinces)
+            {
+                <option value="@province">@province</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Numer obwodu</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz numer obwodu</option>
+            @foreach (var districtNumber in districtNumbers)
+            {
+                <option value="@districtNumber">@districtNumber</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Szukaj</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wpisz wyszukiwaną frazę</option>
+            @* tutaj logika *@
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Lp.</th>
+            <th>Imię</th>
+            <th>Nazwisko</th>
+            <th>PESEL</th>
+            <th>Telefon</th>
+            <th>Adres email</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int index = 1;
+        }
+        @foreach (var voter in filteredVoters)
+        {
+            <tr>
+                <td>@index</td>
+                <td>@voter.Person.Name</td>
+                <td>@voter.Person.Surname</td>
+                <td>@voter.Person.PESEL</td>
+                <td>@voter.PhoneNumber</td>
+                <td>@voter.Email</td>
+                <td>
+                    <a href="/modify/@voter.IdElectionUser">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/delete/@voter.IdElectionUser">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+
+            </tr>
+            index++;
+        }
+    </tbody>
+</table>
+
+@code {
+
+    // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
+
+    private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
+    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
+    private List<ElectionUser> voters = new()
+    {
+        new ElectionUser {IdElectionUser = 1, Email = "uniquemail@gmail.com", PhoneNumber = "123 456 789", Person = new People {IdPerson = 1, Name = "Adam", Surname = "Kowalski", PESEL = 85293128490, Date = DateOnly.Parse("1985-01-01")}},
+        new ElectionUser {IdElectionUser = 2, Email = "newuniquemail@gmail.com", PhoneNumber = "987 654 312", Person = new People {IdPerson = 2, Name = "Katarzyna", Surname = "Elowska", PESEL = 92731028594, Date =  DateOnly.Parse("1992-01-01")}}
+    };
+
+
+    private List<ElectionUser> filteredVoters = new();
+
+
+    private void FilterTable()
+    {
+
+        filteredVoters = voters; // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie
+    }
+
+    protected override void OnInitialized()
+    {
+
+        filteredVoters = voters;
+    }
+
+    public class ElectionUser
+    {
+        public int IdElectionUser { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public People Person { get; set; }
+    }
+
+    public class People
+    {
+        public int IdPerson { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public long PESEL { get; set; }
+        public DateOnly Date { get; set; }
+    }
+}

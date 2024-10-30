@@ -1,5 +1,5 @@
-using E_Wybory.Client.Pages;
-using E_Wybory.Components;
+using E_Wybory.Client.Components.Pages;
+using E_Wybory.Client.Components;
 using E_Wybory.Application;
 using E_Wybory.Infrastructure;
 using E_Wybory.ExtensionMethods;
@@ -65,6 +65,6 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(E_Wybory.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(E_Wybory.Client._Imports).Assembly);    // TODO: commented because error 'Assembly already defined'            
 
 app.Run();

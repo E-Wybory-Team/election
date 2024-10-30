@@ -1,0 +1,145 @@
+﻿@page "/candidateInfo"
+@using System.ComponentModel.DataAnnotations
+<link href="tables.css" rel="stylesheet"/>
+
+<h2 class="title">SPIS KANDYDATÓW</h2>
+
+<div class="filters">
+    <div class="filter-group">
+        <label>Rodzaj wyborów</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz rodzaj wyborów</option>
+            @foreach (var electionType in electionTypes)
+            {
+                <option value="@electionType">@electionType</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Województwo</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in voivodeships)
+            {
+                <option value="@voivodeship">@voivodeship</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Powiat</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in counties)
+            {
+                <option value="@county">@county</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Gmina</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in provinces)
+            {
+                <option value="@province">@province</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Numer obwodu</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz numer obwodu</option>
+            @foreach (var districtNumber in districtNumbers)
+            {
+                <option value="@districtNumber">@districtNumber</option>
+            }
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Numer na karcie do głosowania</th>
+            <th>Nazwisko i imiona</th>
+            <th>Zawód</th>
+            <th>Miejsce (zakład) pracy</th>
+            <th>Miejscowość zamieszkania</th>
+            <th>Wykształcenie</th>
+            <th>Wiek</th>
+            <th>Przynależność do partii politycznej</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var candidate in filteredCandidates)
+        {
+            <tr>
+                <td>@candidate.PositionNumber</td>
+                <td>@candidate.Surname @candidate.FirstName  @candidate.SecondName</td>
+                <td>@candidate.Profession</td>
+                <td>@candidate.WorkPlace</td>
+                <td>@candidate.Residence</td>
+                <td>@candidate.Education</td>
+                <td>@candidate.Age</td>
+                <td>@candidate.PartyAffiliation.PartyName</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
+
+    private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
+    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
+    private List<Candidate> candidates = new()
+    {
+        new Candidate { PositionNumber = 1, FirstName = "Jan", SecondName = "Andrzej", Surname = "Kowalski", Profession = "Prawnik", WorkPlace = "Zakład X", Residence = "Warszawa", Education = "Wyższe", Age = 45, PartyAffiliation = new Parties {PartyName = "Partia A", Abbreviation = "PA", PartyAddress = "Warszawa ul. Wiadoma 5", PartyType = "Type 1", isCoalition = false, ListCommiteeNumber = 1, Website = "https://europarlament.pa/" } },
+        new Candidate { PositionNumber = 2, FirstName = "Marian", SecondName = "Władysław", Surname = "Niemiecki", Profession = "Polityk", WorkPlace = "", Residence = "Warszawa", Education = "Wyższe", Age = 60, PartyAffiliation = new Parties {PartyName = "Partia B", Abbreviation = "PB", PartyAddress = "Warszawa ul. Niewiadoma 20/5", PartyType = "Type 2", isCoalition = false, ListCommiteeNumber = 2, Website = "https://europarlament.pb/" } }
+    };
+    
+
+    private List<Candidate> filteredCandidates = new();
+
+    
+    private void FilterTable()
+    {
+        
+        filteredCandidates = candidates; // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie
+    }
+
+    protected override void OnInitialized()
+    {
+        
+        filteredCandidates = candidates;
+    }
+
+    public class Candidate
+    {
+        public int PositionNumber { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string Surname { get; set; }
+        public string Profession { get; set; }
+        public string WorkPlace { get; set; }
+        public string Residence { get; set; }
+        public string Education { get; set; }
+        public int Age { get; set; }
+        public Parties PartyAffiliation { get; set; }
+    }
+
+    public class Parties
+    {
+        public string PartyName { get; set; }
+        public string Abbreviation{ get; set; }
+        public string PartyAddress { get; set; }
+        public string PartyType { get; set; }
+        public bool isCoalition { get; set; }
+        public int ListCommiteeNumber { get; set; }
+        public string Website { get; set; }
+    }
+}
