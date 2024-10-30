@@ -5,18 +5,18 @@ namespace E_Wybory.Client.ViewModels
     public class RegisterViewModel
     {
         [Required]
-        public string Name { get; set; } = String.Empty;
+        public string FirstName { get; set; } = String.Empty;
 
         [Required]
-        public string Surname { get; set; } = String.Empty;
+        public string LastName { get; set; } = String.Empty;
 
         [Required]
         public string PESEL { get; set; } = String.Empty;
 
         [Required]
-        public DateTime Birthdate { get; set; } = DateTime.MinValue;
+        public DateTime DateOfBirth { get; set; } = DateTime.MinValue;
 
-        [Required]
+        [Required, EmailAddress]
         public string Email { get; set; } = String.Empty;
 
         [Required]
@@ -25,10 +25,22 @@ namespace E_Wybory.Client.ViewModels
         [Required]
         public string Password { get; set; } = String.Empty;
 
-        [Required]
+        [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
         public string ConfirmPassword { get; set; } = String.Empty;
 
         [Required]
-        public int idDistrict { get; set; } = 0;
+        public int SelectedDistrictId { get; set; } = 0;
+
+        public string DateOfBirthString
+        {
+            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    DateOfBirth = DateTime.Parse(value);
+                }
+            }
+        }
     }
 }

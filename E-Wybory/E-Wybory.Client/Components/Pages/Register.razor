@@ -1,7 +1,9 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
-
+@inject IAuthService AuthService
+@inject IDistrictManagementService DistrictManagementService
 
 <div class="registration-form">
     <div class="icon">
@@ -73,55 +75,43 @@
 
         <button type="submit" class="submit-button">ZAREJESTRUJ</button>
     </EditForm>
-
+    @* same as for Login.razor *@
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private RegistrationModel registrationModel = new RegistrationModel();
+    private RegisterViewModel registrationModel = new RegisterViewModel();
+    private List<DistrictViewModel> districts;
+    string errorMessage;
+    //= new List<DistrictViewModel>();
+    // {
+    // new DistrictViewModel { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
+    // new DistrictViewModel { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
+    // new DistrictViewModel { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
+    // };
 
-    private void HandleRegistration()
+    bool formSubmitted = false;
+
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+        districts = await DistrictManagementService.Districts();
     }
 
-    private List<District> districts = new List<District>
-    {
-        new District { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
-        new District { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
-        new District { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
-    };
 
-    public class RegistrationModel
+    private async Task HandleRegistration()
     {
-        [Required] public string FirstName { get; set; }
-        [Required] public string LastName { get; set; }
-        [Required] public string PESEL { get; set; }
-        [Required] public DateTime DateOfBirth { get; set; }
-        [Required, EmailAddress] public string Email { get; set; }
-        [Required] public string PhoneNumber { get; set; }
-        [Required] public string Password { get; set; }
-        [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
-        public string ConfirmPassword { get; set; }
-        [Required] public int SelectedDistrictId { get; set; }
+        //Maybe it is the better plan to make it return HttpResponse with more verbose payload
+        formSubmitted = await AuthService.Register(registrationModel);
 
-        public string DateOfBirthString
-        {
-            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    DateOfBirth = DateTime.Parse(value);
-                }
-            }
-        }
+        errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
+        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
     }
 
-    public class District
-    {
-        [Required] public int IdDistrict { get; set; }
-        [Required] public string DistrictName { get; set; }
-        [Required] public bool DisabledFacilities { get; set; }
-        [Required] public string DistrictHeadquarters { get; set; }
-    }
+    
+                                               
+
+    
 }

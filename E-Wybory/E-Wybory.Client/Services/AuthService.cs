@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using E_Wybory.Client.Pages;
 using E_Wybory.Client.ViewModels;
 
 namespace E_Wybory.Client.Services

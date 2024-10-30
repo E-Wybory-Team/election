@@ -1,8 +1,12 @@
-﻿namespace E_Wybory.Client.ViewModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace E_Wybory.Client.ViewModels
 {
     public class DistrictViewModel
     {
-        public int IdDistrict { get; set; }
-        public string DistrictName { get; set; }
+        [Required] public int IdDistrict { get; set; }
+        [Required] public string DistrictName { get; set; }
+        [Required] public bool DisabledFacilities { get; set; }
+        [Required] public string DistrictHeadquarters { get; set; }
     }
 }

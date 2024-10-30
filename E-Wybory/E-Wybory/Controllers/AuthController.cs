@@ -184,15 +184,15 @@ namespace E_Wybory.Controllers
         public IActionResult Register([FromBody] RegisterViewModel request)
         {
             //if(ModelState.IsValid)
-            if (request.Name == String.Empty || request.Surname == String.Empty || request.PESEL == String.Empty
-                || request.Birthdate == DateTime.MinValue || request.Email == String.Empty
+            if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
+                || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
                 || request.PhoneNumber == String.Empty || request.Password == String.Empty
-                || request.idDistrict == 0)
+                || request.SelectedDistrictId == 0)
 
                 return BadRequest("Not entered data to all required fields"); 
 
-            bool registerResult = JWTMethods.Register(request.Name, request.Surname, request.PESEL, request.Birthdate, request.Email,
-            request.PhoneNumber, request.Password, request.idDistrict, context);
+            bool registerResult = JWTMethods.Register(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
+            request.PhoneNumber, request.Password, request.SelectedDistrictId, context);
 
             if (registerResult)
                 return Ok();
