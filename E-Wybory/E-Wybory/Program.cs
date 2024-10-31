@@ -12,8 +12,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using E_Wybory.Client.BuilderClientExtensionMethods;
+using E_Wybory.Services;
 
 
+var rsaKey = RSA.Create();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -48,7 +50,7 @@ builder.Services.AddClientServices(builder.Configuration["Kestrel:Endpoints:Http
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddSingleton<IJWTService>(new TokenService(rsaKey));
 
 
 var app = builder.Build();

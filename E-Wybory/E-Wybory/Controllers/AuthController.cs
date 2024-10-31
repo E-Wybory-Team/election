@@ -14,55 +14,13 @@ using E_Wybory.Domain.Entities;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Xml.Linq;
 using E_Wybory.Client.ViewModels;
+using E_Wybory.Services;
 
 
 namespace E_Wybory.Controllers
 {
-    public static class JWTMethods
+    public static class AuthMethods
     {
-        public const int JWT_TOKEN_VALIDATION_MINS = 10;
-        public static void CreateRSAPrivateKey()
-        {
-            var rsaKey = RSA.Create();
-            var privateKey = rsaKey.ExportRSAPrivateKey();
-            File.WriteAllBytes("key", privateKey);
-        }
-
-        public static string createToken(RSA rsaPrivateKey, string username)
-        {
-            var handler = new JsonWebTokenHandler();
-            var key = new RsaSecurityKey(rsaPrivateKey);
-            var token = handler.CreateToken(new SecurityTokenDescriptor()
-            {
-                Issuer = "https://localhost:8443",
-                Subject = new ClaimsIdentity(new[]
-                {
-            new Claim("sub", Guid.NewGuid().ToString()),
-            new Claim("name", username),
-            new Claim("Roles", "Administrator") //Added for testing
-
-            }),
-                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
-                Expires = DateTime.Now.AddMinutes(JWT_TOKEN_VALIDATION_MINS)
-            });
-            return token;
-        }
-
-        public static JsonWebKey CreateJwkPublic(RSA rsaPrivateKey)
-        {
-            var publicKey = RSA.Create();
-            publicKey.ImportRSAPublicKey(rsaPrivateKey.ExportRSAPublicKey(), out _);
-
-            var key = new RsaSecurityKey(publicKey);
-            return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
-        }
-
-        public static JsonWebKey CreateJwkPrivate(RSA rsaPrivateKey)
-        {
-            var key = new RsaSecurityKey(rsaPrivateKey);
-            return JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
-        }
-
         public static string Authenticate(string email, string password, ElectionDbContext context)
         {
             SHA256 sha = SHA256.Create();
@@ -86,7 +44,7 @@ namespace E_Wybory.Controllers
                 //CreateRSAPrivateKey();
                 var rsaKey = RSA.Create();
                 rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
-                return createToken(rsaKey, email);
+                return TokenService.createToken(rsaKey, email);
             }
             return null;
         }
@@ -171,7 +129,7 @@ namespace E_Wybory.Controllers
             if (request.Username == String.Empty || request.Password == String.Empty)
                 return BadRequest("Not entered data to all required fields");
 
-            var authResult = JWTMethods.Authenticate(request.Username, request.Password, context);
+            var authResult = AuthMethods.Authenticate(request.Username, request.Password, context);
             if (authResult == null)
                 return Unauthorized();
             else
@@ -191,7 +149,7 @@ namespace E_Wybory.Controllers
 
                 return BadRequest("Not entered data to all required fields"); 
 
-            bool registerResult = JWTMethods.Register(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
+            bool registerResult = AuthMethods.Register(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
             request.PhoneNumber, request.Password, request.SelectedDistrictId, context);
 
             if (registerResult)

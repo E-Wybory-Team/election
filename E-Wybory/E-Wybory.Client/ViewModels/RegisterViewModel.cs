@@ -34,14 +34,18 @@ namespace E_Wybory.Client.ViewModels
 
         public string DateOfBirthString
         {
-            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
+            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("yyyy-MM-dd") : string.Empty;
             set
             {
                 if (!string.IsNullOrEmpty(value))
                 {
                     //The specified value "DaAa Uro24+2enia" does not conform to the required format, "yyyy-MM-dd".
-                    //DateOfBirth = DateTime.ParseExact(value, "dd.MM.yyyy", CultureInfo.InvariantCulture);
-                    DateOfBirth = new DateTime(2001, 1, 24);
+                    DateOfBirth = DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    //DateOfBirth = new DateTime(2001, 1, 24);
+                }
+                else
+                {
+                    DateOfBirth = DateTime.MinValue;
                 }
             }
         }
