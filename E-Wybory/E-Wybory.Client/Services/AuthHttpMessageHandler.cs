@@ -8,6 +8,12 @@ namespace E_Wybory.Client.Services
         private readonly IJSRuntime _jsRuntime;
         private const string TokenKey = "authToken";
 
+        //      private readonly IMemoryCache _memoryCache; //check ? not really
+
+        //https://referbruv.com/blog/using-imemorycache-for-token-caching-in-an-aspnet-core-application/
+        //https://stackoverflow.com/questions/72519590/blazor-and-oauth-jwt-bearer-token-storage
+        //redis???
+        //registering IJSRuntime on Home page
         public AuthHttpMessageHandler(IJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;

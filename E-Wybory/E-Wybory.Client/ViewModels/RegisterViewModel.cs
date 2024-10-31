@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace E_Wybory.Client.ViewModels
 {
@@ -38,7 +39,9 @@ namespace E_Wybory.Client.ViewModels
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    DateOfBirth = DateTime.Parse(value);
+                    //The specified value "DaAa Uro24+2enia" does not conform to the required format, "yyyy-MM-dd".
+                    //DateOfBirth = DateTime.ParseExact(value, "dd.MM.yyyy", CultureInfo.InvariantCulture);
+                    DateOfBirth = new DateTime(2001, 1, 24);
                 }
             }
         }
