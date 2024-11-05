@@ -81,7 +81,12 @@ namespace E_Wybory.Controllers
         [HttpPost]
         public async Task<ActionResult<Candidate>> PostCandidate(CandidateViewModel candidateModel)
         {
-            
+            if(_context.Candidates.Any(candidate => candidate.IdPerson == candidateModel.IdPerson) &&
+               _context.Candidates.Any(candidate => candidate.IdElection == candidateModel.IdElection))
+            {
+                return Conflict();
+            }
+
             var candidate = new Candidate();
 
             candidate.CampaignDescription = candidateModel.CampaignDescription;

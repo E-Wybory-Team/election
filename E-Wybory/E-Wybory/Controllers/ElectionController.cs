@@ -76,8 +76,8 @@ namespace E_Wybory.Controllers
         public async Task<ActionResult<Election>> PostElection(ElectionViewModel electionModel)
         {
             var election = new Election();
-            election.ElectionStartDate = electionModel.ElectionStart;
-            election.ElectionEndDate = electionModel.ElectionEnd;
+            election.ElectionStartDate = electionModel.ElectionStartDate;
+            election.ElectionEndDate = electionModel.ElectionEndDate;
             election.ElectionTour = electionModel.ElectionTour;
             
             _context.Elections.Add(election);
