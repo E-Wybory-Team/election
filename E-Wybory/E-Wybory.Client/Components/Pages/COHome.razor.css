@@ -1,0 +1,102 @@
+﻿.page-content {
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    background-color: #b9d4f3;
+    border: 0px none;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
+}
+
+    .page-content a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .page-content .button-informator,
+    .page-content .button-kandydaci,
+    .page-content .button-statystyki,
+    .page-content .button-voters-list,
+    .page-content .button-check-status,
+    .page-content .button-district-stats {
+        width: 30%;
+        height: 40vh;
+        background-color: #ffffff;
+        border-radius: 10px;
+        background-size: cover;
+        background-position: 50% 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #000000;
+        font-family: "Open Sans-Bold", Helvetica;
+        font-weight: 700;
+        font-size: 2rem;
+        text-align: center;
+        text-shadow: 0px 4px 4px #00000040;
+        opacity: 0.85;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .page-content .button-informator:hover,
+        .page-content .button-kandydaci:hover,
+        .page-content .button-statystyki:hover,
+        .page-content .button-voters-list:hover,
+        .page-content .button-check-status:hover,
+        .page-content .button-district-stats:hover {
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            filter: brightness(0.7);
+            transform: translateY(-5px);
+            transition: all 0.3s ease-in-out;
+        }
+
+    .page-content .button-informator {
+        background-image: url('/images/InfoPhoto.png');
+    }
+
+    .page-content .button-kandydaci {
+        background-image: url('/images/CandidatesPhoto.png');
+    }
+
+    .page-content .button-statystyki {
+        background-image: url('/images/StatsPhoto.png');
+    }
+
+    .page-content .button-voters-list {
+        background-image: url('/images/CancelVoter.png');
+    }
+
+    .page-content .button-check-status {
+        background-image: url('/images/CheckStatus.png');
+    }
+
+    .page-content .button-district-stats {
+        background-image: url('/images/DistrictStats.png');
+    }
+
+    .page-content .informator-wyborczy,
+    .page-content .text-wrapper,
+    .page-content .div,
+    .page-content .text-wrapper-2,
+    .page-content .text-wrapper-3 {
+        z-index: 2;
+        font-size: 36px;
+        text-shadow: 0px 4px 4px #00000040;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+    }
+
+html, body {
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
