@@ -1,5 +1,14 @@
 ﻿@page "/candidateInfo"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@using E_Wybory.Client.Services;
+@inject IPartyManagementService PartyManagementService
+@inject ICandidateManagementService CandidateManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject IPersonManagementService PersonManagementService
+
 <link href="tables.css" rel="stylesheet"/>
 
 <h2 class="title">SPIS KANDYDATÓW</h2>
@@ -21,7 +30,9 @@
             <option value="">Wybierz województwo</option>
             @foreach (var voivodeship in voivodeships)
             {
-                <option value="@voivodeship">@voivodeship</option>
+                <option value="@voivodeship.idVoivodeship">
+                    @voivodeship.voivodeshipName
+                </option>
             }
         </select>
     </div>
@@ -49,9 +60,11 @@
         <label>Numer obwodu</label>
         <select @onchange="(e) => FilterTable()">
             <option value="">Wybierz numer obwodu</option>
-            @foreach (var districtNumber in districtNumbers)
+            @foreach (var district in districts)
             {
-                <option value="@districtNumber">@districtNumber</option>
+                <option value="@district.IdDistrict">
+                    @district.DistrictName - @district.DistrictHeadquarters
+                </option>
             }
         </select>
     </div>
@@ -71,75 +84,89 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var candidate in filteredCandidates)
+        @foreach (var candidate in candidates)
         {
+            var person = GetPersonById(candidate.IdPerson);
+            var age = CountPersonAge(person.BirthDate);
+            var partyName = String.Empty;
+
+            if (candidate.IdParty != 0 && candidate.IdParty != null)
+                partyName = GetPartyNameById(candidate.IdParty.GetValueOrDefault());
+
             <tr>
                 <td>@candidate.PositionNumber</td>
-                <td>@candidate.Surname @candidate.FirstName  @candidate.SecondName</td>
-                <td>@candidate.Profession</td>
-                <td>@candidate.WorkPlace</td>
-                <td>@candidate.Residence</td>
-                <td>@candidate.Education</td>
-                <td>@candidate.Age</td>
-                <td>@candidate.PartyAffiliation.PartyName</td>
+                <td>@person.Surname @person.Name</td>
+                <td>@candidate.JobType</td>
+                <td>@candidate.Workplace</td>
+                <td>@candidate.PlaceOfResidence</td>
+                <td>@candidate.EducationStatus</td>
+                <td>@age</td>
+                <td>@partyName</td>
             </tr>
+            
         }
     </tbody>
 </table>
 
 @code {
 
+    private CandidateViewModel candidate = new CandidateViewModel();
     // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
+    private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
+    private List<PartyViewModel> parties = new List<PartyViewModel>();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    private List<VoivodeshipViewModel> voivodeships = new List<VoivodeshipViewModel>();
+    private List<PersonViewModel> people = new List<PersonViewModel>();
 
     private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
-    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
     private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
     private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
-    private List<Candidate> candidates = new()
-    {
-        new Candidate { PositionNumber = 1, FirstName = "Jan", SecondName = "Andrzej", Surname = "Kowalski", Profession = "Prawnik", WorkPlace = "Zakład X", Residence = "Warszawa", Education = "Wyższe", Age = 45, PartyAffiliation = new Parties {PartyName = "Partia A", Abbreviation = "PA", PartyAddress = "Warszawa ul. Wiadoma 5", PartyType = "Type 1", isCoalition = false, ListCommiteeNumber = 1, Website = "https://europarlament.pa/" } },
-        new Candidate { PositionNumber = 2, FirstName = "Marian", SecondName = "Władysław", Surname = "Niemiecki", Profession = "Polityk", WorkPlace = "", Residence = "Warszawa", Education = "Wyższe", Age = 60, PartyAffiliation = new Parties {PartyName = "Partia B", Abbreviation = "PB", PartyAddress = "Warszawa ul. Niewiadoma 20/5", PartyType = "Type 2", isCoalition = false, ListCommiteeNumber = 2, Website = "https://europarlament.pb/" } }
-    };
-    
 
-    private List<Candidate> filteredCandidates = new();
 
-    
+
+
     private void FilterTable()
     {
-        
-        filteredCandidates = candidates; // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie
+
+        // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        
-        filteredCandidates = candidates;
+        candidates = await CandidateManagementService.Candidates();
+        districts = await DistrictManagementService.Districts();
+        parties = await PartyManagementService.Parties();
+        voivodeships = await VoivodeshipManagementService.Voivodeships();
+        people = await PersonManagementService.People();
     }
 
-    public class Candidate
+    private PersonViewModel? GetPersonById(int id)
     {
-        public int PositionNumber { get; set; }
-        public string FirstName { get; set; }
-        public string SecondName { get; set; }
-        public string Surname { get; set; }
-        public string Profession { get; set; }
-        public string WorkPlace { get; set; }
-        public string Residence { get; set; }
-        public string Education { get; set; }
-        public int Age { get; set; }
-        public Parties PartyAffiliation { get; set; }
+        return people.FirstOrDefault(person => person.IdPerson == id);
     }
 
-    public class Parties
+    private int CountPersonAge(DateTime birthDate)
     {
-        public string PartyName { get; set; }
-        public string Abbreviation{ get; set; }
-        public string PartyAddress { get; set; }
-        public string PartyType { get; set; }
-        public bool isCoalition { get; set; }
-        public int ListCommiteeNumber { get; set; }
-        public string Website { get; set; }
+        var today = DateTime.Today;
+        var age = today.Year - birthDate.Year;
+
+        // Adjust if the birthdate hasn't occurred yet this year
+        if (birthDate.Date > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age;
     }
+
+    private string? GetPartyNameById(int partyId)
+    {
+        var party = parties
+            .Where(p => p.IdParty == partyId)
+            .Select(p => p.PartyName)
+            .FirstOrDefault();
+
+        return party;
+    }
+
 }

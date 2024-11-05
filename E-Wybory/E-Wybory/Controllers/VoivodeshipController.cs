@@ -13,11 +13,11 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VoivodeshipsController : ControllerBase
+    public class VoivodeshipController : ControllerBase
     {
         private readonly ElectionDbContext _context;
 
-        public VoivodeshipsController(ElectionDbContext context)
+        public VoivodeshipController(ElectionDbContext context)
         {
             _context = context;
         }
@@ -50,7 +50,8 @@ namespace E_Wybory.Controllers
         {
             if (id != voivodeship.IdVoivodeship)
             {
-                return BadRequest();
+                return Conflict();
+                return Conflict();
             }
 
             _context.Entry(voivodeship).State = EntityState.Modified;
