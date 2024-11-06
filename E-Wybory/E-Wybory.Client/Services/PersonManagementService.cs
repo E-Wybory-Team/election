@@ -1,6 +1,8 @@
 ﻿using E_Wybory.Client.ViewModels;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using static E_Wybory.Client.Components.Pages.VotersList;
 
 namespace E_Wybory.Client.Services
 {
@@ -31,6 +33,24 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.PostAsJsonAsync("/api/Person", person);
 
             return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public PersonViewModel? GetPersonById(int id, List<PersonViewModel> people)
+        {
+            return people.FirstOrDefault(person => person.IdPerson == id);
+        }
+
+        public int CountPersonAge(DateTime birthDate)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - birthDate.Year;
+
+            if (birthDate.Date > today.AddYears(-age))
+            {
+                age--;
+            }
+
+            return age;
         }
     }
 }

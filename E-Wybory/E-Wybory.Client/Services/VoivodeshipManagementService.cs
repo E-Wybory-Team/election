@@ -1,5 +1,6 @@
 ﻿using E_Wybory.Client.ViewModels;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace E_Wybory.Client.Services
 {
@@ -14,6 +15,6 @@ namespace E_Wybory.Client.Services
                 var response = await _httpClient.GetFromJsonAsync<List<VoivodeshipViewModel>>("/api/Voivodeship");
 
                 return await Task.FromResult(response);
-            }
+        }
     }
 }

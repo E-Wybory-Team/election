@@ -1,4 +1,5 @@
 ﻿using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using System.Net.Http.Json;
 
 namespace E_Wybory.Client.Services
@@ -15,6 +16,16 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<List<ProvinceViewModel>>("/api/Province");
 
             return await Task.FromResult(response);
+        }
+
+        public int? GetCountyIdFromProvince(int provinceId, List<ProvinceViewModel> provinces)
+        {
+            var countyId = provinces
+                .Where(d => d.IdProvince == provinceId)
+                .Select(d => d.IdCounty)
+                .FirstOrDefault();
+
+            return countyId;
         }
 
     }

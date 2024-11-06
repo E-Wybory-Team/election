@@ -1,4 +1,6 @@
 ﻿using E_Wybory.Client.ViewModels;
+using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Net.Http.Json;
 
 namespace E_Wybory.Client.Services
@@ -16,5 +18,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public int? GetVoivodeshipIdFromCounty(int idCounty, List<CountyViewModel> counties)
+        {
+            return counties
+                    .Where(v => v.IdCounty == idCounty)
+                    .Select(v => v.IdVoivodeship)
+                    .FirstOrDefault();
+        }
     }
 }

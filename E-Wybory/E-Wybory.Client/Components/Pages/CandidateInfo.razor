@@ -11,6 +11,7 @@
 @inject IProvinceManagementService ProvinceManagementService
 @inject ICountyManagementService CountyManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
+@inject IElectionManagementService ElectionManagementService
 
 <link href="tables.css" rel="stylesheet"/>
 
@@ -19,7 +20,7 @@
 <div class="filters">
     <div class="filter-group">
         <label>Rodzaj wyborów</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
             <option value="">Wybierz rodzaj wyborów</option>
             @foreach (var electionType in electionTypes)
             {
@@ -31,8 +32,8 @@
     </div>
     <div class="filter-group">
         <label>Województwo</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz województwo</option>
+        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+            <option value="0">Wybierz województwo</option>
             @foreach (var voivodeship in voivodeships)
             {
                 <option value="@voivodeship.idVoivodeship">
@@ -43,37 +44,46 @@
     </div>
     <div class="filter-group">
         <label>Powiat</label>
-        <select @bind="@SelectedCountyId" @bind:after="@FilterTable">
+        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
             <option value="0">Wybierz powiat</option>
             @foreach (var county in counties)
             {
-                <option value="@county.IdCounty">
-                    @county.CountyName
+                @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                {
+                    <option value="@county.IdCounty">
+                        @county.CountyName
                 </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Gmina</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz gminę</option>
+        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+            <option value="0">Wybierz gminę</option>
             @foreach (var province in provinces)
             {
-                <option value="@province.IdProvince">
-                    @province.ProvinceName
-                </option>
+                @if (province.IdCounty == SelectedCountyId)
+                {
+                    <option value="@province.IdProvince">
+                        @province.ProvinceName
+                    </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Numer obwodu</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz numer obwodu</option>
+        <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+            <option value="0">Wybierz numer obwodu</option>
             @foreach (var district in districts)
             {
-                <option value="@district.IdDistrict">
-                    @district.DistrictName - @district.DistrictHeadquarters
-                </option>
+                @if (district.IdProvince == SelectedProvinceId)
+                {
+                    <option value="@district.IdDistrict">
+                        @district.DistrictName - @district.DistrictHeadquarters
+                    </option>
+                }
             }
         </select>
     </div>
@@ -95,12 +105,12 @@
     <tbody>
         @foreach (var candidate in filteredCandidates)
         {
-            var person = GetPersonById(candidate.IdPerson);
-            var age = CountPersonAge(person.BirthDate);
+            var person = PersonManagementService.GetPersonById(candidate.IdPerson, people);
+            var age = PersonManagementService.CountPersonAge(person.BirthDate);
             var partyName = String.Empty;
 
             if (candidate.IdParty != 0 && candidate.IdParty != null)
-                partyName = GetPartyNameById(candidate.IdParty.GetValueOrDefault());
+                partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.GetValueOrDefault(), parties);
 
             <tr>
                 <td>@candidate.PositionNumber</td>
@@ -119,7 +129,11 @@
 
 @code {
     private CandidateViewModel candidate = new CandidateViewModel();
+    private int SelectedElectionTypeId { get; set; } = 0;
+    private int SelectedVoivodeshipId { get; set; } = 0;
     private int SelectedCountyId { get; set; } = 0;
+    private int SelectedProvinceId { get; set; } = 0;
+    private int SelectedDistrictId { get; set; } = 0;
 
     private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
     private List<CandidateViewModel> filteredCandidates = new List<CandidateViewModel>();
@@ -130,7 +144,7 @@
     private List<ProvinceViewModel> provinces = new List<ProvinceViewModel>();
     private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
     private List<CountyViewModel> counties = new List<CountyViewModel>();
-
+    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,66 +157,77 @@
         electionTypes = await ElectionTypeManagementService.ElectionTypes();
         counties = await CountyManagementService.Counties();
         filteredCandidates = candidates;
+        elections = await ElectionManagementService.Elections();
     }
 
-    private void FilterTable()
+
+    private void FilterCandidate()
     {
-        if (SelectedCountyId == 0)
-        {
-            filteredCandidates = candidates;
-        }
-        else
-        {
-            filteredCandidates = candidates
-                .Where(c => GetCountyIdFromDistrict(c.IdDistrict) == SelectedCountyId)
-                .ToList();
-        }
+        filteredCandidates = candidates.Where(candidate =>
+            (SelectedElectionTypeId == 0 ||
+                ElectionManagementService.GetElectionTypeIdFromElection(candidate.IdElection, elections) == SelectedElectionTypeId) &&
+
+            (SelectedVoivodeshipId == 0 || 
+                CountyManagementService.GetVoivodeshipIdFromCounty(
+                    ProvinceManagementService.GetCountyIdFromProvince(
+                        DistrictManagementService.GetProvinceIdFromDistrict(
+                            candidate.IdDistrict, districts).Value, provinces).Value, counties) == SelectedVoivodeshipId) &&
+
+            (SelectedCountyId == 0 || 
+                ProvinceManagementService.GetCountyIdFromProvince(
+                    DistrictManagementService.GetProvinceIdFromDistrict(candidate.IdDistrict, districts)
+                    .Value, provinces) == SelectedCountyId) &&
+
+            (SelectedProvinceId == 0 || 
+                DistrictManagementService.GetProvinceIdFromDistrict(candidate.IdDistrict, districts) == SelectedProvinceId) &&
+
+            (SelectedDistrictId == 0 || candidate.IdDistrict == SelectedDistrictId)
+        ).ToList();
     }
 
-
-    private PersonViewModel? GetPersonById(int id)
+    private void OnElectionTypeChanged()
     {
-        return people.FirstOrDefault(person => person.IdPerson == id);
+        SelectedVoivodeshipId = 0;
+        SelectedCountyId = 0;
+        SelectedProvinceId = 0;
+        SelectedDistrictId = 0;
+
+        FilterCandidate();
     }
 
-    private int CountPersonAge(DateTime birthDate)
+    private void OnVoivodeshipChanged()
     {
-        var today = DateTime.Today;
-        var age = today.Year - birthDate.Year;
+        SelectedCountyId = 0;      
+        SelectedProvinceId = 0;
+        SelectedDistrictId = 0;
 
-        // Adjust if the birthdate hasn't occurred yet this year
-        if (birthDate.Date > today.AddYears(-age))
-        {
-            age--;
-        }
-
-        return age;
+        FilterCandidate();  
     }
 
-    private string? GetPartyNameById(int partyId)
+    private void OnCountyChanged()
     {
-        var party = parties
-            .Where(p => p.IdParty == partyId)
-            .Select(p => p.PartyName)
-            .FirstOrDefault();
+        SelectedProvinceId = 0;   
+        SelectedDistrictId = 0;
 
-        return party;
+        FilterCandidate();  
     }
 
-    public int? GetCountyIdFromDistrict(int idDistrict)
+    private void OnProvinceChanged()
     {
-        var provinceId = districts
-            .Where(d => d.IdProvince == idDistrict)
-            .Select(d => d.IdProvince)
-            .FirstOrDefault();
+        SelectedDistrictId = 0;   
 
-        var countyId = counties
-            .Where(d => d.IdCounty == provinceId)
-            .Select(d => d.IdCounty)
-            .FirstOrDefault();
-
-        return countyId;
+        FilterCandidate(); 
     }
+
+    private void OnDistrictChanged()
+    {
+        FilterCandidate(); 
+    }
+
+
+
+
+
 
 
 }
