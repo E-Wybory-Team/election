@@ -1,0 +1,100 @@
+﻿@page "/add-district-region"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
+
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>DODAWANIE OKRĘGU WYBORCZEGO</h1>
+
+    <EditForm Model="@districtRegionModel" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="districtNumber">NR OKRĘGU</label>
+            <InputNumber id="districtNumber" @bind-Value="districtRegionModel.DistrictNumber" placeholder="Nr okręgu wyborczego" />
+        </div>
+
+        <div class="form-group">
+            <label for="selectedPowiaty">POWIATY</label>
+            <select @ref="_selectReference" @onchange="OnSelectionChanged" multiple>
+                @foreach (var powiat in powiaty)
+                {
+                    <option value="@powiat.IdPowiat" selected="@districtRegionModel.SelectedPowiaty.Contains(powiat.IdPowiat.ToString())">
+                        @powiat.PowiatName
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="siedziba">SIEDZIBA</label>
+            <InputText id="siedziba" @bind-Value="districtRegionModel.Siedziba" placeholder="Wprowadź siedzibę" />
+        </div>
+
+        <button type="submit" class="submit-button">DODAJ</button>
+        <button type="button" class="submit-button" @onclick="TestForm">TEST</button>
+    </EditForm>
+</div>
+
+@code {
+    private DistrictRegionModel districtRegionModel = new DistrictRegionModel();
+    private ElementReference _selectReference;
+
+    private async Task OnSelectionChanged(ChangeEventArgs eventArgs)
+    {
+        var selection = await GetSelections(_selectReference);
+        districtRegionModel.SelectedPowiaty = selection.ToList();
+    }
+
+    public async Task<HashSet<string>> GetSelections(ElementReference elementReference)
+    {
+        return (await JS.InvokeAsync<List<string>>("getSelectedValues", _selectReference)).ToHashSet();
+    }
+
+    private void HandleSubmit()
+    {
+        // Logika dodania okręgu wyborczego
+        Console.WriteLine($"Dodano okręg: {districtRegionModel.DistrictNumber}");
+        Console.WriteLine($"Wybrane powiaty: {string.Join(", ", districtRegionModel.SelectedPowiaty)}");
+        Console.WriteLine($"Siedziba: {districtRegionModel.Siedziba}");
+    }
+
+    // test
+    private void TestForm()
+    {
+        Console.WriteLine("Test formularza:");
+        Console.WriteLine($"Nr Okręgu: {districtRegionModel.DistrictNumber}");
+        Console.WriteLine($"Wybrane Powiaty: {string.Join(", ", districtRegionModel.SelectedPowiaty)}");
+        Console.WriteLine($"Siedziba: {districtRegionModel.Siedziba}");
+    }
+
+    private List<Powiat> powiaty = new List<Powiat>
+    {
+        new Powiat { IdPowiat = 1, PowiatName = "Powiat 1" },
+        new Powiat { IdPowiat = 2, PowiatName = "Powiat 2" },
+        new Powiat { IdPowiat = 3, PowiatName = "Powiat 3" },
+        new Powiat { IdPowiat = 4, PowiatName = "Powiat 4" }
+    };
+
+    public class DistrictRegionModel
+    {
+        [Required(ErrorMessage = "Nr okręgu jest wymagany")]
+        public int DistrictNumber { get; set; }
+
+        [Required(ErrorMessage = "Musisz wybrać co najmniej jeden powiat")]
+        public List<string> SelectedPowiaty { get; set; } = new List<string>();
+
+        [Required(ErrorMessage = "Siedziba jest wymagana")]
+        public string Siedziba { get; set; }
+    }
+
+    public class Powiat
+    {
+        [Required] public int IdPowiat { get; set; }
+        [Required] public string PowiatName { get; set; }
+    }
+}

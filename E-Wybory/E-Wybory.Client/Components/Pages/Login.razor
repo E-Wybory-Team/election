@@ -1,0 +1,89 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@rendermode InteractiveWebAssembly
+@inject E_Wybory.Client.Services.IAuthService AuthService
+@inject AuthenticationStateProvider StateProvider
+
+
+<div class="login-form">
+    <div class="icon">
+        <img src="images/profile-tick.png" alt="Ikona logowania" width="400" height="400" />
+    </div>
+
+    <EditForm FormName="Auth" Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                <InputText @bind-Value="loginModel.Username" placeholder="E-MAIL lub TELEFON" class="form-input" />
+            </div>
+
+            <div class="input-group">
+                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                <InputText @bind-Value="loginModel.Password" type="password" placeholder="HASŁO" class="form-input" />
+            </div>
+        </div>
+
+        <button type="submit" class="submit-button">ZALOGUJ</button>
+        <div class="login-links">
+            <a href="/forgot-password">Nie pamiętasz hasła?</a>
+            <a href="/register">Nie masz konta?</a>
+        </div>
+
+    </EditForm>
+
+    @* Decided to keep for debugging purposes, later delete *@
+
+    @if (!string.IsNullOrEmpty(loginInfoMessage))
+    {
+        <p style="color: red;">@loginInfoMessage</p>
+    }
+
+
+</div>
+
+@code {
+    private LoginViewModel loginModel = new LoginViewModel();
+    private string loginInfoMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        //Console.WriteLine($"Logowanie dla: {loginModel.Username}");
+        var token = await AuthService.Login(loginModel);
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var stateProvider = StateProvider as ElectionAuthStateProvider;
+
+            if (stateProvider != null)
+            {
+                await stateProvider.MarkUserAsAuthenticated(token);
+                loginInfoMessage = "Successfuly logged in!";
+            }
+            else
+                loginInfoMessage = "State provider error";
+
+
+
+        }
+        else
+            loginInfoMessage = "Invalid username or password!";    
+
+
+    
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Nazwa użytkownika jest wymagana.")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Hasło jest wymagane.")]
+        public string Password { get; set; }
+    }
+}

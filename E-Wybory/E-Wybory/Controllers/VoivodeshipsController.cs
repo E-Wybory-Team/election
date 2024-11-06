@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
+using Microsoft.AspNetCore.Authorization;
 
 namespace E_Wybory.Controllers
 {

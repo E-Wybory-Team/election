@@ -146,6 +146,8 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasIndex(e => e.IdProvince, "FkProvincesDistrict");
 
+            entity.HasIndex(e => e.DistrictHeadquarters, "UniqueDistrictHeadquarters").IsUnique();
+
             entity.HasIndex(e => new { e.DistrictName, e.IdConstituency }, "uniqueDistrictNameInConstituency").IsUnique();
 
             entity.Property(e => e.IdDistrict).HasColumnName("idDistrict");
@@ -335,8 +337,6 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasKey(e => e.IdUserType).HasName("PRIMARY");
 
             entity.HasIndex(e => e.IdUserTypesGroup, "FkUserTypesGroupsUserTypes");
-
-            entity.HasIndex(e => e.UserTypeName, "uniqueUserTypeName").IsUnique();
 
             entity.Property(e => e.IdUserType).HasColumnName("idUserType");
             entity.Property(e => e.IdUserTypesGroup).HasColumnName("idUserTypesGroup");

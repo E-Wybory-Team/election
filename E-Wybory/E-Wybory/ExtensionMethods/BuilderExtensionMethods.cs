@@ -1,7 +1,14 @@
 ﻿using E_Wybory.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace E_Wybory.ExtensionMethods {
 
@@ -38,7 +45,7 @@ namespace E_Wybory.ExtensionMethods {
                         var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
 
 
-                        options.ListenAnyIP(443, listenOptions =>
+                        options.ListenAnyIP(8443, listenOptions =>
                         {
                             listenOptions.UseHttps(certWithKey);
                         });
@@ -77,11 +84,53 @@ namespace E_Wybory.ExtensionMethods {
             {
                 connectionString = connectionString.Replace("{DbPassword}", dbPassword);
             }
-            else throw new ArgumentException($"Cannot obtain password from source: {(environment.IsProduction() ? "PRODUCTION" : "DEVELOPMENT")}");
+            //else throw new ArgumentException($"Cannot obtain password from source: {(environment.IsProduction() ? "PRODUCTION" : "DEVELOPMENT")}");  KOMENTARZ
 
             // Add the DbContext to the service collection using the (possibly) modified connection string
             builder.Services.AddDbContext<ElectionDbContext>(options =>
                 options.UseMySQL(connectionString));
+
+            return builder;
+        }
+
+        public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder)
+        {
+            var rsaKey = RSA.Create();
+            rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    RoleClaimType = "Roles"
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = (ctx) =>
+                    {
+                        if (ctx.Request.Query.ContainsKey("t"))
+                        {
+                            ctx.Token = ctx.Request.Query["t"];
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
+                options.Configuration = new OpenIdConnectConfiguration
+                {
+                    SigningKeys = { new RsaSecurityKey(rsaKey) }
+                };
+                options.SaveToken = true;
+                options.MapInboundClaims = false;
+            });
 
             return builder;
         }

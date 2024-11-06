@@ -1,0 +1,118 @@
+﻿@page "/register"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Components.Forms
+@inject IAuthService AuthService
+@inject IDistrictManagementService DistrictManagementService
+
+<div class="registration-form">
+    <div class="icon">
+        <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
+    </div>
+    
+    <EditForm FormName="Register" Model="@registrationModel" OnValidSubmit="HandleRegistration">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                <InputText  @bind-Value="registrationModel.FirstName" placeholder="IMIĘ" />
+            </div>
+            <div class="input-group">
+                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                <InputText @bind-Value="registrationModel.LastName" placeholder="NAZWISKO" />
+            </div>
+        </div>
+         
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/cards.png" alt="Ikona identyfikacyjna" class="input-icon" />
+                <InputText @bind-Value="registrationModel.PESEL" placeholder="PESEL" />
+            </div>
+            <div class="input-group">
+                <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
+                <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" placeholder="DATA URODZENIA" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/envelope.png" alt="Ikona email" class="input-icon" />
+                <InputText @bind-Value="registrationModel.Email" type="email" placeholder="ADRES EMAIL" />
+            </div>
+            <div class="input-group">
+                <img src="images/phone.png" alt="Ikona telefonu" class="input-icon" />
+                <InputText @bind-Value="registrationModel.PhoneNumber" placeholder="NUMER TELEFONU" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                <InputText @bind-Value="registrationModel.Password" type="password" placeholder="HASŁO" />
+            </div>
+            <div class="input-group">
+                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                <InputText @bind-Value="registrationModel.ConfirmPassword" type="password" placeholder="POTWIERDŹ HASŁO" />
+            </div>
+        </div>
+
+        <div class="form-row double-column">
+            <div class="input-group">
+                <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
+                <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
+                    <option value="">Wybierz Obwód</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-button">ZAREJESTRUJ</button>
+    </EditForm>
+    @* same as for Login.razor *@
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    private RegisterViewModel registrationModel = new RegisterViewModel();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    string errorMessage;
+    //= new List<DistrictViewModel>();
+    // {
+    // new DistrictViewModel { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
+    // new DistrictViewModel { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
+    // new DistrictViewModel { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
+    // };
+
+    bool formSubmitted = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        districts = await DistrictManagementService.Districts();
+    }
+
+
+    private async Task HandleRegistration()
+    {
+        //Maybe it is the better plan to make it return HttpResponse with more verbose payload
+        formSubmitted = await AuthService.Register(registrationModel);
+
+        errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
+        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+    }
+
+    
+                                               
+
+    
+}

@@ -1,0 +1,125 @@
+﻿.page-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px; /* Odstęp między przyciskami */
+    width: 100%; /* Pełna szerokość okna przeglądarki */
+    height: 90vh; /* Wysokość na 90% okna przeglądarki */
+    background-color: #b9d4f3;
+    box-sizing: border-box;
+    padding: 10px;
+    overflow: hidden;
+}
+
+    .page-content a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* Ustawienia dla przycisków */
+    .page-content .button-informator,
+    .page-content .button-kandydaci,
+    .page-content .button-statystyki,
+    .page-content .button-conf,
+    .page-content .button-conf-party,
+    .page-content .button-conf-district,
+    .page-content .div-wrapper,
+    .page-content .button-conf-info,
+    .page-content .button-conf-election {
+        width: 30%; /* Przycisk zajmuje 30% szerokości rodzica */
+        height: 25vh; /* Wysokość przycisku ustawiona na 25% wysokości okna */
+        background-color: #ffffff;
+        border-radius: 10px;
+        background-size: cover;
+        background-position: 50% 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #000000;
+        font-family: "Open Sans-Bold", Helvetica;
+        font-weight: 700;
+        font-size: 2rem;
+        text-align: center;
+        text-shadow: 0px 4px 4px #00000040;
+        opacity: 0.85;
+        transition: all 0.3s ease-in-out;
+    }
+
+        /* Efekty hover */
+        .page-content .button-informator:hover,
+        .page-content .button-kandydaci:hover,
+        .page-content .button-statystyki:hover,
+        .page-content .button-conf:hover,
+        .page-content .button-conf-party:hover,
+        .page-content .button-conf-district:hover,
+        .page-content .div-wrapper:hover,
+        .page-content .button-conf-info:hover,
+        .page-content .button-conf-election:hover {
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            filter: brightness(0.7);
+            transform: translateY(-5px);
+            transition: all 0.3s ease-in-out;
+        }
+
+    /* Tła przycisków */
+    .page-content .button-informator {
+        background-image: url('/images/InfoPhoto.png');
+    }
+
+    .page-content .button-kandydaci {
+        background-image: url('/images/CandidatesPhoto.png');
+    }
+
+    .page-content .button-statystyki {
+        background-image: url('/images/StatsPhoto.png');
+    }
+
+    .page-content .button-conf {
+        background-image: url('/images/EditCandidate.png');
+    }
+
+    .page-content .button-conf-party {
+        background-image: url('/images/EditParty.png');
+    }
+
+    .page-content .button-conf-district {
+        background-image: url('/images/EditDistrict.png');
+    }
+
+    .page-content .div-wrapper {
+        background-image: url('/images/EditConstituency.png');
+    }
+
+    .page-content .button-conf-info {
+        background-image: url('/images/EditInfo.png');
+    }
+
+    .page-content .button-conf-election {
+        background-image: url('/images/EditElection.png');
+    }
+
+    /* Tekst w przyciskach */
+    .page-content .informator-wyborczy,
+    .page-content .text-wrapper,
+    .page-content .div,
+    .page-content .text-wrapper-2,
+    .page-content .text-wrapper-3 {
+        z-index: 2;
+        font-size: 36px;
+        text-shadow: 0px 4px 4px #00000040;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+    }
+
+/* Ukrycie paska przewijania */
+html, body {
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
