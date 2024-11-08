@@ -1,0 +1,141 @@
+﻿@page "/partylist"
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">Konfiguracja komitetów wyborczych</h2>
+    <button class="add-button" @onclick="AddParty">Dodaj komitet</button>
+</div>
+
+<div class="filters">
+    <div class="filter-group">
+        <label>Rodzaj wyborów</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz rodzaj wyborów</option>
+            @foreach (var electionType in electionTypes)
+            {
+                <option value="@electionType">@electionType</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Województwo</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in voivodeships)
+            {
+                <option value="@voivodeship">@voivodeship</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Powiat</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in counties)
+            {
+                <option value="@county">@county</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Gmina</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in provinces)
+            {
+                <option value="@province">@province</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Numer obwodu</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz numer obwodu</option>
+            @foreach (var districtNumber in districtNumbers)
+            {
+                <option value="@districtNumber">@districtNumber</option>
+            }
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Nr listy</th>
+            <th>Nazwa</th>
+            <th>Skrót</th>
+            <th>Adres</th>
+            <th>Rodzaj partii</th>
+            <th>Partia koalicyjna</th>
+            <th>Strona WWW</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var party in filteredParties)
+        {
+            <tr>
+                <td>@party.ListNumber</td>
+                <td>@party.Name</td>
+                <td>@party.Acronym</td>
+                <td>@party.Address</td>
+                <td>@party.PartyType</td>
+                <td>@party.IsCoalition</td>
+                <td>@party.Website</td>
+                <td>
+                    <a href="/modify/@party.Id">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/delete/@party.Id">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<string> electionTypes = new() { "Parlamentarne", "Samorządowe", "Prezydenckie" };
+    private List<string> voivodeships = new() { "Opolskie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> districtNumbers = new() { "1", "2", "3" };
+
+    private List<Party> parties = new()
+    {
+        new Party { Id = 1, ListNumber = "11", Name = "KOMITET WYBORCZY WYBORCÓW MNIEJSZOŚCI NIEMIECKIEJ", Acronym = "KWW MNIEJSZOŚĆ NIEMIECKA", Address = "ul. Marii Konopnickiej 6, 45-004 Opole", PartyType = "Polityczna", IsCoalition = "nie", Website = "http://mniejszoscnemiecka.eu" }
+    };
+
+    private List<Party> filteredParties = new();
+
+    private void FilterTable()
+    {
+        // Mockowana logika filtrowania
+        filteredParties = parties;
+    }
+
+    private void AddParty()
+    {
+        Console.WriteLine("Dodaj komitet"); // Mockowana logika dodawania
+    }
+
+    protected override void OnInitialized()
+    {
+        filteredParties = parties;
+    }
+
+    public class Party
+    {
+        public int Id { get; set; }
+        public string ListNumber { get; set; }
+        public string Name { get; set; }
+        public string Acronym { get; set; }
+        public string Address { get; set; }
+        public string PartyType { get; set; }
+        public string IsCoalition { get; set; }
+        public string Website { get; set; }
+    }
+}

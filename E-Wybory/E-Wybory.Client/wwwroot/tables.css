@@ -138,5 +138,15 @@
         width: 100%; 
     }
 
+    .filter-group-4columns label {
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+
+.icon-accessibility {
+    filter: invert(100%) brightness(200%);
+}
+
 
 
