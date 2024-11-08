@@ -1,0 +1,55 @@
+﻿@page "/modify-committee"
+@using System.ComponentModel.DataAnnotations
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>MODYFIKOWANIE KOMITETU WYBORCZEGO</h1>
+    <EditForm Model="@committeeModel" OnValidSubmit="HandleAddSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="nr-listy">NR LISTY</label>
+            <InputText @bind-Value="committeeModel.NrListy" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
+        </div>
+        <div class="form-group">
+            <label for="nazwa">NAZWA</label>
+            <InputText @bind-Value="committeeModel.Nazwa" id="nazwa" class="form-input" placeholder="Wprowadź nazwę komitetu" />
+        </div>
+        <div class="form-group">
+            <label for="skrot">SKRÓT</label>
+            <InputText @bind-Value="committeeModel.Skrot" id="skrot" class="form-input" placeholder="Wprowadź skrót komitetu" />
+        </div>
+        <div class="form-group">
+            <label for="adres">ADRES</label>
+            <InputText @bind-Value="committeeModel.Adres" id="adres" class="form-input" placeholder="Wprowadź adres komitetu" />
+        </div>
+
+        <button type="submit" class="submit-button">MODYFIKUJ</button>
+    </EditForm>
+</div>
+
+@code {
+    private CommitteeModel committeeModel = new CommitteeModel();
+
+    private void HandleAddSubmit()
+    {
+        // Logika obsługi po dodaniu komitetu
+        Console.WriteLine($"Dodano komitet: {committeeModel.Nazwa}");
+    }
+
+    public class CommitteeModel
+    {
+        [Required(ErrorMessage = "Numer listy jest wymagany.")]
+        public string NrListy { get; set; }
+
+        [Required(ErrorMessage = "Nazwa komitetu jest wymagana.")]
+        public string Nazwa { get; set; }
+
+        [Required(ErrorMessage = "Skrót jest wymagany.")]
+        public string Skrot { get; set; }
+
+        [Required(ErrorMessage = "Adres jest wymagany.")]
+        public string Adres { get; set; }
+    }
+}
