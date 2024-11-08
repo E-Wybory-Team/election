@@ -20,12 +20,20 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
                 client.BaseAddress = new Uri(endpointUri);
             })
             .AddHttpMessageHandler<AuthHttpMessageHandler>();
-           
+            
 
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<AuthenticationStateProvider, ElectionAuthStateProvider>();
             services.AddScoped<IDistrictManagementService, DistrictManagementService>();
+            services.AddScoped<IPartyManagementService, PartyManagementService>();
+            services.AddScoped<ICandidateManagementService, CandidateManagementService>();
+            services.AddScoped<IPersonManagementService, PersonManagementService>();
+            services.AddScoped<IElectionManagementService, ElectionManagementService>();
+            services.AddScoped<IVoivodeshipManagementService, VoivodeshipManagementService>();
+            services.AddScoped<IProvinceManagementService, ProvinceManagementService>();
+            services.AddScoped<ICountyManagementService, CountyManagementService>();
+            services.AddScoped<IElectionTypeManagementService, ElectionTypeManagementService>();
         }
     }
 }

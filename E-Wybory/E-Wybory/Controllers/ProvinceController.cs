@@ -13,47 +13,47 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DistrictController : ControllerBase
+    public class ProvinceController : ControllerBase
     {
         private readonly ElectionDbContext _context;
 
-        public DistrictController(ElectionDbContext context)
+        public ProvinceController(ElectionDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Districts
+        // GET: api/Provinces
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<District>>> GetDistricts()
+        public async Task<ActionResult<IEnumerable<Province>>> GetProvinces()
         {
-            return await _context.Districts.ToListAsync();
+            return await _context.Provinces.ToListAsync();
         }
 
-        // GET: api/Districts/5
+        // GET: api/Provinces/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<District>> GetDistrict(int id)
+        public async Task<ActionResult<Province>> GetProvince(int id)
         {
-            var district = await _context.Districts.FindAsync(id);
+            var Province = await _context.Provinces.FindAsync(id);
 
-            if (district == null)
+            if (Province == null)
             {
                 return NotFound();
             }
 
-            return district;
+            return Province;
         }
 
-        // PUT: api/Districts/5
+        // PUT: api/Provinces/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDistrict(int id, District district)
+        public async Task<IActionResult> PutProvince(int id, Province Province)
         {
-            if (id != district.IdDistrict)
+            if (id != Province.IdProvince)
             {
-                return Conflict();
+                return BadRequest();
             }
 
-            _context.Entry(district).State = EntityState.Modified;
+            _context.Entry(Province).State = EntityState.Modified;
 
             try
             {
@@ -61,7 +61,7 @@ namespace E_Wybory.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DistrictExists(id))
+                if (!ProvinceExists(id))
                 {
                     return NotFound();
                 }
@@ -74,36 +74,36 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
-        // POST: api/Districts
+        // POST: api/Provinces
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<District>> PostDistrict(District district)
+        public async Task<ActionResult<Province>> PostProvince(Province Province)
         {
-            _context.Districts.Add(district);
+            _context.Provinces.Add(Province);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDistrict", new { id = district.IdDistrict }, district);
+            return CreatedAtAction("GetProvince", new { id = Province.IdProvince }, Province);
         }
 
-        // DELETE: api/Districts/5
+        // DELETE: api/Provinces/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDistrict(int id)
+        public async Task<IActionResult> DeleteProvince(int id)
         {
-            var district = await _context.Districts.FindAsync(id);
-            if (district == null)
+            var Province = await _context.Provinces.FindAsync(id);
+            if (Province == null)
             {
                 return NotFound();
             }
 
-            _context.Districts.Remove(district);
+            _context.Provinces.Remove(Province);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool DistrictExists(int id)
+        private bool ProvinceExists(int id)
         {
-            return _context.Districts.Any(e => e.IdDistrict == id);
+            return _context.Provinces.Any(e => e.IdProvince == id);
         }
     }
 }

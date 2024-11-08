@@ -13,47 +13,48 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DistrictController : ControllerBase
+    public class VoivodeshipController : ControllerBase
     {
         private readonly ElectionDbContext _context;
 
-        public DistrictController(ElectionDbContext context)
+        public VoivodeshipController(ElectionDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Districts
+        // GET: api/Voivodeships
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<District>>> GetDistricts()
+        public async Task<ActionResult<IEnumerable<Voivodeship>>> GetVoivodeships()
         {
-            return await _context.Districts.ToListAsync();
+            return await _context.Voivodeships.ToListAsync();
         }
 
-        // GET: api/Districts/5
+        // GET: api/Voivodeships/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<District>> GetDistrict(int id)
+        public async Task<ActionResult<Voivodeship>> GetVoivodeship(int id)
         {
-            var district = await _context.Districts.FindAsync(id);
+            var voivodeship = await _context.Voivodeships.FindAsync(id);
 
-            if (district == null)
+            if (voivodeship == null)
             {
                 return NotFound();
             }
 
-            return district;
+            return voivodeship;
         }
 
-        // PUT: api/Districts/5
+        // PUT: api/Voivodeships/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDistrict(int id, District district)
+        public async Task<IActionResult> PutVoivodeship(int id, Voivodeship voivodeship)
         {
-            if (id != district.IdDistrict)
+            if (id != voivodeship.IdVoivodeship)
             {
+                return Conflict();
                 return Conflict();
             }
 
-            _context.Entry(district).State = EntityState.Modified;
+            _context.Entry(voivodeship).State = EntityState.Modified;
 
             try
             {
@@ -61,7 +62,7 @@ namespace E_Wybory.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DistrictExists(id))
+                if (!VoivodeshipExists(id))
                 {
                     return NotFound();
                 }
@@ -74,36 +75,36 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
-        // POST: api/Districts
+        // POST: api/Voivodeships
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<District>> PostDistrict(District district)
+        public async Task<ActionResult<Voivodeship>> PostVoivodeship(Voivodeship voivodeship)
         {
-            _context.Districts.Add(district);
+            _context.Voivodeships.Add(voivodeship);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDistrict", new { id = district.IdDistrict }, district);
+            return CreatedAtAction("GetVoivodeship", new { id = voivodeship.IdVoivodeship }, voivodeship);
         }
 
-        // DELETE: api/Districts/5
+        // DELETE: api/Voivodeships/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDistrict(int id)
+        public async Task<IActionResult> DeleteVoivodeship(int id)
         {
-            var district = await _context.Districts.FindAsync(id);
-            if (district == null)
+            var voivodeship = await _context.Voivodeships.FindAsync(id);
+            if (voivodeship == null)
             {
                 return NotFound();
             }
 
-            _context.Districts.Remove(district);
+            _context.Voivodeships.Remove(voivodeship);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool DistrictExists(int id)
+        private bool VoivodeshipExists(int id)
         {
-            return _context.Districts.Any(e => e.IdDistrict == id);
+            return _context.Voivodeships.Any(e => e.IdVoivodeship == id);
         }
     }
 }

@@ -1,7 +1,9 @@
-﻿using E_Wybory.Domain.Entities;
+﻿using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 
 namespace E_Wybory.Controllers
 {
@@ -44,7 +46,7 @@ namespace E_Wybory.Controllers
         {
             if (id != person.IdPerson)
             {
-                return BadRequest();
+                return Conflict();
             }
 
             _context.Entry(person).State = EntityState.Modified;
@@ -73,6 +75,14 @@ namespace E_Wybory.Controllers
         [HttpPost]
         public async Task<ActionResult<Person>> PostPerson(Person person)
         {
+            /*
+            var person = new Person();
+
+            person.Name = personModel.Name;
+            person.Surname = personModel.Surname;
+            person.Pesel = personModel.PESEL;
+            person.BirthDate = personModel.BirthDate;
+            */
             _context.People.Add(person);
             await _context.SaveChangesAsync();
 

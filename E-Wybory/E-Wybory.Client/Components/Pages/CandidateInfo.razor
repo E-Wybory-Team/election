@@ -1,5 +1,18 @@
 ﻿@page "/candidateInfo"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@using E_Wybory.Client.Services;
+@inject IPartyManagementService PartyManagementService
+@inject ICandidateManagementService CandidateManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IProvinceManagementService ProvinceManagementService
+@inject ICountyManagementService CountyManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
+@inject IElectionManagementService ElectionManagementService
+
 <link href="tables.css" rel="stylesheet"/>
 
 <h2 class="title">SPIS KANDYDATÓW</h2>
@@ -7,51 +20,70 @@
 <div class="filters">
     <div class="filter-group">
         <label>Rodzaj wyborów</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
             <option value="">Wybierz rodzaj wyborów</option>
             @foreach (var electionType in electionTypes)
             {
-                <option value="@electionType">@electionType</option>
+                <option value="@electionType.IdElectionType">
+                    @electionType.ElectionTypeName
+                </option>
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Województwo</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz województwo</option>
+        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+            <option value="0">Wybierz województwo</option>
             @foreach (var voivodeship in voivodeships)
             {
-                <option value="@voivodeship">@voivodeship</option>
+                <option value="@voivodeship.idVoivodeship">
+                    @voivodeship.voivodeshipName
+                </option>
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Powiat</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz powiat</option>
+        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+            <option value="0">Wybierz powiat</option>
             @foreach (var county in counties)
             {
-                <option value="@county">@county</option>
+                @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                {
+                    <option value="@county.IdCounty">
+                        @county.CountyName
+                </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Gmina</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz gminę</option>
+        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+            <option value="0">Wybierz gminę</option>
             @foreach (var province in provinces)
             {
-                <option value="@province">@province</option>
+                @if (province.IdCounty == SelectedCountyId)
+                {
+                    <option value="@province.IdProvince">
+                        @province.ProvinceName
+                    </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Numer obwodu</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz numer obwodu</option>
-            @foreach (var districtNumber in districtNumbers)
+        <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+            <option value="0">Wybierz numer obwodu</option>
+            @foreach (var district in districts)
             {
-                <option value="@districtNumber">@districtNumber</option>
+                @if (district.IdProvince == SelectedProvinceId)
+                {
+                    <option value="@district.IdDistrict">
+                        @district.DistrictName - @district.DistrictHeadquarters
+                    </option>
+                }
             }
         </select>
     </div>
@@ -73,73 +105,129 @@
     <tbody>
         @foreach (var candidate in filteredCandidates)
         {
+            var person = PersonManagementService.GetPersonById(candidate.IdPerson, people);
+            var age = PersonManagementService.CountPersonAge(person.BirthDate);
+            var partyName = String.Empty;
+
+            if (candidate.IdParty != 0 && candidate.IdParty != null)
+                partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.GetValueOrDefault(), parties);
+
             <tr>
                 <td>@candidate.PositionNumber</td>
-                <td>@candidate.Surname @candidate.FirstName  @candidate.SecondName</td>
-                <td>@candidate.Profession</td>
-                <td>@candidate.WorkPlace</td>
-                <td>@candidate.Residence</td>
-                <td>@candidate.Education</td>
-                <td>@candidate.Age</td>
-                <td>@candidate.PartyAffiliation.PartyName</td>
+                <td>@person.Surname @person.Name</td>
+                <td>@candidate.JobType</td>
+                <td>@candidate.Workplace</td>
+                <td>@candidate.PlaceOfResidence</td>
+                <td>@candidate.EducationStatus</td>
+                <td>@age</td>
+                <td>@partyName</td>
             </tr>
+            
         }
     </tbody>
 </table>
 
 @code {
+    private CandidateViewModel candidate = new CandidateViewModel();
+    private int SelectedElectionTypeId { get; set; } = 0;
+    private int SelectedVoivodeshipId { get; set; } = 0;
+    private int SelectedCountyId { get; set; } = 0;
+    private int SelectedProvinceId { get; set; } = 0;
+    private int SelectedDistrictId { get; set; } = 0;
 
-    // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
+    private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
+    private List<CandidateViewModel> filteredCandidates = new List<CandidateViewModel>();
+    private List<PartyViewModel> parties = new List<PartyViewModel>();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    private List<VoivodeshipViewModel> voivodeships = new List<VoivodeshipViewModel>();
+    private List<PersonViewModel> people = new List<PersonViewModel>();
+    private List<ProvinceViewModel> provinces = new List<ProvinceViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
+    private List<CountyViewModel> counties = new List<CountyViewModel>();
+    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
 
-    private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
-    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
-    private List<Candidate> candidates = new()
+    protected override async Task OnInitializedAsync()
     {
-        new Candidate { PositionNumber = 1, FirstName = "Jan", SecondName = "Andrzej", Surname = "Kowalski", Profession = "Prawnik", WorkPlace = "Zakład X", Residence = "Warszawa", Education = "Wyższe", Age = 45, PartyAffiliation = new Parties {PartyName = "Partia A", Abbreviation = "PA", PartyAddress = "Warszawa ul. Wiadoma 5", PartyType = "Type 1", isCoalition = false, ListCommiteeNumber = 1, Website = "https://europarlament.pa/" } },
-        new Candidate { PositionNumber = 2, FirstName = "Marian", SecondName = "Władysław", Surname = "Niemiecki", Profession = "Polityk", WorkPlace = "", Residence = "Warszawa", Education = "Wyższe", Age = 60, PartyAffiliation = new Parties {PartyName = "Partia B", Abbreviation = "PB", PartyAddress = "Warszawa ul. Niewiadoma 20/5", PartyType = "Type 2", isCoalition = false, ListCommiteeNumber = 2, Website = "https://europarlament.pb/" } }
-    };
-    
-
-    private List<Candidate> filteredCandidates = new();
-
-    
-    private void FilterTable()
-    {
-        
-        filteredCandidates = candidates; // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie
-    }
-
-    protected override void OnInitialized()
-    {
-        
+        candidates = await CandidateManagementService.Candidates();
+        districts = await DistrictManagementService.Districts();
+        parties = await PartyManagementService.Parties();
+        voivodeships = await VoivodeshipManagementService.Voivodeships();
+        people = await PersonManagementService.People();
+        provinces = await ProvinceManagementService.Provinces();
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
+        counties = await CountyManagementService.Counties();
         filteredCandidates = candidates;
+        elections = await ElectionManagementService.Elections();
     }
 
-    public class Candidate
+
+    private void FilterCandidate()
     {
-        public int PositionNumber { get; set; }
-        public string FirstName { get; set; }
-        public string SecondName { get; set; }
-        public string Surname { get; set; }
-        public string Profession { get; set; }
-        public string WorkPlace { get; set; }
-        public string Residence { get; set; }
-        public string Education { get; set; }
-        public int Age { get; set; }
-        public Parties PartyAffiliation { get; set; }
+        filteredCandidates = candidates.Where(candidate =>
+            (SelectedElectionTypeId == 0 ||
+                ElectionManagementService.GetElectionTypeIdFromElection(candidate.IdElection, elections) == SelectedElectionTypeId) &&
+
+            (SelectedVoivodeshipId == 0 || 
+                CountyManagementService.GetVoivodeshipIdFromCounty(
+                    ProvinceManagementService.GetCountyIdFromProvince(
+                        DistrictManagementService.GetProvinceIdFromDistrict(
+                            candidate.IdDistrict, districts).Value, provinces).Value, counties) == SelectedVoivodeshipId) &&
+
+            (SelectedCountyId == 0 || 
+                ProvinceManagementService.GetCountyIdFromProvince(
+                    DistrictManagementService.GetProvinceIdFromDistrict(candidate.IdDistrict, districts)
+                    .Value, provinces) == SelectedCountyId) &&
+
+            (SelectedProvinceId == 0 || 
+                DistrictManagementService.GetProvinceIdFromDistrict(candidate.IdDistrict, districts) == SelectedProvinceId) &&
+
+            (SelectedDistrictId == 0 || candidate.IdDistrict == SelectedDistrictId)
+        ).ToList();
     }
 
-    public class Parties
+    private void OnElectionTypeChanged()
     {
-        public string PartyName { get; set; }
-        public string Abbreviation{ get; set; }
-        public string PartyAddress { get; set; }
-        public string PartyType { get; set; }
-        public bool isCoalition { get; set; }
-        public int ListCommiteeNumber { get; set; }
-        public string Website { get; set; }
+        SelectedVoivodeshipId = 0;
+        SelectedCountyId = 0;
+        SelectedProvinceId = 0;
+        SelectedDistrictId = 0;
+
+        FilterCandidate();
     }
+
+    private void OnVoivodeshipChanged()
+    {
+        SelectedCountyId = 0;      
+        SelectedProvinceId = 0;
+        SelectedDistrictId = 0;
+
+        FilterCandidate();  
+    }
+
+    private void OnCountyChanged()
+    {
+        SelectedProvinceId = 0;   
+        SelectedDistrictId = 0;
+
+        FilterCandidate();  
+    }
+
+    private void OnProvinceChanged()
+    {
+        SelectedDistrictId = 0;   
+
+        FilterCandidate(); 
+    }
+
+    private void OnDistrictChanged()
+    {
+        FilterCandidate(); 
+    }
+
+
+
+
+
+
+
 }

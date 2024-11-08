@@ -77,7 +77,7 @@ namespace E_Wybory.Controllers
             person.Pesel = PESEL;
             person.BirthDate = birthdate;
 
-            Console.Write(idDistrict);
+            //Console.Write(idDistrict);
             context.People.Add(person);
             context.SaveChanges();
             var newPersonId = person.IdPerson; //save to use in user
@@ -138,7 +138,6 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("register")]
-        [Authorize(Roles = "Administrator")]
         public IActionResult Register([FromBody] RegisterViewModel request)
         {
             //if(ModelState.IsValid)

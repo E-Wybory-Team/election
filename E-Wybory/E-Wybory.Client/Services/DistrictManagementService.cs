@@ -18,5 +18,15 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public int? GetProvinceIdFromDistrict(int idDistrict, List<DistrictViewModel> districts)
+        {
+            var provinceId = districts
+                .Where(d => d.IdDistrict == idDistrict)
+                .Select(d => d.IdProvince)
+                .FirstOrDefault();
+
+            return provinceId;
+        }
+
     }
 }

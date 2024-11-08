@@ -13,47 +13,47 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DistrictController : ControllerBase
+    public class PartyController : ControllerBase
     {
         private readonly ElectionDbContext _context;
 
-        public DistrictController(ElectionDbContext context)
+        public PartyController(ElectionDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Districts
+        // GET: api/Parties
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<District>>> GetDistricts()
+        public async Task<ActionResult<IEnumerable<Party>>> GetParties()
         {
-            return await _context.Districts.ToListAsync();
+            return await _context.Parties.ToListAsync();
         }
 
-        // GET: api/Districts/5
+        // GET: api/Parties/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<District>> GetDistrict(int id)
+        public async Task<ActionResult<Party>> GetParty(int id)
         {
-            var district = await _context.Districts.FindAsync(id);
+            var party = await _context.Parties.FindAsync(id);
 
-            if (district == null)
+            if (party == null)
             {
                 return NotFound();
             }
 
-            return district;
+            return party;
         }
 
-        // PUT: api/Districts/5
+        // PUT: api/Parties/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDistrict(int id, District district)
+        public async Task<IActionResult> PutParty(int id, string name, Party party)
         {
-            if (id != district.IdDistrict)
+            if (id != party.IdParty || name == party.PartyName)
             {
                 return Conflict();
             }
 
-            _context.Entry(district).State = EntityState.Modified;
+            _context.Entry(party).State = EntityState.Modified;
 
             try
             {
@@ -61,7 +61,7 @@ namespace E_Wybory.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DistrictExists(id))
+                if (!PartyExists(id, name))
                 {
                     return NotFound();
                 }
@@ -74,36 +74,42 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
-        // POST: api/Districts
+        // POST: api/parties
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<District>> PostDistrict(District district)
+        public async Task<ActionResult<Party>> PostParty(Party party)
         {
-            _context.Districts.Add(district);
+
+            if(PartyExists(party.IdParty, party.PartyName))
+            {
+                return Conflict();
+            }
+
+            _context.Parties.Add(party);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDistrict", new { id = district.IdDistrict }, district);
+            return CreatedAtAction("GetParty", new { id = party.IdParty }, party);
         }
 
-        // DELETE: api/Districts/5
+        // DELETE: api/parties/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDistrict(int id)
+        public async Task<IActionResult> DeleteParty(int id)
         {
-            var district = await _context.Districts.FindAsync(id);
-            if (district == null)
+            var party = await _context.Parties.FindAsync(id);
+            if (party == null)
             {
                 return NotFound();
             }
 
-            _context.Districts.Remove(district);
+            _context.Parties.Remove(party);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool DistrictExists(int id)
+        private bool PartyExists(int id, string name)
         {
-            return _context.Districts.Any(e => e.IdDistrict == id);
+            return _context.Parties.Any(e => e.IdParty == id || e.PartyName == name);
         }
     }
 }
