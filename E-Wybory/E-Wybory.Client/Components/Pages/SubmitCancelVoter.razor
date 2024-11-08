@@ -1,0 +1,53 @@
+﻿@page "/submitcancelvoter"
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>WYPISYWANIE WYBORCY</h1>
+
+    <form>
+        <div class="form-group">
+            <label for="district">OBWÓD GŁOSOWANIA</label>
+            <input type="text" id="district" value="OKW 1 Kędzierzyn Koźle" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <input type="text" id="pesel" value="@voterData.PESEL" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="firstName">IMIĘ</label>
+            <input type="text" id="firstName" value="@voterData.FirstName" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">NAZWISKO</label>
+            <input type="text" id="lastName" value="@voterData.LastName" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="birthDate">DATA URODZENIA</label>
+            <input type="text" id="birthDate" value="@voterData.BirthDate" readonly />
+        </div>
+
+        <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+    </form>
+</div>
+
+@code {
+    private Voter voterData = new Voter
+        {
+            PESEL = "12345678901",
+            FirstName = "Jan",
+            LastName = "Kowalski",
+            BirthDate = "01.01.1985"
+        };
+
+    public class Voter
+    {
+        public string PESEL { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string BirthDate { get; set; }
+    }
+}

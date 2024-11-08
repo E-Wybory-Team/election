@@ -1,17 +1,14 @@
 ﻿@page "/register"
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
-@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
-@inject IAuthService AuthService
-@inject IDistrictManagementService DistrictManagementService
+
 
 <div class="registration-form">
     <div class="icon">
         <img src="images/profile-add.png" alt="Ikona główna" width="200" height="200" />
     </div>
     
-    <EditForm FormName="Register" Model="@registrationModel" OnValidSubmit="HandleRegistration">
+    <EditForm Model="@registrationModel" OnValidSubmit="HandleRegistration">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -84,43 +81,55 @@
 
         <button type="submit" class="submit-button">ZAREJESTRUJ</button>
     </EditForm>
-    @* same as for Login.razor *@
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
+
 </div>
 
 @code {
-    private RegisterViewModel registrationModel = new RegisterViewModel();
-    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
-    string errorMessage;
-    //= new List<DistrictViewModel>();
-    // {
-    // new DistrictViewModel { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
-    // new DistrictViewModel { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
-    // new DistrictViewModel { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
-    // };
+    private RegistrationModel registrationModel = new RegistrationModel();
 
-    bool formSubmitted = false;
-
-    protected override async Task OnInitializedAsync()
+    private void HandleRegistration()
     {
         //districts = await DistrictManagementService.Districts();
     }
 
-
-    private async Task HandleRegistration()
+    private List<District> districts = new List<District>
     {
-        //Maybe it is the better plan to make it return HttpResponse with more verbose payload
-        formSubmitted = await AuthService.Register(registrationModel);
+        new District { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
+        new District { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
+        new District { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
+    };
 
-        errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
-        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+    public class RegistrationModel
+    {
+        [Required] public string FirstName { get; set; }
+        [Required] public string LastName { get; set; }
+        [Required] public string PESEL { get; set; }
+        [Required] public DateTime DateOfBirth { get; set; }
+        [Required, EmailAddress] public string Email { get; set; }
+        [Required] public string PhoneNumber { get; set; }
+        [Required] public string Password { get; set; }
+        [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
+        public string ConfirmPassword { get; set; }
+        [Required] public int SelectedDistrictId { get; set; }
+
+        public string DateOfBirthString
+        {
+            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    DateOfBirth = DateTime.Parse(value);
+                }
+            }
+        }
     }
 
-    
-                                               
-
-    
+    public class District
+    {
+        [Required] public int IdDistrict { get; set; }
+        [Required] public string DistrictName { get; set; }
+        [Required] public bool DisabledFacilities { get; set; }
+        [Required] public string DistrictHeadquarters { get; set; }
+    }
 }

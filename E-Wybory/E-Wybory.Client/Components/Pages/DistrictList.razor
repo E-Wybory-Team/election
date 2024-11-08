@@ -1,0 +1,131 @@
+﻿@page "/districtlist"
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">KONFIGURACJA OBWODÓW WYBORCZYCH</h2>
+    <button class="add-button" @onclick="AddDistrict">Dodaj Obwód</button>
+</div>
+
+<div class="filters">
+    <div class="filter-group-4columns">
+        <label>Numer okręgu</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz numer okręgu</option>
+            @foreach (var districtNumber in districtNumbers)
+            {
+                <option value="@districtNumber">@districtNumber</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Województwo</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in voivodeships)
+            {
+                <option value="@voivodeship">@voivodeship</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Powiat</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in counties)
+            {
+                <option value="@county">@county</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Gmina</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in provinces)
+            {
+                <option value="@province">@province</option>
+            }
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Numer obwodu</th>
+            <th>Siedziba</th>
+            <th><img src="images/Accessibility.png" alt="Accessibility" class="icon-accessibility" /></th>
+            <th>Numer okręgu</th>
+            <th>Województwo</th>
+            <th>Powiat</th>
+            <th>Gmina</th>
+            <th>Skład komisji</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var district in filteredDistricts)
+        {
+            <tr>
+                <td>@district.DistrictNumber</td>
+                <td>@district.Seat</td>
+                <td>@district.Accessibility</td>
+                <td>@district.DistrictNumber</td>
+                <td>@district.Voivodeship</td>
+                <td>@district.County</td>
+                <td>@district.Province</td>
+                <td><img src="images/CommitteeMembers.png" alt="Committee" class="icon" title="Skład komisji" /></td> @* tutaj jeszcze przekierowanie do składu wybranej komisji *@
+                <td>
+                    <a href="/modify/@district.Id">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/delete/@district.Id">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<string> voivodeships = new() { "Opolskie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> districtNumbers = new() { "1", "2", "3" };
+
+    private List<District> districts = new()
+    {
+        new District { Id = 1, DistrictNumber = "1", Seat = "Szkoła Podstawowa, Stare Koźle ul. Szkolna 5, 47-223 Kędzierzyn-Koźle", Accessibility = "tak", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Kędzierzyn-Koźle" },
+        new District { Id = 2, DistrictNumber = "2", Seat = "Szkoła Podstawowa, ul. Kościelna 1, 47-240 Bierawa", Accessibility = "nie", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Bierawa" }
+    };
+
+    private List<District> filteredDistricts = new();
+
+    private void FilterTable()
+    {
+        filteredDistricts = districts; // Mockowana logika filtrowania
+    }
+
+    private void AddDistrict()
+    {
+        Console.WriteLine("Dodaj Obwód"); // Mockowana logika dodawania
+    }
+
+    protected override void OnInitialized()
+    {
+        filteredDistricts = districts;
+    }
+
+    public class District
+    {
+        public int Id { get; set; }
+        public string DistrictNumber { get; set; }
+        public string Seat { get; set; }
+        public string Accessibility { get; set; }
+        public string Voivodeship { get; set; }
+        public string County { get; set; }
+        public string Province { get; set; }
+    }
+}
