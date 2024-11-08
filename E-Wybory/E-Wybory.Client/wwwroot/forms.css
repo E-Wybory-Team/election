@@ -71,7 +71,6 @@ form {
         background-color: #164f7c;
     }
 
-/* Styl dla większych formularzy z polami w dwóch kolumnach */
 .form-row {
     display: flex;
     justify-content: space-between;
@@ -80,12 +79,9 @@ form {
 }
 
 .form-group-half {
-    width: 48%; /* Połowa szerokości dla dwóch kolumn */
+    width: 48%; 
 }
 
-
-
-/* Styl dla pól tekstowych, selectów i inputów liczbowych */
 input, select {
     width: 100%;
     padding: 10px;
@@ -93,4 +89,20 @@ input, select {
     border: 3px solid #ccc;
     font-size: 1rem;
     box-sizing: border-box;
+}
+form .checkbox-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+    width: 100%;
+}
+.vote-form input{
+    width: 10%
+}
+
+.checkbox-label {
+    margin-left: 10px;
+    font-weight: bold;
+    font-size:20px;
 }

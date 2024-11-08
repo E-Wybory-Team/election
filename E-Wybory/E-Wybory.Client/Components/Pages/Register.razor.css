@@ -26,11 +26,9 @@
 }
 
 .input-group {
-    position: relative;
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    min-width: 200px;
     border: solid;
     border-color: slategray;
     border-radius: 10px;
@@ -41,8 +39,20 @@
 .input-icon {
     width: 30px;
     height: 30px;
-    margin-right: 10px;
-    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+.input-content {
+    display: flex;
+    flex-direction: column; 
+    flex-grow: 1;
+    align-items: flex-start;
+}
+
+.form-label {
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #797b7c;
 }
 
 .dropdown {

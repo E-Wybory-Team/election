@@ -1,16 +1,16 @@
 ﻿@page "/vote"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+<link href="forms.css" rel="stylesheet" />
+<div class="form-container">
+    <h1>ODDAWANIE GŁOSU</h1>
 
-<div class="vote-page">
-    <h1>Oddawanie Głosu</h1>
-
-    <EditForm Model="@voteModel" OnValidSubmit="HandleVoteSubmit">
+    <EditForm Model="@voteModel" OnValidSubmit="HandleVoteSubmit" class="vote-form">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="form-group">
-            <label for="komitet">Komitet Wyborczy</label>
+            <label for="komitet">KOMITET WYBORCZY</label>
             <InputSelect @bind-Value="voteModel.Komitet" id="komitet" class="form-select">
                 <option value="" disabled>Wybierz komitet wyborczy</option>
                 <option value="Komitet 1">Komitet 1</option>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="form-group">
-            <label for="kandydat">Kandydat</label>
+            <label for="kandydat">KANDYDAT</label>
             <InputSelect @bind-Value="voteModel.Kandydat" id="kandydat" class="form-select">
                 <option value="" disabled>Wybierz kandydata</option>
                 <option value="Kandydat 1">Kandydat 1</option>
