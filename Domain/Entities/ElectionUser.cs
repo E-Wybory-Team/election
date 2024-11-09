@@ -17,6 +17,8 @@ public partial class ElectionUser
 
     public int IdDistrict { get; set; }
 
+    public string? UserSecret { get; set; }
+
     public virtual District IdDistrictNavigation { get; set; } = null!;
 
     public virtual Person IdPersonNavigation { get; set; } = null!;
