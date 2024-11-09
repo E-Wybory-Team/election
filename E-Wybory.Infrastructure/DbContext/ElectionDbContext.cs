@@ -146,6 +146,8 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasIndex(e => e.IdProvince, "FkProvincesDistrict");
 
+            entity.HasIndex(e => e.DistrictHeadquarters, "UniqueDistrictHeadquarters").IsUnique();
+
             entity.HasIndex(e => new { e.DistrictName, e.IdConstituency }, "uniqueDistrictNameInConstituency").IsUnique();
 
             entity.Property(e => e.IdDistrict).HasColumnName("idDistrict");
@@ -229,6 +231,9 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(15)
                 .HasColumnName("phoneNumber");
+            entity.Property(e => e.UserSecret)
+                .HasMaxLength(100)
+                .HasColumnName("userSecret");
 
             entity.HasOne(d => d.IdDistrictNavigation).WithMany(p => p.ElectionUsers)
                 .HasForeignKey(d => d.IdDistrict)
@@ -252,6 +257,9 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.IdElectionVoter).HasColumnName("idElectionVoter");
             entity.Property(e => e.IdElection).HasColumnName("idElection");
             entity.Property(e => e.IdVoter).HasColumnName("idVoter");
+            entity.Property(e => e.VoteTime)
+                .HasColumnType("datetime")
+                .HasColumnName("voteTime");
 
             entity.HasOne(d => d.IdElectionNavigation).WithMany(p => p.ElectionVoters)
                 .HasForeignKey(d => d.IdElection)
@@ -336,8 +344,6 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasIndex(e => e.IdUserTypesGroup, "FkUserTypesGroupsUserTypes");
 
-            entity.HasIndex(e => e.UserTypeName, "uniqueUserTypeName").IsUnique();
-
             entity.Property(e => e.IdUserType).HasColumnName("idUserType");
             entity.Property(e => e.IdUserTypesGroup).HasColumnName("idUserTypesGroup");
             entity.Property(e => e.UserTypeInfo)
@@ -403,12 +409,15 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
         {
             entity.HasKey(e => e.IdVote).HasName("PRIMARY");
 
+            entity.HasIndex(e => e.IdDistrict, "FK_Votes_Districts");
+
             entity.HasIndex(e => e.IdCandidate, "FkCandidatesVotes");
 
             entity.HasIndex(e => e.IdElection, "FkElectionsVotes");
 
             entity.Property(e => e.IdVote).HasColumnName("idVote");
             entity.Property(e => e.IdCandidate).HasColumnName("idCandidate");
+            entity.Property(e => e.IdDistrict).HasColumnName("idDistrict");
             entity.Property(e => e.IdElection).HasColumnName("idElection");
             entity.Property(e => e.IsValid).HasColumnName("isValid");
 
@@ -416,6 +425,11 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
                 .HasForeignKey(d => d.IdCandidate)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FkCandidatesVotes");
+
+            entity.HasOne(d => d.IdDistrictNavigation).WithMany(p => p.Votes)
+                .HasForeignKey(d => d.IdDistrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Votes_Districts");
 
             entity.HasOne(d => d.IdElectionNavigation).WithMany(p => p.Votes)
                 .HasForeignKey(d => d.IdElection)

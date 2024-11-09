@@ -13,7 +13,11 @@ public partial class Vote
 
     public int IdElection { get; set; }
 
+    public int IdDistrict { get; set; }
+
     public virtual Candidate IdCandidateNavigation { get; set; } = null!;
+
+    public virtual District IdDistrictNavigation { get; set; } = null!;
 
     public virtual Election IdElectionNavigation { get; set; } = null!;
 }
