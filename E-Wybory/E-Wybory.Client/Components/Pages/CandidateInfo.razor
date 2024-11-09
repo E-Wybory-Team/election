@@ -12,6 +12,8 @@
 @inject ICountyManagementService CountyManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@using FilterData;
 
 <link href="tables.css" rel="stylesheet"/>
 
@@ -33,8 +35,8 @@
     <div class="filter-group">
         <label>Województwo</label>
         <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
-            <option value="0">Wybierz województwo</option>
-            @foreach (var voivodeship in voivodeships)
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
             {
                 <option value="@voivodeship.idVoivodeship">
                     @voivodeship.voivodeshipName
@@ -45,8 +47,8 @@
     <div class="filter-group">
         <label>Powiat</label>
         <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
-            <option value="0">Wybierz powiat</option>
-            @foreach (var county in counties)
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
             {
                 @if (county.IdVoivodeship == SelectedVoivodeshipId)
                 {
@@ -60,8 +62,8 @@
     <div class="filter-group">
         <label>Gmina</label>
         <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
-            <option value="0">Wybierz gminę</option>
-            @foreach (var province in provinces)
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
             {
                 @if (province.IdCounty == SelectedCountyId)
                 {
@@ -75,8 +77,8 @@
     <div class="filter-group">
         <label>Numer obwodu</label>
         <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
-            <option value="0">Wybierz numer obwodu</option>
-            @foreach (var district in districts)
+            <option value="">Wybierz numer obwodu</option>
+            @foreach (var district in wrapper.FilterListWrapper.DistrictFilter)
             {
                 @if (district.IdProvince == SelectedProvinceId)
                 {
@@ -129,99 +131,76 @@
 
 @code {
     private CandidateViewModel candidate = new CandidateViewModel();
-    private int SelectedElectionTypeId { get; set; } = 0;
-    private int SelectedVoivodeshipId { get; set; } = 0;
-    private int SelectedCountyId { get; set; } = 0;
-    private int SelectedProvinceId { get; set; } = 0;
-    private int SelectedDistrictId { get; set; } = 0;
+    private int? SelectedElectionTypeId { get; set; } = null;
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
+    private int? SelectedDistrictId { get; set; } = null;
 
     private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
     private List<CandidateViewModel> filteredCandidates = new List<CandidateViewModel>();
     private List<PartyViewModel> parties = new List<PartyViewModel>();
-    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
-    private List<VoivodeshipViewModel> voivodeships = new List<VoivodeshipViewModel>();
     private List<PersonViewModel> people = new List<PersonViewModel>();
-    private List<ProvinceViewModel> provinces = new List<ProvinceViewModel>();
     private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
-    private List<CountyViewModel> counties = new List<CountyViewModel>();
     private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+
+    private FilterListWrapperFull wrapper = new FilterListWrapperFull();
 
     protected override async Task OnInitializedAsync()
     {
         candidates = await CandidateManagementService.Candidates();
-        districts = await DistrictManagementService.Districts();
         parties = await PartyManagementService.Parties();
-        voivodeships = await VoivodeshipManagementService.Voivodeships();
         people = await PersonManagementService.People();
-        provinces = await ProvinceManagementService.Provinces();
         electionTypes = await ElectionTypeManagementService.ElectionTypes();
-        counties = await CountyManagementService.Counties();
         filteredCandidates = candidates;
         elections = await ElectionManagementService.Elections();
+
     }
 
 
-    private void FilterCandidate()
+    private async Task FilterCandidate()
     {
-        filteredCandidates = candidates.Where(candidate =>
-            (SelectedElectionTypeId == 0 ||
-                ElectionManagementService.GetElectionTypeIdFromElection(candidate.IdElection, elections) == SelectedElectionTypeId) &&
-
-            (SelectedVoivodeshipId == 0 || 
-                CountyManagementService.GetVoivodeshipIdFromCounty(
-                    ProvinceManagementService.GetCountyIdFromProvince(
-                        DistrictManagementService.GetProvinceIdFromDistrict(
-                            candidate.IdDistrict, districts).Value, provinces).Value, counties) == SelectedVoivodeshipId) &&
-
-            (SelectedCountyId == 0 || 
-                ProvinceManagementService.GetCountyIdFromProvince(
-                    DistrictManagementService.GetProvinceIdFromDistrict(candidate.IdDistrict, districts)
-                    .Value, provinces) == SelectedCountyId) &&
-
-            (SelectedProvinceId == 0 || 
-                DistrictManagementService.GetProvinceIdFromDistrict(candidate.IdDistrict, districts) == SelectedProvinceId) &&
-
-            (SelectedDistrictId == 0 || candidate.IdDistrict == SelectedDistrictId)
-        ).ToList();
+        wrapper.FilterListWrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
     }
 
-    private void OnElectionTypeChanged()
+    private async Task OnElectionTypeChanged()
     {
-        SelectedVoivodeshipId = 0;
-        SelectedCountyId = 0;
-        SelectedProvinceId = 0;
-        SelectedDistrictId = 0;
+        SelectedVoivodeshipId = null;
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
 
-        FilterCandidate();
+        await FilterCandidate();
     }
 
-    private void OnVoivodeshipChanged()
+    private async Task OnVoivodeshipChanged()
     {
-        SelectedCountyId = 0;      
-        SelectedProvinceId = 0;
-        SelectedDistrictId = 0;
+        SelectedCountyId = null;      
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
 
-        FilterCandidate();  
+        await FilterCandidate();
     }
 
-    private void OnCountyChanged()
+    private async Task OnCountyChanged()
     {
-        SelectedProvinceId = 0;   
-        SelectedDistrictId = 0;
+        SelectedProvinceId = null;   
+        SelectedDistrictId = null;
 
-        FilterCandidate();  
+        await FilterCandidate();  
     }
 
-    private void OnProvinceChanged()
+    private async Task OnProvinceChanged()
     {
-        SelectedDistrictId = 0;   
+        SelectedDistrictId = null;   
 
-        FilterCandidate(); 
+        await FilterCandidate(); 
     }
 
-    private void OnDistrictChanged()
+    private async Task OnDistrictChanged()
     {
-        FilterCandidate(); 
+        await FilterCandidate(); 
     }
 
 

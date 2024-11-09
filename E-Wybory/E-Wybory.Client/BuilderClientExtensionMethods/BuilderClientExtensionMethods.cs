@@ -34,6 +34,7 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
             services.AddScoped<IProvinceManagementService, ProvinceManagementService>();
             services.AddScoped<ICountyManagementService, CountyManagementService>();
             services.AddScoped<IElectionTypeManagementService, ElectionTypeManagementService>();
+            services.AddScoped<IFilterWrapperManagementService, FilterWrapperManagementService>();
         }
     }
 }
