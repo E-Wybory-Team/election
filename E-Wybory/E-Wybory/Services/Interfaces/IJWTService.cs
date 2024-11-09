@@ -6,10 +6,10 @@ namespace E_Wybory.Services
 {
     public interface IJWTService
     {
-        static void CreateRSAPrivateKey() { }
-        static string createToken(RSA rsaPrivateKey, string username) { return null; }
-        static JsonWebKey CreateJwkPublic(RSA rsaPrivateKey) { return null; }
-        static JsonWebKey CreateJwkPrivate(RSA rsaPrivateKey) { return null; }
+        void CreateRSAPrivateKey() { }
+        Task<string> CreateToken(RSA rsaPrivateKey, string username, ElectionDbContext context) { return null; }
+        JsonWebKey CreateJwkPublic(RSA rsaPrivateKey) { return null; }
+        JsonWebKey CreateJwkPrivate(RSA rsaPrivateKey) { return null; }
 
     }
 }

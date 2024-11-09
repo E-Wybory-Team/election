@@ -15,13 +15,74 @@ using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pag
 using System.Xml.Linq;
 using E_Wybory.Client.ViewModels;
 using E_Wybory.Services;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace E_Wybory.Controllers
 {
-    public static class AuthMethods
+    [Route("api/auth")]
+    [ApiController]
+    public class AuthController : ControllerBase
     {
-        public static string Authenticate(string email, string password, ElectionDbContext context)
+        private readonly ElectionDbContext _context;
+        private readonly IJWTService _tokenService;
+        public AuthController(ElectionDbContext context, IJWTService tokenService)
+        {
+            this._context = context;
+            this._tokenService = tokenService;
+        }
+
+
+        //For now for this endpoints use viewmodels, maybe the better options are DTO
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginViewModel request)
+        {
+            if (request.Username == String.Empty || request.Password == String.Empty)
+                return BadRequest("Not entered data to all required fields");
+
+            var authResult = await Authenticate(request.Username, request.Password, _context);
+            if (authResult == null)
+                return Unauthorized();
+            else
+                return Ok(authResult);
+        }
+
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterViewModel request)
+        {
+            //if(ModelState.IsValid)
+            if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
+                || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
+                || request.PhoneNumber == String.Empty || request.Password == String.Empty
+                || request.SelectedDistrictId == 0)
+
+                return BadRequest("Not entered data to all required fields"); 
+
+            bool registerResult = await RegisterUser(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
+            request.PhoneNumber, request.Password, request.SelectedDistrictId);
+            if (registerResult)
+                return Ok();
+            else
+                return Conflict();
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            //Now just checking if header is empty, maybe flag in database?
+            var authorizationHeader = Request.Headers["Authorization"].ToString();
+
+            return string.IsNullOrEmpty(authorizationHeader) ? Ok() : BadRequest("Auth token was not cleared properly");
+            
+        }
+
+
+        public async Task<string> Authenticate(string email, string password, ElectionDbContext context)
         {
             SHA256 sha = SHA256.Create();
             UTF8Encoding objUtf8 = new UTF8Encoding();
@@ -34,23 +95,23 @@ namespace E_Wybory.Controllers
                 hexString.AppendFormat("{0:x2}", b);
             }
 
-            if (context.ElectionUsers.Any(user => user.Email == email) &&
-                context.ElectionUsers
+            if (await context.ElectionUsers.AnyAsync(user => user.Email == email) &&
+                await context.ElectionUsers
                 .Where(user => user.Email == email)
                 .Select(user => user.Password)
-                .FirstOrDefault() == hexString.ToString()
+                .FirstOrDefaultAsync() == hexString.ToString()
                 )
             {
                 //CreateRSAPrivateKey();
                 var rsaKey = RSA.Create();
-                rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
-                return TokenService.createToken(rsaKey, email);
+                rsaKey.ImportRSAPrivateKey(System.IO.File.ReadAllBytes("key"), out _);
+                return await _tokenService.CreateToken(rsaKey, email, context);
             }
             return null;
         }
 
-        public static bool Register(string name, string surname, string PESEL, DateTime birthdate, string email, 
-            string phoneNumber, string password, int idDistrict, ElectionDbContext context)
+        public async Task<bool> RegisterUser(string name, string surname, string PESEL, DateTime birthdate, string email,
+            string phoneNumber, string password, int idDistrict)
         {
             SHA256 sha = SHA256.Create();
             UTF8Encoding objUtf8 = new UTF8Encoding();
@@ -63,8 +124,9 @@ namespace E_Wybory.Controllers
                 hexString.AppendFormat("{0:x2}", b);
             }
 
-            if (context.People.Any(person => person.Pesel == PESEL)
-                || context.ElectionUsers.Any(user => user.Email == email))
+
+            if (await _context.People.AnyAsync(person => person.Pesel == PESEL)
+                || await _context.ElectionUsers.AnyAsync(user => user.Email == email))
             {
                 return false;
             }
@@ -78,8 +140,8 @@ namespace E_Wybory.Controllers
             person.BirthDate = birthdate;
 
             //Console.Write(idDistrict);
-            context.People.Add(person);
-            context.SaveChanges();
+            await _context.People.AddAsync(person);
+            await _context.SaveChangesAsync();
             var newPersonId = person.IdPerson; //save to use in user
 
             //add new user
@@ -92,69 +154,19 @@ namespace E_Wybory.Controllers
             //idDistrict = 1;
             user.IdDistrict = idDistrict;
 
-            context.ElectionUsers.Add(user);
-            context.SaveChanges();
+            await _context.ElectionUsers.AddAsync(user);
+            await _context.SaveChangesAsync();
 
             var userId = user.IdElectionUser; //save to use in voter
             //add new voter(every user(person) is voter too)
             var voter = new Voter();
-            voter.IdDistrict = idDistrict;
+            //voter.IdDistrict = idDistrict;
             voter.IdElectionUser = userId;
 
-            context.Voters.Add(voter);
-            context.SaveChanges();
+            await _context.Voters.AddAsync(voter);
+            await _context.SaveChangesAsync();
 
             return true;
-        }
-    }
-
-    
-    [Route("api/auth")]
-    [ApiController]
-    public class AuthController : ControllerBase
-    {
-        private readonly ElectionDbContext context;
-        public AuthController(ElectionDbContext context)
-        {
-            this.context = context;
-        }
-
-
-        //For now for this endpoints use viewmodels, maybe the better options are DTO
-        [HttpPost]
-        [Route("login")]
-        [AllowAnonymous]
-        public IActionResult Login([FromBody] LoginViewModel request)
-        {
-            if (request.Username == String.Empty || request.Password == String.Empty)
-                return BadRequest("Not entered data to all required fields");
-
-            var authResult = AuthMethods.Authenticate(request.Username, request.Password, context);
-            if (authResult == null)
-                return Unauthorized();
-            else
-                return Ok(authResult);
-        }
-
-        [HttpPost]
-        [Route("register")]
-        public IActionResult Register([FromBody] RegisterViewModel request)
-        {
-            //if(ModelState.IsValid)
-            if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
-                || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
-                || request.PhoneNumber == String.Empty || request.Password == String.Empty
-                || request.SelectedDistrictId == 0)
-
-                return BadRequest("Not entered data to all required fields"); 
-
-            bool registerResult = AuthMethods.Register(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
-            request.PhoneNumber, request.Password, request.SelectedDistrictId, context);
-
-            if (registerResult)
-                return Ok();
-            else
-                return Conflict();
         }
     }
 }
