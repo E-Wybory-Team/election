@@ -10,4 +10,10 @@ namespace E_Wybory.Client.ViewModels
         public int ElectionTour { get; set; } = 1;
         [Required] public int IdElectionType { get; set; } = 0;
     }
+
+    public class ElectionViewModelShort
+    {
+        [Required] public int IdElection { get; set; } = 0;
+        [Required] public string ElectionName { get; set; } = string.Empty;
+    }
 }

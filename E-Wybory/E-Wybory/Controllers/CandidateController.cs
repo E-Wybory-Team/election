@@ -28,6 +28,12 @@ namespace E_Wybory.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Candidate>>> GetCandidates()
         {
+
+            //Use Mapster or map manually 
+           // _context.Candidates.Select(c => new CandidateViewModel() { IdCandidate = c.IdCandidate /*...*/ });
+
+            
+
             return await _context.Candidates.ToListAsync();
         }
 
