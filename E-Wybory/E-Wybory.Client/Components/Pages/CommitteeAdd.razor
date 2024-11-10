@@ -1,4 +1,4 @@
-﻿@page "/add-committee"
+﻿@page "/addcommittee"
 @using System.ComponentModel.DataAnnotations
 <link href="forms.css" rel="stylesheet" />
 
@@ -8,21 +8,33 @@
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="form-group">
+        <div class="form-group-smaller">
             <label for="nr-listy">NR LISTY</label>
             <InputText @bind-Value="committeeModel.NrListy" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
         </div>
-        <div class="form-group">
+        <div class="form-group-smaller">
             <label for="nazwa">NAZWA</label>
             <InputText @bind-Value="committeeModel.Nazwa" id="nazwa" class="form-input" placeholder="Wprowadź nazwę komitetu" />
         </div>
-        <div class="form-group">
+        <div class="form-group-smaller">
             <label for="skrot">SKRÓT</label>
             <InputText @bind-Value="committeeModel.Skrot" id="skrot" class="form-input" placeholder="Wprowadź skrót komitetu" />
         </div>
-        <div class="form-group">
+        <div class="form-group-smaller">
             <label for="adres">ADRES</label>
             <InputText @bind-Value="committeeModel.Adres" id="adres" class="form-input" placeholder="Wprowadź adres komitetu" />
+        </div>
+        <div class="form-group-smaller">
+            <label for="adres">TYP PARTII</label>
+            <InputText @bind-Value="committeeModel.PartyType" id="type" class="form-input" placeholder="Wprowadź typ partii" />
+        </div>
+        <div class="form-group-smaller">
+            <label for="adres">PARTIA KOALICYJNA</label>
+            <InputText @bind-Value="committeeModel.isCoalition" id="coalition" class="form-input" placeholder="Czy partia koalicyjna" />
+        </div>
+        <div class="form-group-smaller">
+            <label for="adres">STRONA WWW</label>
+            <InputText @bind-Value="committeeModel.Website" id="website" class="form-input" placeholder="Wprowadź stronę internetową" />
         </div>
 
         <button type="submit" class="submit-button">DODAJ</button>
@@ -51,5 +63,14 @@
 
         [Required(ErrorMessage = "Adres jest wymagany.")]
         public string Adres { get; set; }
+
+        [Required(ErrorMessage = "Typ partii jest wymagany.")]
+        public string PartyType { get; set; }
+
+        [Required(ErrorMessage = "Koalicyjność partii jest wymagany.")]
+        public string isCoalition { get; set; }
+
+        [Required(ErrorMessage = "Adres strony WWW jest wymagany.")]
+        public string Website { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿@page "/partylist"
+﻿@page "/committeelist"
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
@@ -17,47 +17,7 @@
                 <option value="@electionType">@electionType</option>
             }
         </select>
-    </div>
-    <div class="filter-group">
-        <label>Województwo</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in voivodeships)
-            {
-                <option value="@voivodeship">@voivodeship</option>
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Powiat</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz powiat</option>
-            @foreach (var county in counties)
-            {
-                <option value="@county">@county</option>
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Gmina</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz gminę</option>
-            @foreach (var province in provinces)
-            {
-                <option value="@province">@province</option>
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Numer obwodu</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz numer obwodu</option>
-            @foreach (var districtNumber in districtNumbers)
-            {
-                <option value="@districtNumber">@districtNumber</option>
-            }
-        </select>
-    </div>
+        </div>
 </div>
 
 <table class="candidate-table">

@@ -6,7 +6,7 @@
 
 <div class="header-container">
     <h2 class="title">SPIS WYBORCÓW</h2>
-    <button class="add-button" @onclick="AddVoter">Dodaj Wyborcę</button>
+    <a href="/addvoter" class="add-button">Dodaj Wyborcę</a>
 </div>
 
 <div class="filters">
@@ -54,7 +54,6 @@
         <label>Szukaj</label>
         <input type="text" @bind="searchQuery" @bind:event="oninput" placeholder="Wpisz wyszukiwaną frazę" />
     </div>
-
 </div>
 
 <table class="candidate-table">
@@ -83,14 +82,13 @@
                 <td>@voter.PhoneNumber</td>
                 <td>@voter.Email</td>
                 <td>
-                    <a href="/modify/@voter.IdElectionUser">
+                    <a href="/modifyvoter/@voter.IdElectionUser">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/delete/@voter.IdElectionUser">
+                    <a href="/voterdelete/@voter.IdElectionUser">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
-
             </tr>
             index++;
         }
@@ -101,15 +99,7 @@
     private ElectionUser? selectedVoter;
     private string searchQuery = string.Empty;
 
-    private void AddVoter()
-    {
-        // Logika do dodania nowego wyborcy (zmockowana)
-        Console.WriteLine("Dodaj wyborcę");
-    }
-
-    // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
-
-    private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
+    // Mockowane dane wyborców
     private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
     private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
     private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
@@ -120,11 +110,9 @@
         new ElectionUser {IdElectionUser = 2, Email = "newuniquemail@gmail.com", PhoneNumber = "987 654 312", Person = new People {IdPerson = 2, Name = "Katarzyna", Surname = "Elowska", PESEL = 92731028594, Date =  DateOnly.Parse("1992-01-01")}}
     };
 
-
     private List<ElectionUser> filteredVoters = new();
 
-
-    private void FilterTable()   // tutaj oczywiście też raczej zmockowane trzeba będzie tą logikę poprawić
+    private void FilterTable()
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
@@ -144,7 +132,6 @@
 
     protected override void OnInitialized()
     {
-
         filteredVoters = voters;
     }
 

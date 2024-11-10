@@ -4,7 +4,7 @@
 
 <div class="header-container">
     <h2 class="title">SPIS KOMISJI</h2>
-    <button class="add-button" @onclick="AddCommissioner">Dodaj członka</button>
+    <a href="/addcommissioner" class="add-button">Dodaj członka</a>
 </div>
 
 <div class="filters">
@@ -78,10 +78,10 @@
                 <td>@commissioner.Email</td>
                 <td>@commissioner.Rank</td>
                 <td>
-                    <a href="/modify/@commissioner.IdCommissioner">
+                    <a href="/commissionersmodify/@commissioner.IdCommissioner">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/delete/@commissioner.IdCommissioner">
+                    <a href="/commissionersdelete/@commissioner.IdCommissioner">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
@@ -106,14 +106,8 @@
 
     private void FilterTable()
     {
-        // Logika filtrowania (zmockowana)
+        // Mockowana logika filtrowania
         filteredCommissioners = commissioners;
-    }
-
-    private void AddCommissioner()
-    {
-        // Logika dodawania nowego członka komisji (zmockowana)
-        Console.WriteLine("Dodaj członka komisji");
     }
 
     protected override void OnInitialized()
