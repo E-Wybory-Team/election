@@ -9,7 +9,7 @@ public partial class Voter
 
     public int IdElectionUser { get; set; }
 
-    public int IdDistrict { get; set; }
+    public int? IdDistrict { get; set; }
 
     public virtual ICollection<ElectionVoter> ElectionVoters { get; set; } = new List<ElectionVoter>();
 

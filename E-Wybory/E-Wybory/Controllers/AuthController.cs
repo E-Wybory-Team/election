@@ -160,7 +160,7 @@ namespace E_Wybory.Controllers
             var userId = user.IdElectionUser; //save to use in voter
             //add new voter(every user(person) is voter too)
             var voter = new Voter();
-            //voter.IdDistrict = idDistrict;
+            voter.IdDistrict = null;
             voter.IdElectionUser = userId;
 
             await _context.Voters.AddAsync(voter);
