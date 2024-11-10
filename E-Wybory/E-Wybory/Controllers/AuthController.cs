@@ -43,7 +43,7 @@ namespace E_Wybory.Controllers
             if (request.Username == String.Empty || request.Password == String.Empty)
                 return BadRequest("Not entered data to all required fields");
 
-            var authResult = await Authenticate(request.Username, request.Password, _context);
+            var authResult = await AuthenticateUser(request.Username, request.Password, _context);
             if (authResult == null)
                 return Unauthorized();
             else
@@ -82,7 +82,7 @@ namespace E_Wybory.Controllers
         }
 
 
-        public async Task<string> Authenticate(string email, string password, ElectionDbContext context)
+        private async Task<string> AuthenticateUser(string email, string password, ElectionDbContext context)
         {
             SHA256 sha = SHA256.Create();
             UTF8Encoding objUtf8 = new UTF8Encoding();
@@ -110,7 +110,7 @@ namespace E_Wybory.Controllers
             return null;
         }
 
-        public async Task<bool> RegisterUser(string name, string surname, string PESEL, DateTime birthdate, string email,
+        private async Task<bool> RegisterUser(string name, string surname, string PESEL, DateTime birthdate, string email,
             string phoneNumber, string password, int idDistrict)
         {
             SHA256 sha = SHA256.Create();

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using E_Wybory.Client.BuilderClientExtensionMethods;
 using E_Wybory.Services;
+using Microsoft.OpenApi.Models;
 
 
 var rsaKey = RSA.Create();
@@ -49,7 +50,7 @@ builder.Services.AddClientServices(builder.Configuration["Kestrel:Endpoints:Http
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.ConfigureSwagger();
 builder.Services.AddSingleton<IJWTService>(new TokenService(rsaKey));
 
 
@@ -85,7 +86,7 @@ app.MapRazorComponents<App>()
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/userInfo", (HttpContext ctx) => ctx.User.FindFirst("sub")?.Value ?? "Empty");
+//app.MapGet("/userInfo", (HttpContext ctx) => ctx.User.FindFirst("sub")?.Value ?? "Empty");
 
 /*
 app.MapGet("/jwt", () =>

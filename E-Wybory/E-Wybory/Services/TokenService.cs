@@ -60,7 +60,7 @@ namespace E_Wybory.Services
             {
                 new Claim("sub", Guid.NewGuid().ToString()),
                 new Claim("name", username),
-                new Claim("Roles", "Wyborca"), //By default
+                //new Claim("Roles", "Wyborca"), //By default
                 new Claim("IdElectionUser", electionUser.IdElectionUser.ToString()),
                 new Claim("IdDistrict", electionUser.IdDistrict.ToString()),
             };
