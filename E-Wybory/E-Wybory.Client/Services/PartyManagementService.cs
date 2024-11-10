@@ -17,7 +17,6 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
-
         public string? GetPartyNameById(int partyId, List<PartyViewModel> parties)
         {
             var party = parties
@@ -27,6 +26,5 @@ namespace E_Wybory.Client.Services
 
             return party;
         }
-
     }
 }

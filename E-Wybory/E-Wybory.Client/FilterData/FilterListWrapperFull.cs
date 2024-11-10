@@ -4,7 +4,7 @@ namespace E_Wybory.Client.FilterData
 {
     public class FilterListWrapperFull
     {
-        List<ElectionViewModelShort> ElectionFilter {  get; set; } = new List<ElectionViewModelShort>();
+        public List<ElectionTypeViewModel> ElectionFilter {  get; set; } = new List<ElectionTypeViewModel>();
 
         public FilterListWrapper FilterListWrapper { get; set; }  = new FilterListWrapper();
     }

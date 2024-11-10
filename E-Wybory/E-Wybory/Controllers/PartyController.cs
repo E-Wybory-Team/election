@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
+using E_Wybory.Client.ViewModels;
 
 namespace E_Wybory.Controllers
 {
@@ -110,6 +111,18 @@ namespace E_Wybory.Controllers
         private bool PartyExists(int id, string name)
         {
             return _context.Parties.Any(e => e.IdParty == id || e.PartyName == name);
+        }
+
+        // POST: api/parties/name/2
+        [HttpGet("name/{partyId}")]
+        public string? GetPartyNameById(int partyId)
+        {
+            var partyName = _context.Parties
+                .Where(p => p.IdParty == partyId)
+                .Select(p => p.PartyName)
+                .FirstOrDefault();
+
+            return partyName;
         }
     }
 }

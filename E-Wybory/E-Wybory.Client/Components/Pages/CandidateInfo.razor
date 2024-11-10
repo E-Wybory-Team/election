@@ -24,7 +24,7 @@
         <label>Rodzaj wyborów</label>
         <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
             <option value="">Wybierz rodzaj wyborów</option>
-            @foreach (var electionType in electionTypes)
+            @foreach (var electionType in wrapper.ElectionFilter)
             {
                 <option value="@electionType.IdElectionType">
                     @electionType.ElectionTypeName
@@ -107,20 +107,19 @@
     <tbody>
         @foreach (var candidate in filteredCandidates)
         {
-            var person = PersonManagementService.GetPersonById(candidate.IdPerson, people);
-            var age = PersonManagementService.CountPersonAge(person.BirthDate);
             var partyName = String.Empty;
+            var age = PersonManagementService.CountPersonAge(candidate.personViewModel.BirthDate);
 
-            if (candidate.IdParty != 0 && candidate.IdParty != null)
-                partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.GetValueOrDefault(), parties);
+            if (candidate.candidateViewModel.IdParty != 0 && candidate.candidateViewModel.IdParty != null)
+                partyName = PartyManagementService.GetPartyNameById(candidate.candidateViewModel.IdParty.GetValueOrDefault(), parties);
 
             <tr>
-                <td>@candidate.PositionNumber</td>
-                <td>@person.Surname @person.Name</td>
-                <td>@candidate.JobType</td>
-                <td>@candidate.Workplace</td>
-                <td>@candidate.PlaceOfResidence</td>
-                <td>@candidate.EducationStatus</td>
+                <td>@candidate.candidateViewModel.PositionNumber</td>
+                <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td>
+                <td>@candidate.candidateViewModel.JobType</td>
+                <td>@candidate.candidateViewModel.Workplace</td>
+                <td>@candidate.candidateViewModel.PlaceOfResidence</td>
+                <td>@candidate.candidateViewModel.EducationStatus</td>
                 <td>@age</td>
                 <td>@partyName</td>
             </tr>
@@ -130,38 +129,30 @@
 </table>
 
 @code {
-    private CandidateViewModel candidate = new CandidateViewModel();
+
     private int? SelectedElectionTypeId { get; set; } = null;
     private int? SelectedVoivodeshipId { get; set; } = null;
     private int? SelectedCountyId { get; set; } = null;
     private int? SelectedProvinceId { get; set; } = null;
     private int? SelectedDistrictId { get; set; } = null;
 
-    private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
-    private List<CandidateViewModel> filteredCandidates = new List<CandidateViewModel>();
-    private List<PartyViewModel> parties = new List<PartyViewModel>();
-    private List<PersonViewModel> people = new List<PersonViewModel>();
-    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
-    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
-
+    private List<CandidatePersonViewModel> filteredCandidates = new List<CandidatePersonViewModel>();
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
+    private List<PartyViewModel> parties = new List<PartyViewModel>();
 
     protected override async Task OnInitializedAsync()
     {
-        candidates = await CandidateManagementService.Candidates();
+        //it must be executed here because every parameters at the beginning are null
+        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
         parties = await PartyManagementService.Parties();
-        people = await PersonManagementService.People();
-        electionTypes = await ElectionTypeManagementService.ElectionTypes();
-        filteredCandidates = candidates;
-        elections = await ElectionManagementService.Elections();
-
     }
 
 
     private async Task FilterCandidate()
     {
-        wrapper.FilterListWrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        wrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
     }
 
     private async Task OnElectionTypeChanged()

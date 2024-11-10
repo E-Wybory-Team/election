@@ -13,8 +13,7 @@ namespace E_Wybory.Client.ViewModels
 
     public class ElectionViewModelShort
     {
-        [Required] public int IdElection { get; set; } = 0;
+        [Required] public int IdElectionType { get; set; } = 0;
         [Required] public string ElectionType { get; set; } = string.Empty;
-        [Required] public DateTime ElectionStartDate { get; set; }
     }
 }

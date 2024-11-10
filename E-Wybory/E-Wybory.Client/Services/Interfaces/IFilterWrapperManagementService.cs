@@ -5,7 +5,7 @@ namespace E_Wybory.Client.Services
 {
     public interface IFilterWrapperManagementService
     {
-        Task<FilterListWrapper> GetFilteredLists(int? voivodeshipId, int? countyId, int? provinceId);
-        Task<List<CandidateViewModel>> GetFilteredCandidates(int? voivodeshipId, int? countyId, int? provinceId, int? districtId);
+        Task<FilterListWrapperFull> GetFilteredLists(int? voivodeshipId, int? countyId, int? provinceId);
+        Task<List<CandidatePersonViewModel>> GetFilteredCandidates(int? electionTypeId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId);
     }
 }

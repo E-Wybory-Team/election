@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Matching;
 using E_Wybory.ExtensionMethods;
+using System.Xml.Linq;
 
 namespace E_Wybory.Controllers
 {
@@ -23,18 +24,28 @@ namespace E_Wybory.Controllers
             _context = context;
         }
 
+        [HttpGet("ElectionTypesList")]
+
         // GET: api/FilterWrapper/Lists
         [HttpGet("Lists")]
-        public async Task<ActionResult<FilterListWrapper>> GetFilteredLists(
+        public async Task<ActionResult<FilterListWrapperFull>> GetFilteredLists(
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
             [FromQuery] int? provinceId)
         {
-            var filterListWrapper = new FilterListWrapper();
+            var filterListWrapperFull = new FilterListWrapperFull();
 
-            if (filterListWrapper.VoivodeshipFilter.Count == 0) //when voivodeships are empty - at the beginning
+            
+            filterListWrapperFull.ElectionFilter = await _context.ElectionTypes.Select(v => new ElectionTypeViewModel()
+                {
+                    IdElectionType = v.IdElectionType,
+                    ElectionTypeName = v.ElectionTypeName
+                }).ToListAsync();
+           
+
+            if (filterListWrapperFull.FilterListWrapper.VoivodeshipFilter.Count == 0) 
             {
-                filterListWrapper.VoivodeshipFilter = await _context.Voivodeships.Select(v => new VoivodeshipViewModel()
+                filterListWrapperFull.FilterListWrapper.VoivodeshipFilter = await _context.Voivodeships.Select(v => new VoivodeshipViewModel()
                 {
                     idVoivodeship = v.IdVoivodeship,
                     voivodeshipName = v.VoivodeshipName
@@ -43,7 +54,7 @@ namespace E_Wybory.Controllers
 
             if (voivodeshipId.HasValue)
             {
-                filterListWrapper.CountyFilter = await _context.Counties
+                filterListWrapperFull.FilterListWrapper.CountyFilter = await _context.Counties
                     .Where(c => c.IdVoivodeship == voivodeshipId)
                     .Select(c => new CountyViewModel
                     {
@@ -57,7 +68,7 @@ namespace E_Wybory.Controllers
 
             if (countyId.HasValue)
             {
-                filterListWrapper.ProvinceFilter = await _context.Provinces
+                filterListWrapperFull.FilterListWrapper.ProvinceFilter = await _context.Provinces
                     .Where(p => countyId == p.IdCounty)
                     .Select(p => new ProvinceViewModel
                     {
@@ -71,7 +82,7 @@ namespace E_Wybory.Controllers
 
             if (provinceId.HasValue)
             {
-                filterListWrapper.DistrictFilter = await _context.Districts
+                filterListWrapperFull.FilterListWrapper.DistrictFilter = await _context.Districts
                     .Where(p => provinceId == p.IdProvince)
                     .Select(p => new DistrictViewModel
                     {
@@ -82,54 +93,77 @@ namespace E_Wybory.Controllers
                     })
                     .ToListAsync();
             }
-            return Ok(filterListWrapper);
+            return Ok(filterListWrapperFull);
         }
 
         // GET: api/FilterWrapper/Candidates
         [HttpGet("Candidates")]
-        public async Task<ActionResult<List<CandidateViewModel>>> GetFilteredCandidates(
+        public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidates(
+            [FromQuery] int? electionTypeId,
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
             [FromQuery] int? provinceId,
             [FromQuery] int? districtId)
         {
             var candidates = await _context.Candidates
+                .Include(candElection => candElection.IdElectionNavigation)
                 .Include(candDist => candDist.IdDistrictNavigation)
                 .ThenInclude(district => district.IdProvinceNavigation)
                 .ThenInclude(province => province.IdCountyNavigation)
                 .ThenInclude(county => county.IdVoivodeshipNavigation)
                 .ToListAsync();
 
-            var filteredCandidates = candidates.Where( candidate => 
-                    ( voivodeshipId == null
-                      || FilteringMethods.GetCandidateIdVoivodeship(_context, candidate.IdCandidate).Result == voivodeshipId)
-                      &&
-                      ( countyId == null 
-                      || FilteringMethods.GetCandidateIdCounty(_context, candidate.IdCandidate).Result == countyId)
-                      &&
-                      ( provinceId == null
-                      || FilteringMethods.GetCandidateIdProvince(_context, candidate.IdCandidate).Result == provinceId)
-                      &&
-                      (districtId == null
-                      || candidate.IdDistrict == districtId)
-                      )
-                .Select(candidate => new CandidateViewModel
-                {
-                    IdCandidate = candidate.IdCandidate,
-                    CampaignDescription = candidate.CampaignDescription,
-                    EducationStatus = candidate.EducationStatus,
-                    JobType = candidate.JobType,
-                    PlaceOfResidence = candidate.PlaceOfResidence,
-                    PositionNumber = candidate.PositionNumber,
-                    Workplace = candidate.Workplace,
-                    IdPerson = candidate.IdPerson,
-                    IdDistrict = candidate.IdDistrict,
-                    IdParty = candidate.IdParty,
-                    IdElection = candidate.IdElection
-                })
-                .ToList();
+            var candidatePersonViewModels = new List<CandidatePersonViewModel>();
 
-            return Ok(filteredCandidates);
+            foreach (var candidate in candidates)
+            {
+                if ((electionTypeId != null &&
+                     await FilteringMethods.GetCandidateIdElectionType(_context, candidate.IdCandidate) != electionTypeId)
+                    || (voivodeshipId != null &&
+                     await FilteringMethods.GetCandidateIdVoivodeship(_context, candidate.IdCandidate) != voivodeshipId)
+                    || (countyId != null &&
+                     await FilteringMethods.GetCandidateIdCounty(_context, candidate.IdCandidate) != countyId)
+                    || (provinceId != null &&
+                     await FilteringMethods.GetCandidateIdProvince(_context, candidate.IdCandidate) != provinceId)
+                    || (districtId != null && candidate.IdDistrict != districtId))
+                {
+                    // Skip this candidate if any of the filter conditions are not met
+                    continue;
+                }
+
+                var personViewModel = await _context.People
+                    .Where(p => p.IdPerson == candidate.IdPerson)
+                    .Select(person => new PersonViewModel
+                    {
+                        IdPerson = person.IdPerson,
+                        Name = person.Name,
+                        Surname = person.Surname,
+                        PESEL = person.Pesel,
+                        BirthDate = person.BirthDate
+                    })
+                    .FirstOrDefaultAsync();
+
+                candidatePersonViewModels.Add(new CandidatePersonViewModel
+                {
+                    candidateViewModel = new CandidateViewModel
+                    {
+                        IdCandidate = candidate.IdCandidate,
+                        CampaignDescription = candidate.CampaignDescription,
+                        EducationStatus = candidate.EducationStatus,
+                        JobType = candidate.JobType,
+                        PlaceOfResidence = candidate.PlaceOfResidence,
+                        PositionNumber = candidate.PositionNumber,
+                        Workplace = candidate.Workplace,
+                        IdPerson = candidate.IdPerson,
+                        IdDistrict = candidate.IdDistrict,
+                        IdParty = candidate.IdParty,
+                        IdElection = candidate.IdElection
+                    },
+                    personViewModel = personViewModel
+                });
+            }
+
+            return Ok(candidatePersonViewModels);
         }
     }
 }

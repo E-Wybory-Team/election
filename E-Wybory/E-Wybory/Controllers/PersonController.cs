@@ -105,9 +105,18 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
+        // GET: api/People/idFromPesel/3
+        [HttpGet("idFromPesel/{pesel}")]
+        public async Task<ActionResult<int>> GetPersonIdByPeselAsync(string pesel)
+        {
+            var person = await _context.People.Where(p => p.Pesel == pesel).FirstOrDefaultAsync();
+            return Ok(person?.IdPerson ?? 0);
+        }
+
         private bool PersonExists(int id)
         {
             return _context.People.Any(e => e.IdPerson == id);
         }
+
     }
 }

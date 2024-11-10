@@ -13,7 +13,7 @@ namespace E_Wybory.Client.Services
             _httpClient = clientFactory.CreateClient("ElectionHttpClient");
         }
 
-        public async Task<FilterListWrapper> GetFilteredLists(int? voivodeshipId, int? countyId, int? provinceId)
+        public async Task<FilterListWrapperFull> GetFilteredLists(int? voivodeshipId, int? countyId, int? provinceId)
         {
             var url = "/api/FilterWrapper/Lists";
             var queryParameters = new List<string>();
@@ -37,15 +37,19 @@ namespace E_Wybory.Client.Services
             }
 
 
-            var response = await _httpClient.GetFromJsonAsync<FilterListWrapper>(url);
+            var response = await _httpClient.GetFromJsonAsync<FilterListWrapperFull>(url);
             return response;
         }
 
-        public async Task<List<CandidateViewModel>> GetFilteredCandidates(int? voivodeshipId, int? countyId, int? provinceId, int? districtId)
+        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidates(int? electionTypeId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId)
         {
             var url = "/api/FilterWrapper/Candidates";
             var queryParameters = new List<string>();
 
+            if (electionTypeId.HasValue)
+            {
+                queryParameters.Add($"electionTypeId={electionTypeId.Value}");
+            }
             if (voivodeshipId.HasValue)
             {
                 queryParameters.Add($"voivodeshipId={voivodeshipId.Value}");
@@ -68,7 +72,7 @@ namespace E_Wybory.Client.Services
                 url += "?" + string.Join("&", queryParameters);
             }
 
-            var response = await _httpClient.GetFromJsonAsync<List<CandidateViewModel>>(url);
+            var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>(url);
             return response;
         }
 

@@ -41,5 +41,16 @@ namespace E_Wybory.ExtensionMethods
                             .Select(c => c.IdProvince)
                             .FirstOrDefaultAsync();
         }
+
+        public static Task<int> GetCandidateIdElectionType(ElectionDbContext _context, int idCandidate)
+        {
+            return _context.Candidates
+                            .Where(candidate => candidate.IdCandidate == idCandidate)
+                            .Include(p => p.IdElectionNavigation.IdElectionTypeNavigation)
+                            .Select(p => p.IdElectionNavigation)
+                            .Select(c => c.IdElectionTypeNavigation)
+                            .Select(c => c.IdElectionType)
+                            .FirstOrDefaultAsync();
+        }
     }
 }
