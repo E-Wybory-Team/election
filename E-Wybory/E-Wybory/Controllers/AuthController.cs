@@ -43,7 +43,7 @@ namespace E_Wybory.Controllers
             if (request.Username == String.Empty || request.Password == String.Empty)
                 return BadRequest("Not entered data to all required fields");
 
-            var authResult = await AuthenticateUser(request.Username, request.Password, _context);
+            var authResult = await AuthenticateUser(request.Username, request.Password);
             if (authResult == null)
                 return Unauthorized();
             else
@@ -82,7 +82,7 @@ namespace E_Wybory.Controllers
         }
 
 
-        private async Task<string> AuthenticateUser(string email, string password, ElectionDbContext context)
+        private async Task<string> AuthenticateUser(string email, string password)
         {
             SHA256 sha = SHA256.Create();
             UTF8Encoding objUtf8 = new UTF8Encoding();
@@ -95,8 +95,8 @@ namespace E_Wybory.Controllers
                 hexString.AppendFormat("{0:x2}", b);
             }
 
-            if (await context.ElectionUsers.AnyAsync(user => user.Email == email) &&
-                await context.ElectionUsers
+            if (await _context.ElectionUsers.AnyAsync(user => user.Email == email) &&
+                await _context.ElectionUsers
                 .Where(user => user.Email == email)
                 .Select(user => user.Password)
                 .FirstOrDefaultAsync() == hexString.ToString()
@@ -105,7 +105,7 @@ namespace E_Wybory.Controllers
                 //CreateRSAPrivateKey();
                 var rsaKey = RSA.Create();
                 rsaKey.ImportRSAPrivateKey(System.IO.File.ReadAllBytes("key"), out _);
-                return await _tokenService.CreateToken(rsaKey, email, context);
+                return await _tokenService.CreateToken(rsaKey, email, _context);
             }
             return null;
         }

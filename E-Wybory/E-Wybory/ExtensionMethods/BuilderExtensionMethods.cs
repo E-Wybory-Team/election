@@ -94,7 +94,7 @@ namespace E_Wybory.ExtensionMethods {
             return builder;
         }
 
-        public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder, TokenValidationParameters validationParameters)
         {
             var rsaKey = RSA.Create();
             rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
@@ -106,13 +106,8 @@ namespace E_Wybory.ExtensionMethods {
             })
             .AddJwtBearer(options =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    RoleClaimType = "Roles"
-                };
-
+                options.TokenValidationParameters = validationParameters.Clone();
+                options.TokenValidationParameters.IssuerSigningKey = new RsaSecurityKey(rsaKey);
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = (ctx) =>

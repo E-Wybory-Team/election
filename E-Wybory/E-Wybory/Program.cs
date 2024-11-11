@@ -14,10 +14,24 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using E_Wybory.Client.BuilderClientExtensionMethods;
 using E_Wybory.Services;
 using Microsoft.OpenApi.Models;
+using E_Wybory.Middleware;
 
 
 var rsaKey = RSA.Create();
+
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+TokenValidationParameters validationParameters = new TokenValidationParameters
+{
+    ValidateAudience = false,
+    ValidateIssuer = false,
+    ValidateLifetime = true,
+    RoleClaimType = "Roles",
+    ValidateIssuerSigningKey = true,
+    ClockSkew = TimeSpan.Zero,
+};
 
 // Add services to the container.
 builder.Services
@@ -41,7 +55,7 @@ builder.ConfigureAndAddKestrel()
        .ConfigureAndAddDbContext();
 
 //Added JWT Bearer configuration
-builder.ConfigureAuth();
+builder.ConfigureAuth(validationParameters);
 
 //builder.Services.AddAuthorizationCore();
 
@@ -51,7 +65,9 @@ builder.Services.AddClientServices(builder.Configuration["Kestrel:Endpoints:Http
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.ConfigureSwagger();
-builder.Services.AddSingleton<IJWTService>(new TokenService(rsaKey));
+builder.Services.AddSingleton<RSA>(rsaKey);
+builder.Services.AddSingleton<TokenValidationParameters>(validationParameters);
+builder.Services.AddSingleton<IJWTService,TokenService>();
 
 
 var app = builder.Build();
@@ -85,6 +101,9 @@ app.MapRazorComponents<App>()
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<TokenRenewalMiddleware>();
+
 
 //app.MapGet("/userInfo", (HttpContext ctx) => ctx.User.FindFirst("sub")?.Value ?? "Empty");
 
