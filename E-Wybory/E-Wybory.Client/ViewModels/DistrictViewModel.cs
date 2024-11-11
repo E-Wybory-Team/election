@@ -9,6 +9,6 @@ namespace E_Wybory.Client.ViewModels
         [Required] public bool DisabledFacilities { get; set; } = false;
         [Required] public string DistrictHeadquarters { get; set; } = String.Empty;
         [Required] public int IdConstituency { get; set; } = 0;
-        public int IdProvince { get; set; } = 0;
+        public int? IdProvince { get; set; } = null;
     }
 }

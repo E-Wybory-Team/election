@@ -6,5 +6,8 @@ namespace E_Wybory.Client.Services
     {
         Task<List<DistrictViewModel>> Districts();
         int? GetProvinceIdFromDistrict(int idDistrict, List<DistrictViewModel> districts);
+        Task<bool> AddDistrict(DistrictViewModel district);
+        Task<bool> PutDistrict(DistrictViewModel district);
+
     }
 }

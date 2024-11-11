@@ -96,6 +96,54 @@ namespace E_Wybory.Controllers
             return Ok(filterListWrapperFull);
         }
 
+        // GET: api/FilterWrapper/RegionLists
+        [HttpGet("RegionLists")]
+        public async Task<ActionResult<FilterListWrapper>> GetFilteredLists(
+            [FromQuery] int? voivodeshipId,
+            [FromQuery] int? countyId)
+        {
+            var filterListWrapper = new FilterListWrapper();
+
+
+            if (filterListWrapper.VoivodeshipFilter.Count == 0)
+            {
+                filterListWrapper.VoivodeshipFilter = await _context.Voivodeships.Select(v => new VoivodeshipViewModel()
+                {
+                    idVoivodeship = v.IdVoivodeship,
+                    voivodeshipName = v.VoivodeshipName
+                }).ToListAsync();
+            }
+
+            if (voivodeshipId.HasValue)
+            {
+                filterListWrapper.CountyFilter = await _context.Counties
+                    .Where(c => c.IdVoivodeship == voivodeshipId)
+                    .Select(c => new CountyViewModel
+                    {
+                        IdCounty = c.IdCounty,
+                        CountyName = c.CountyName,
+                        IdVoivodeship = c.IdVoivodeship
+                    })
+                    .ToListAsync();
+            }
+
+
+            if (countyId.HasValue)
+            {
+                filterListWrapper.ProvinceFilter = await _context.Provinces
+                    .Where(p => countyId == p.IdCounty)
+                    .Select(p => new ProvinceViewModel
+                    {
+                        IdProvince = p.IdProvince,
+                        IdCounty = p.IdCounty,
+                        ProvinceName = p.ProvinceName
+                    })
+                    .ToListAsync();
+            }
+
+            return Ok(filterListWrapper);
+        }
+
         // GET: api/FilterWrapper/Candidates
         [HttpGet("Candidates")]
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidates(

@@ -18,6 +18,20 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<bool> AddDistrict(DistrictViewModel district)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/District", district);
+
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> PutDistrict(DistrictViewModel district)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/District/{district.IdDistrict}", district);
+
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
         public int? GetProvinceIdFromDistrict(int idDistrict, List<DistrictViewModel> districts)
         {
             var provinceId = districts

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
+using E_Wybory.Client.ViewModels;
 
 namespace E_Wybory.Controllers
 {
@@ -44,41 +45,61 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Districts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDistrict(int id, District district)
+        public async Task<IActionResult> PutPerson(int id, [FromBody] DistrictViewModel districtModel)
         {
-            if (id != district.IdDistrict)
+            if (!EnteredRequiredData(districtModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            if (id != districtModel.IdDistrict || !DistrictExists(id))
             {
                 return Conflict();
             }
 
-            _context.Entry(district).State = EntityState.Modified;
+            var district = await _context.Districts.FindAsync(id);
+
+            if (district == null)
+            {
+                return NotFound();
+            }
+
+            district.DistrictName = districtModel.DistrictName;
+            district.DisabledFacilities = districtModel.DisabledFacilities;
+            district.DistrictHeadquarters = districtModel.DistrictHeadquarters;
+            district.IdConstituency = districtModel.IdConstituency;
+            district.IdProvince = districtModel.IdProvince;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!DistrictExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Districts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<District>> PostDistrict(District district)
+        public async Task<ActionResult<District>> PostDistrict([FromBody] DistrictViewModel districtModel)
         {
+            if (!EnteredRequiredData(districtModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            var district = new District();
+
+            district.DistrictName = districtModel.DistrictName;
+            district.DisabledFacilities = districtModel.DisabledFacilities;
+            district.DistrictHeadquarters = districtModel.DistrictHeadquarters;
+            district.IdConstituency = districtModel.IdConstituency;
+            district.IdProvince = districtModel.IdProvince;
+
             _context.Districts.Add(district);
             await _context.SaveChangesAsync();
 
@@ -104,6 +125,17 @@ namespace E_Wybory.Controllers
         private bool DistrictExists(int id)
         {
             return _context.Districts.Any(e => e.IdDistrict == id);
+        }
+
+        private bool EnteredRequiredData(DistrictViewModel districtModel)
+        {
+            if (districtModel.DistrictName == String.Empty || districtModel.DistrictHeadquarters == String.Empty
+                 || districtModel.IdConstituency == 0 )
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

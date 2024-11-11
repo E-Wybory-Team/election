@@ -1,5 +1,6 @@
 ﻿using E_Wybory.Client.FilterData;
 using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using System.Net.Http.Json;
 
 namespace E_Wybory.Client.Services
@@ -13,68 +14,65 @@ namespace E_Wybory.Client.Services
             _httpClient = clientFactory.CreateClient("ElectionHttpClient");
         }
 
-        public async Task<FilterListWrapperFull> GetFilteredLists(int? voivodeshipId, int? countyId, int? provinceId)
+        private string BuildUrlWithParameters(string baseUrl, Dictionary<string, int?> parameters)
         {
-            var url = "/api/FilterWrapper/Lists";
             var queryParameters = new List<string>();
-
-            if (voivodeshipId.HasValue)
+            foreach (var param in parameters)
             {
-                queryParameters.Add($"voivodeshipId={voivodeshipId.Value}");
-            }
-            if (countyId.HasValue)
-            {
-                queryParameters.Add($"countyId={countyId.Value}");
-            }
-            if (provinceId.HasValue)
-            {
-                queryParameters.Add($"provinceId={provinceId.Value}");
+                if (param.Value.HasValue)
+                {
+                    queryParameters.Add($"{param.Key}={param.Value.Value}");
+                }
             }
 
             if (queryParameters.Any())
             {
-                url += "?" + string.Join("&", queryParameters);
+                baseUrl += "?" + string.Join("&", queryParameters);
             }
 
+            return baseUrl;
+        }
+
+        public async Task<FilterListWrapperFull> GetFilteredLists(int? voivodeshipId, int? countyId, int? provinceId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/Lists", new Dictionary<string, int?>
+            {
+                { "voivodeshipId", voivodeshipId },
+                { "countyId", countyId },
+                { "provinceId", provinceId }
+            });
 
             var response = await _httpClient.GetFromJsonAsync<FilterListWrapperFull>(url);
             return response;
         }
 
-        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidates(int? electionTypeId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId)
+        public async Task<FilterListWrapper> GetFilteredLists(int? voivodeshipId, int? countyId)
         {
-            var url = "/api/FilterWrapper/Candidates";
-            var queryParameters = new List<string>();
+            var url = BuildUrlWithParameters("/api/FilterWrapper/RegionLists", new Dictionary<string, int?>
+            {
+            { "voivodeshipId", voivodeshipId },
+            { "countyId", countyId }
+            });
 
-            if (electionTypeId.HasValue)
-            {
-                queryParameters.Add($"electionTypeId={electionTypeId.Value}");
-            }
-            if (voivodeshipId.HasValue)
-            {
-                queryParameters.Add($"voivodeshipId={voivodeshipId.Value}");
-            }
-            if (countyId.HasValue)
-            {
-                queryParameters.Add($"countyId={countyId.Value}");
-            }
-            if (provinceId.HasValue)
-            {
-                queryParameters.Add($"provinceId={provinceId.Value}");
-            }
-            if (districtId.HasValue)
-            {
-                queryParameters.Add($"districtId={districtId.Value}");
-            }
+            var response = await _httpClient.GetFromJsonAsync<FilterListWrapper>(url);
+            return response;
+        }
 
-            if (queryParameters.Any())
+        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidates(
+            int? electionTypeId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId)
             {
-                url += "?" + string.Join("&", queryParameters);
-            }
+            var url = BuildUrlWithParameters("/api/FilterWrapper/Candidates", new Dictionary<string, int?>
+            { 
+                { "electionTypeId", electionTypeId },
+                { "voivodeshipId", voivodeshipId },
+                { "countyId", countyId },
+                { "provinceId", provinceId },
+                { "districtId", districtId }
+            });
 
             var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>(url);
             return response;
-        }
+            }
 
     }
 }
