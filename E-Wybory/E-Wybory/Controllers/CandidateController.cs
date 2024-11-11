@@ -63,7 +63,7 @@ namespace E_Wybory.Controllers
 
             if (id != candidateModel.IdCandidate || !CandidateExists(id))
             {
-                return Conflict();
+                return Conflict("Incorrect id");
             }
 
             var candidate = await _context.Candidates.FindAsync(id);
@@ -90,7 +90,7 @@ namespace E_Wybory.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Impossible to execute in database");
             }
             return Ok();
         }
@@ -108,7 +108,7 @@ namespace E_Wybory.Controllers
             if (_context.Candidates.Any(candidate => candidate.IdPerson == candidateModel.IdPerson) &&
                _context.Candidates.Any(candidate => candidate.IdElection == candidateModel.IdElection))
             {
-                return Conflict();
+                return Conflict("These data exists in database");
             }
 
             var candidate = new Candidate();

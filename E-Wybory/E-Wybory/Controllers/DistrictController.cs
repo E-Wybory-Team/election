@@ -55,7 +55,7 @@ namespace E_Wybory.Controllers
 
             if (id != districtModel.IdDistrict || !DistrictExists(id))
             {
-                return Conflict();
+                return Conflict("Incorrect district's id");
             }
 
             var district = await _context.Districts.FindAsync(id);
@@ -77,7 +77,7 @@ namespace E_Wybory.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Impossible to execute that in database");
             }
             return Ok();
         }

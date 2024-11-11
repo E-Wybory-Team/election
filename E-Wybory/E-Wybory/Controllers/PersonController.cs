@@ -49,7 +49,7 @@ namespace E_Wybory.Controllers
 
             if (id != personModel.IdPerson || !PersonExists(id))
             {
-                return Conflict();
+                return Conflict("Incorrect person's id");
             }
 
             var person = await _context.People.FindAsync(id);
@@ -57,7 +57,7 @@ namespace E_Wybory.Controllers
             //when user tries to add existing PESEL
             if (person.Pesel != personModel.PESEL && _context.People.Any(e => e.Pesel == personModel.PESEL))
             {
-                return Conflict();
+                return Conflict("Person with entered PESEL already exists");
             }
 
             if (person == null)

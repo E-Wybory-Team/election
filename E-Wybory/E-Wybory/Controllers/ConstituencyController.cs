@@ -49,7 +49,7 @@ namespace E_Wybory.Controllers
 
             if (id != constituencyModel.idConstituency || !ConstituencyExists(id))
             {
-                return Conflict();
+                return Conflict("Incorrect id");
             }
 
             var constituency = await _context.Constituences.FindAsync(id);
@@ -68,7 +68,7 @@ namespace E_Wybory.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Impossible to execute it in database");
             }
             return Ok();
         }
