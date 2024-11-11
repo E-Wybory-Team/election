@@ -34,10 +34,24 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
+        public async Task<bool> PutPerson(PersonViewModel person)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/Person/{person.IdPerson}", person);
+
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
         public async Task<PersonViewModel> GetPersonById(int id)
         {
             var response = await _httpClient.GetFromJsonAsync<PersonViewModel>($"/api/Person/{id}");
             return await Task.FromResult(response);
+        }
+
+        public async Task<String> GetPersonNameSurnameById(int id)
+        {
+            var person = await GetPersonById(id);
+
+            return await Task.FromResult($"{person.Name} {person.Surname} - wiek: {CountPersonAge(person.BirthDate)}");
         }
 
         public int CountPersonAge(DateTime birthDate)

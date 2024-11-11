@@ -39,50 +39,65 @@ namespace E_Wybory.Controllers
             return person;
         }
 
-        // PUT: api/People/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, Person person)
+        public async Task<IActionResult> PutPerson(int id, [FromBody] PersonViewModel personModel)
         {
-            if (id != person.IdPerson)
+            if (!EnteredRequiredData(personModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            if (id != personModel.IdPerson || !PersonExists(id))
             {
                 return Conflict();
             }
 
-            _context.Entry(person).State = EntityState.Modified;
+            var person = await _context.People.FindAsync(id);
+
+            //when user tries to add existing PESEL
+            if (person.Pesel != personModel.PESEL && _context.People.Any(e => e.Pesel == personModel.PESEL))
+            {
+                return Conflict();
+            }
+
+            if (person == null)
+            {
+                return NotFound();
+            }
+
+            person.Name = personModel.Name;
+            person.Surname = personModel.Surname;
+            person.Pesel = personModel.PESEL;
+            person.BirthDate = personModel.BirthDate;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!PersonExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/People
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Person>> PostPerson(Person person)
+        public async Task<ActionResult<Person>> PostPerson([FromBody] PersonViewModel personModel)
         {
-            /*
+            if (!EnteredRequiredData(personModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
             var person = new Person();
 
             person.Name = personModel.Name;
             person.Surname = personModel.Surname;
             person.Pesel = personModel.PESEL;
             person.BirthDate = personModel.BirthDate;
-            */
+            
             _context.People.Add(person);
             await _context.SaveChangesAsync();
 
@@ -113,10 +128,30 @@ namespace E_Wybory.Controllers
             return Ok(person?.IdPerson ?? 0);
         }
 
+
+        // GET: api/People/dataFromId/3
+        [HttpGet("dataFromId/{idPerson}")]
+        public async Task<ActionResult<string>> GetPersonDataByIdAsync(int idPerson)
+        {
+            var person = await _context.People.Where(p => p.IdPerson == idPerson).FirstOrDefaultAsync();
+            var resultString = $"{person.Name} {person.Surname}";
+            return Ok(resultString);
+        }
+
         private bool PersonExists(int id)
         {
             return _context.People.Any(e => e.IdPerson == id);
         }
 
+        private bool EnteredRequiredData(PersonViewModel personModel)
+        {
+            if(personModel.Name == String.Empty || personModel.Surname == String.Empty 
+                || personModel.PESEL == String.Empty || personModel.BirthDate == DateTime.MinValue)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

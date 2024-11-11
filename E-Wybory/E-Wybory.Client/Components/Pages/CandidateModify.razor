@@ -1,54 +1,83 @@
 ﻿@page "/modify-candidate"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
+
+@inject IPartyManagementService PartyManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject ICandidateManagementService CandidateManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionManagementService ElectionManagementService
 
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>MODYFIKOWANIE KANDYDATA W WYBORACH</h1>
 
-    <EditForm Model="@candidateModel" OnValidSubmit="HandleEditCandidate">
+    <EditForm FormName="CandidateModify" Model="@candidateModel" OnValidSubmit="HandleEditCandidate">
         <DataAnnotationsValidator />
         <ValidationSummary />
+
+        <div class="form-group">
+            <label for="currentCandidate">KANDYDAT DO EDYCJI</label>
+            <InputSelect id="currentCandidate" @bind-Value="SelectedCandidateId">
+                <option value="">Wybierz kandydata</option>
+                @foreach (var candidate in candidates)
+                {
+                    <option value="@candidate.IdCandidate">
+                        @candidate.IdCandidate - @candidateNames[candidate.IdPerson]
+                    </option>
+                }
+            </InputSelect>
+        </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="firstName">IMIĘ</label>
-                <InputText id="firstName" @bind-Value="candidateModel.FirstName" placeholder="Wprowadź imię kandydata" />
+                <InputText id="firstName" @bind-Value="candidateModel.personViewModel.Name" placeholder="Wprowadź imię kandydata" />
             </div>
-            <div class="form-group">
-                <label for="middleName">DRUGIE IMIĘ</label>
-                <InputText id="middleName" @bind-Value="candidateModel.MiddleName" placeholder="Wprowadź drugie imię kandydata" />
-            </div>
-        </div>
-
-        <div class="form-row">
             <div class="form-group">
                 <label for="lastName">NAZWISKO</label>
-                <InputText id="lastName" @bind-Value="candidateModel.LastName" placeholder="Wprowadź nazwisko kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="occupation">ZAWÓD</label>
-                <InputText id="occupation" @bind-Value="candidateModel.Occupation" placeholder="Wprowadź zawód kandydata" />
+                <InputText id="lastName" @bind-Value="candidateModel.personViewModel.Surname" placeholder="Wprowadź nazwisko kandydata" />
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
+                <label for="pesel">PESEL</label>
+                <InputText id="pesel" @bind-Value="candidateModel.personViewModel.PESEL" placeholder="Wprowadź nr PESEL kandydata" />
+            </div>
+            <div class="form-group">
+                <label for="dateBirth">DATA URODZENIA</label>
+                <InputText id="dateBirth" @bind-Value="candidateModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź zawód kandydata" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="occupation">ZAWÓD</label>
+                <InputText id="occupation" @bind-Value="candidateModel.candidateViewModel.JobType" placeholder="Wprowadź zawód kandydata" />
+            </div>
+            <div class="form-group">
                 <label for="workplace">MIEJSCE PRACY</label>
-                <InputText id="workplace" @bind-Value="candidateModel.Workplace" placeholder="Wprowadź miejsce pracy kandydata" />
+                <InputText id="workplace" @bind-Value="candidateModel.candidateViewModel.Workplace" placeholder="Wprowadź miejsce pracy kandydata" />
+            </div>
+            <div class="form-group">
+                <label for="campaign">OPIS KAMPANII</label>
+                <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" placeholder="Wprowadź opis kampanii wyborczej kandydata" />
             </div>
             <div class="form-group">
                 <label for="listNumber">NUMER NA LIŚCIE</label>
-                <InputNumber id="listNumber" @bind-Value="candidateModel.ListNumber" placeholder="Wprowadź numer na liście" />
+                <InputNumber id="listNumber" @bind-Value="candidateModel.candidateViewModel.PositionNumber" placeholder="Wprowadź numer na liście" />
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="education">WYKSZTAŁCENIE</label>
-                <InputSelect id="education" @bind-Value="candidateModel.Education">
+                <InputSelect id="education" @bind-Value="candidateModel.candidateViewModel.EducationStatus">
                     <option value="">Wybierz wykształcenie</option>
                     <option value="Podstawowe">Podstawowe</option>
                     <option value="Średnie">Średnie</option>
@@ -57,7 +86,7 @@
             </div>
             <div class="form-group">
                 <label for="partyAffiliation">PRZYNALEŻNOŚĆ DO PARTII</label>
-                <InputSelect id="partyAffiliation" @bind-Value="candidateModel.PartyAffiliation">
+                <InputSelect id="partyAffiliation" @bind-Value="candidateModel.candidateViewModel.IdParty">
                     <option value="">Wybierz partię</option>
                     @foreach (var party in parties)
                     {
@@ -67,16 +96,28 @@
                     }
                 </InputSelect>
             </div>
+            <div class="form-group">
+                <label for="election">WYBORY</label>
+                <InputSelect id="election" @bind-Value="candidateModel.candidateViewModel.IdElection">
+                    <option value="">Wybierz instancję wyborów</option>
+                    @foreach (var election in elections)
+                    {
+                        <option value="@election.IdElection">
+                            Od:  @election.ElectionStartDate  do:  @election.ElectionEndDate
+                        </option>
+                    }
+                </InputSelect>
+            </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
-                <InputText id="placeOfResidence" @bind-Value="candidateModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
+                <InputText id="placeOfResidence" @bind-Value="candidateModel.candidateViewModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
             </div>
             <div class="form-group">
                 <label for="districtNumber">OBWÓD WYBORCZY</label>
-                <InputSelect id="districtNumber" @bind-Value="candidateModel.SelectedDistrictId">
+                <InputSelect id="districtNumber" @bind-Value="candidateModel.candidateViewModel.IdDistrict">
                     <option value="">Wybierz obwód wyborczy</option>
                     @foreach (var district in districts)
                     {
@@ -90,72 +131,64 @@
 
         <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
     </EditForm>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private CandidateModel candidateModel = new CandidateModel();
+    private CandidatePersonViewModel candidateModel = new CandidatePersonViewModel();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    private List<PartyViewModel> parties = new List<PartyViewModel>();
+    private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
+    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private Dictionary<int, string> candidateNames = new();
+    private int SelectedCandidateId { get; set; } = 0;
+    string errorMessage;
+    bool formSubmitted = false;
 
-    private void HandleEditCandidate()
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"Zmodyfikowano kandydata: {candidateModel.FirstName} {candidateModel.LastName}");
-    }
-    private List<Party> parties = new List<Party>
-    {
-        new Party { IdParty = 1, PartyName = "Partia 1" },
-        new Party { IdParty = 2, PartyName = "Partia 2" },
-        new Party { IdParty = 3, PartyName = "Partia 3" }
-    };
-
-    private List<District> districts = new List<District>
-    {
-        new District { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
-        new District { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
-        new District { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
-    };
-
-    public class CandidateModel
-    {
-        [Required(ErrorMessage = "Imię jest wymagane")]
-        public string FirstName { get; set; }
-
-        public string MiddleName { get; set; }
-
-        [Required(ErrorMessage = "Nazwisko jest wymagane")]
-        public string LastName { get; set; }
-
-        [Required(ErrorMessage = "Zawód jest wymagany")]
-        public string Occupation { get; set; }
-
-        [Required(ErrorMessage = "Miejsce pracy jest wymagane")]
-        public string Workplace { get; set; }
-
-        [Required(ErrorMessage = "Numer na liście jest wymagany")]
-        public int ListNumber { get; set; }
-
-        [Required(ErrorMessage = "Wykształcenie jest wymagane")]
-        public string Education { get; set; }
-
-        [Required(ErrorMessage = "Przynależność do partii jest wymagana")]
-        public string PartyAffiliation { get; set; }
-
-        [Required(ErrorMessage = "Miejsce zamieszkania jest wymagane")]
-        public string PlaceOfResidence { get; set; }
-
-        [Required(ErrorMessage = "Obwód wyborczy jest wymagany")]
-        public int SelectedDistrictId { get; set; }
+        districts = await DistrictManagementService.Districts();
+        parties = await PartyManagementService.Parties();
+        candidates = await CandidateManagementService.Candidates();
+        elections = await ElectionManagementService.Elections();
+        await LoadAllCandidateNamesAsync();
     }
 
-    public class District
+    private async Task LoadAllCandidateNamesAsync()
     {
-        [Required] public int IdDistrict { get; set; }
-        [Required] public string DistrictName { get; set; }
-        [Required] public bool DisabledFacilities { get; set; }
-        [Required] public string DistrictHeadquarters { get; set; }
+        var nameTasks = candidates.Select(async candidate =>
+        {
+            var name = await PersonManagementService.GetPersonNameSurnameById(candidate.IdPerson);
+            var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.GetValueOrDefault(), parties);
+            candidateNames[candidate.IdPerson] = name + " - partia: " + partyName;
+        });
+
+        await Task.WhenAll(nameTasks);
     }
 
-    public class Party
+    private async void HandleEditCandidate()
     {
-        [Required] public int IdParty { get; set; }
-        [Required] public string PartyName { get; set; }
+        if (SelectedCandidateId != 0) //only if is selected
+        {
+            candidateModel.candidateViewModel.IdCandidate = SelectedCandidateId;
+            var personIdFromCandidate = candidates
+                    .Where(p => p.IdCandidate == SelectedCandidateId)
+                    .Select(p => p.IdPerson)
+                    .FirstOrDefault();
+
+            candidateModel.candidateViewModel.IdPerson = personIdFromCandidate;
+            candidateModel.personViewModel.IdPerson = personIdFromCandidate;
+
+            formSubmitted = await PersonManagementService.PutPerson(candidateModel.personViewModel);
+            formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
+
+            errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
+        }
     }
+
+
 }

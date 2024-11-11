@@ -30,9 +30,9 @@ namespace E_Wybory.Controllers
         {
 
             //Use Mapster or map manually 
-           // _context.Candidates.Select(c => new CandidateViewModel() { IdCandidate = c.IdCandidate /*...*/ });
+            // _context.Candidates.Select(c => new CandidateViewModel() { IdCandidate = c.IdCandidate /*...*/ });
 
-            
+
 
             return await _context.Candidates.ToListAsync();
         }
@@ -54,40 +54,58 @@ namespace E_Wybory.Controllers
         // PUT: api/Candidates/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCandidate(int id, Candidate candidate)
+        public async Task<IActionResult> PutCandidate(int id, [FromBody] CandidateViewModel candidateModel)
         {
-            if (id != candidate.IdCandidate)
+            if (!EnteredRequiredData(candidateModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            if (id != candidateModel.IdCandidate || !CandidateExists(id))
             {
                 return Conflict();
             }
 
-            _context.Entry(candidate).State = EntityState.Modified;
+            var candidate = await _context.Candidates.FindAsync(id);
+
+            if (candidate == null)
+            {
+                return NotFound();
+            }
+
+            candidate.CampaignDescription = candidateModel.CampaignDescription;
+            candidate.PlaceOfResidence = candidateModel.PlaceOfResidence;
+            candidate.JobType = candidateModel.JobType;
+            candidate.PositionNumber = candidateModel.PositionNumber;
+            candidate.EducationStatus = candidateModel.EducationStatus;
+            candidate.Workplace = candidateModel.Workplace;
+            candidate.IdDistrict = candidateModel.IdDistrict;
+            candidate.IdPerson = candidateModel.IdPerson;
+            candidate.IdParty = candidateModel.IdParty;
+            candidate.IdElection = candidateModel.IdElection;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!CandidateExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/candidates
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Candidate>> PostCandidate(CandidateViewModel candidateModel)
+        public async Task<ActionResult<Candidate>> PostCandidate([FromBody] CandidateViewModel candidateModel)
         {
-            if(_context.Candidates.Any(candidate => candidate.IdPerson == candidateModel.IdPerson) &&
+            if (!EnteredRequiredData(candidateModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            if (_context.Candidates.Any(candidate => candidate.IdPerson == candidateModel.IdPerson) &&
                _context.Candidates.Any(candidate => candidate.IdElection == candidateModel.IdElection))
             {
                 return Conflict();
@@ -104,8 +122,8 @@ namespace E_Wybory.Controllers
             candidate.IdDistrict = candidateModel.IdDistrict;
             candidate.IdPerson = candidateModel.IdPerson;
             candidate.IdParty = candidateModel.IdParty;
-            candidate.IdElection = candidateModel.IdElection;  
-            
+            candidate.IdElection = candidateModel.IdElection;
+
             _context.Candidates.Add(candidate);
             await _context.SaveChangesAsync();
 
@@ -132,5 +150,17 @@ namespace E_Wybory.Controllers
         {
             return _context.Candidates.Any(e => e.IdCandidate == id);
         }
+
+        private bool EnteredRequiredData(CandidateViewModel model)
+        {
+            if (model.JobType == String.Empty || model.PlaceOfResidence == String.Empty || model.PositionNumber == 0
+                || model.IdPerson == 0 || model.IdElection == 0 || model.IdDistrict == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }
+

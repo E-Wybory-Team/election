@@ -16,7 +16,7 @@
 <div class="form-container">
     <h1>DODAWANIE KANDYDATA W WYBORACH</h1>
 
-    <EditForm Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate">
+    <EditForm FormName="CandidateAdd" Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -118,6 +118,10 @@
 
         <button type="submit" class="submit-button">DODAJ</button>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
@@ -129,6 +133,7 @@
 
     bool isAddedPerson = false;
     bool isAddedCandidate = false;
+    string errorMessage;
 
 
     protected override async Task OnInitializedAsync()
@@ -152,5 +157,7 @@
         }
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);
+
+        errorMessage = (isAddedPerson && isAddedCandidate) ? "Registration successful!" : "Registration fails";
     }
 }

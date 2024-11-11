@@ -25,5 +25,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
+        public async Task<bool> PutCandidate(CandidateViewModel candidate)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/Candidate/{candidate.IdCandidate}", candidate);
+
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
     }
 }

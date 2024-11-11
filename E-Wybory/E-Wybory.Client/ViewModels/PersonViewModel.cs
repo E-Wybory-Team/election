@@ -11,6 +11,7 @@ namespace E_Wybory.Client.ViewModels
         [Required] public string PESEL { get; set; } = String.Empty;
         [Required] public DateTime BirthDate { get; set; } = DateTime.MinValue;
 
+        [Required]
         public string DateOfBirthString
         {
             get => BirthDate != DateTime.MinValue ? BirthDate.ToString("yyyy-MM-dd") : string.Empty;
