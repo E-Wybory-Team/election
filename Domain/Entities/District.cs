@@ -26,4 +26,7 @@ public partial class District
     public virtual Province? IdProvinceNavigation { get; set; }
 
     public virtual ICollection<Voter> Voters { get; set; } = new List<Voter>();
+
+    public virtual ICollection<Vote> Votes { get; set; } = new List<Vote>();
+
 }

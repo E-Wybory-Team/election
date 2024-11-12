@@ -1,6 +1,11 @@
 ﻿@page "/login"
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@rendermode InteractiveWebAssembly
+@inject E_Wybory.Client.Services.IAuthService AuthService
+@inject AuthenticationStateProvider StateProvider
 
 
 <div class="login-form">
@@ -8,7 +13,7 @@
         <img src="images/profile-tick.png" alt="Ikona logowania" width="400" height="400" />
     </div>
 
-    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <EditForm FormName="Auth" Model="@loginModel" OnValidSubmit="HandleLogin">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -31,14 +36,46 @@
         </div>
 
     </EditForm>
+
+    @* Decided to keep for debugging purposes, later delete *@
+
+    @if (!string.IsNullOrEmpty(loginInfoMessage))
+    {
+        <p style="color: red;">@loginInfoMessage</p>
+    }
+
+
 </div>
 
 @code {
-    private LoginModel loginModel = new LoginModel();
+    private LoginViewModel loginModel = new LoginViewModel();
+    private string loginInfoMessage = string.Empty;
 
-    private void HandleLogin()
+    private async Task HandleLogin()
     {
-        Console.WriteLine($"Logowanie dla: {loginModel.Username}");
+        //Console.WriteLine($"Logowanie dla: {loginModel.Username}");
+        var token = await AuthService.Login(loginModel);
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var stateProvider = StateProvider as ElectionAuthStateProvider;
+
+            if (stateProvider != null)
+            {
+                await stateProvider.MarkUserAsAuthenticated(token);
+                loginInfoMessage = "Successfuly logged in!";
+            }
+            else
+                loginInfoMessage = "State provider error";
+
+
+
+        }
+        else
+            loginInfoMessage = "Invalid username or password!";    
+
+
+    
     }
 
     public class LoginModel

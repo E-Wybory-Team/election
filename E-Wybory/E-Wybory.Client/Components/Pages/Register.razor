@@ -1,14 +1,17 @@
 ﻿@page "/register"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
-
+@inject IAuthService AuthService
+@inject IDistrictManagementService DistrictManagementService
 
 <div class="registration-form">
     <div class="icon">
-        <img src="images/profile-add.png" alt="Ikona główna" width="200" height="200" />
+        <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
     </div>
     
-    <EditForm Model="@registrationModel" OnValidSubmit="HandleRegistration">
+    <EditForm FormName="Register" Model="@registrationModel" OnValidSubmit="HandleRegistration">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -28,15 +31,10 @@
                 <img src="images/cards.png" alt="Ikona identyfikacyjna" class="input-icon" />
                 <InputText @bind-Value="registrationModel.PESEL" placeholder="PESEL" />
             </div>
-            
             <div class="input-group">
                 <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
-                <div class="input-content">
-                    <label for="birthdate" class="form-label">DATA URODZENIA</label>
-                    <InputText @bind-Value="registrationModel.DateOfBirthString" id="birthdate" type="date" />
-                </div>
+                <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" placeholder="DATA URODZENIA" />
             </div>
-
         </div>
 
         <div class="form-row">
@@ -64,72 +62,57 @@
         <div class="form-row double-column">
             <div class="input-group">
                 <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
-                <div class="input-content">
-                <label for="district" class="form-label">WYBIERZ OBWÓD</label>
-                    <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
-                        <option value="">Wybierz Obwód</option>
-                        @foreach (var district in districts)
-                        {
-                            <option value="@district.IdDistrict">
-                                @district.DistrictName - @district.DistrictHeadquarters
-                            </option>
-                        }
-                    </select>
-                </div>
+                <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
+                    <option value="">Wybierz Obwód</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
+                </select>
             </div>
         </div>
 
         <button type="submit" class="submit-button">ZAREJESTRUJ</button>
     </EditForm>
-
+    @* same as for Login.razor *@
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private RegistrationModel registrationModel = new RegistrationModel();
+    private RegisterViewModel registrationModel = new RegisterViewModel();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    string errorMessage;
+    //= new List<DistrictViewModel>();
+    // {
+    // new DistrictViewModel { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
+    // new DistrictViewModel { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
+    // new DistrictViewModel { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
+    // };
 
-    private void HandleRegistration()
+    bool formSubmitted = false;
+
+    protected override async Task OnInitializedAsync()
     {
-        //districts = await DistrictManagementService.Districts();
+        districts = await DistrictManagementService.Districts();
     }
 
-    private List<District> districts = new List<District>
-    {
-        new District { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Warszawa", DisabledFacilities = true },
-        new District { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Kraków", DisabledFacilities = false },
-        new District { IdDistrict = 3, DistrictName = "Obwód 3", DistrictHeadquarters = "Poznań", DisabledFacilities = true }
-    };
 
-    public class RegistrationModel
+    private async Task HandleRegistration()
     {
-        [Required] public string FirstName { get; set; }
-        [Required] public string LastName { get; set; }
-        [Required] public string PESEL { get; set; }
-        [Required] public DateTime DateOfBirth { get; set; }
-        [Required, EmailAddress] public string Email { get; set; }
-        [Required] public string PhoneNumber { get; set; }
-        [Required] public string Password { get; set; }
-        [Required, Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
-        public string ConfirmPassword { get; set; }
-        [Required] public int SelectedDistrictId { get; set; }
+        //Maybe it is the better plan to make it return HttpResponse with more verbose payload
+        formSubmitted = await AuthService.Register(registrationModel);
 
-        public string DateOfBirthString
-        {
-            get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("Data Urodzenia") : string.Empty;
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    DateOfBirth = DateTime.Parse(value);
-                }
-            }
-        }
+        errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
+        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
     }
 
-    public class District
-    {
-        [Required] public int IdDistrict { get; set; }
-        [Required] public string DistrictName { get; set; }
-        [Required] public bool DisabledFacilities { get; set; }
-        [Required] public string DistrictHeadquarters { get; set; }
-    }
+    
+                                               
+
+    
 }

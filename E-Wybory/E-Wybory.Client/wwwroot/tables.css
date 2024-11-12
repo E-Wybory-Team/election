@@ -67,8 +67,8 @@
     }
 
         .candidate-table td .icon {
-            display: inline-block; 
-            margin: 0; 
+            display: inline-block;
+            margin: 0;
         }
 
 .modal-overlay {
@@ -125,9 +125,9 @@
 
 .filter-group-4columns {
     display: flex;
-    width: 24%; 
+    width: 24%;
     flex-direction: column;
-    margin-right: 10px; 
+    margin-right: 10px;
 }
 
     .filter-group-4columns select {
@@ -135,7 +135,7 @@
         border-radius: 5px;
         border: 1px solid #ccc;
         font-size: 16px;
-        width: 100%; 
+        width: 100%;
     }
 
     .filter-group-4columns label {
@@ -147,6 +147,3 @@
 .icon-accessibility {
     filter: invert(100%) brightness(200%);
 }
-
-
-

@@ -11,6 +11,8 @@ public partial class ElectionVoter
 
     public int IdVoter { get; set; }
 
+    public DateTime VoteTime { get; set; }
+
     public virtual Election IdElectionNavigation { get; set; } = null!;
 
     public virtual Voter IdVoterNavigation { get; set; } = null!;
