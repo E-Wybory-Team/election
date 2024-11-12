@@ -70,7 +70,7 @@ namespace E_Wybory.Services
 
 
 
-        public async Task<ClaimsIdentity> GenerateClaims(string username, ElectionDbContext context, int idUserType = 0)
+        public async Task<ClaimsIdentity> GenerateClaims(string username, ElectionDbContext context, int idUserType = -1)
         {
             var electionUser = await context.ElectionUsers.Where(e => e.Email.Equals(username)).FirstOrDefaultAsync();
 
@@ -91,17 +91,20 @@ namespace E_Wybory.Services
             {
                 claims.Add(new Claim("Roles", userTypeSet.IdUserTypeNavigation.IdUserTypesGroupNavigation.UserTypesGroupName));
                 claims.Add(new Claim("IdUserType", userTypeSet.IdUserType.ToString()));
+            } else
+            {
+                claims.Add(new Claim("IdUserType", "0"));
             }
 
             return new ClaimsIdentity(claims);
         }
 
-        public async Task<UserTypeSet?> GetRole(int idElectionUser, ElectionDbContext context, int idUserType = 0)
+        public async Task<UserTypeSet?> GetRole(int idElectionUser, ElectionDbContext context, int idUserType = -1)
         {
             var userTypeSet = await context.UserTypeSets
                 .Include(u => u.IdElectionUserNavigation)
                 .Include(u => u.IdUserTypeNavigation.IdUserTypesGroupNavigation)
-                .Where(u => u.IdElectionUser == idElectionUser && (idUserType <= 0 || 
+                .Where(u => u.IdElectionUser == idElectionUser && (idUserType < 0 || 
                         u.IdUserTypeNavigation.IdUserType == idUserType))
                 .OrderBy(u => u.IdUserTypeSet) //How to get default user role? "Wyborca" by deafult?
                 .FirstOrDefaultAsync();

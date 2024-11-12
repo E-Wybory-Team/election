@@ -86,14 +86,11 @@ namespace E_Wybory.Controllers
         [Authorize]
         public async Task<IActionResult> RenewTokenClaims([FromBody] UserInfoViewModel userInfo)
         {
-            int currentUserTypeId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type.Equals("IdUserType"))?.Value);
+            string? currentUserTypeId = User.Claims.FirstOrDefault(c => c.Type.Equals("IdUserType"))?.Value;
             
-            if(currentUserTypeId == 0 || currentUserTypeId == userInfo.CurrentUserType.IdUserType)
+            if(string.IsNullOrEmpty(currentUserTypeId) || Convert.ToInt32(currentUserTypeId) == userInfo.CurrentUserType.IdUserType)
             {
-                var oldToken = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-                return Ok(oldToken);
-
+                return Ok();
             }
 
             string? username = User.Claims.FirstOrDefault(c => c.Type.Equals("name"))?.Value;
