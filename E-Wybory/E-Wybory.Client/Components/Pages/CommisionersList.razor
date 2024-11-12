@@ -1,16 +1,14 @@
-﻿@page "/voterslist"
-@using System.ComponentModel.DataAnnotations
-
+﻿@page "/commissionerslist"
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
 <div class="header-container">
-    <h2 class="title">SPIS WYBORCÓW</h2>
-    <a href="/addvoter" class="add-button">Dodaj Wyborcę</a>
+    <h2 class="title">SPIS KOMISJI</h2>
+    <a href="/addcommissioner" class="add-button">Dodaj członka</a>
 </div>
 
 <div class="filters">
-    <div class="filter-group">
+    <div class="filter-group-4columns">
         <label>Województwo</label>
         <select @onchange="(e) => FilterTable()">
             <option value="">Wybierz województwo</option>
@@ -20,7 +18,7 @@
             }
         </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group-4columns">
         <label>Powiat</label>
         <select @onchange="(e) => FilterTable()">
             <option value="">Wybierz powiat</option>
@@ -30,7 +28,7 @@
             }
         </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group-4columns">
         <label>Gmina</label>
         <select @onchange="(e) => FilterTable()">
             <option value="">Wybierz gminę</option>
@@ -40,7 +38,7 @@
             }
         </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group-4columns">
         <label>Numer obwodu</label>
         <select @onchange="(e) => FilterTable()">
             <option value="">Wybierz numer obwodu</option>
@@ -49,10 +47,6 @@
                 <option value="@districtNumber">@districtNumber</option>
             }
         </select>
-    </div>
-    <div class="filter-group">
-        <label>Szukaj</label>
-        <input type="text" @bind="searchQuery" @bind:event="oninput" placeholder="Wpisz wyszukiwaną frazę" />
     </div>
 </div>
 
@@ -65,6 +59,7 @@
             <th>PESEL</th>
             <th>Telefon</th>
             <th>Adres email</th>
+            <th>Stopień</th>
             <th>Opcje konfiguracji</th>
         </tr>
     </thead>
@@ -72,20 +67,21 @@
         @{
             int index = 1;
         }
-        @foreach (var voter in filteredVoters)
+        @foreach (var commissioner in filteredCommissioners)
         {
             <tr>
                 <td>@index</td>
-                <td>@voter.Person.Name</td>
-                <td>@voter.Person.Surname</td>
-                <td>@voter.Person.PESEL</td>
-                <td>@voter.PhoneNumber</td>
-                <td>@voter.Email</td>
+                <td>@commissioner.Person.Name</td>
+                <td>@commissioner.Person.Surname</td>
+                <td>@commissioner.Person.PESEL</td>
+                <td>@commissioner.PhoneNumber</td>
+                <td>@commissioner.Email</td>
+                <td>@commissioner.Rank</td>
                 <td>
-                    <a href="/modifyvoter/@voter.IdElectionUser">
+                    <a href="/commissionersmodify/@commissioner.IdCommissioner">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/voterdelete/@voter.IdElectionUser">
+                    <a href="/commissionersdelete/@commissioner.IdCommissioner">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
@@ -96,59 +92,42 @@
 </table>
 
 @code {
-    private ElectionUser? selectedVoter;
-    private string searchQuery = string.Empty;
-
-    // Mockowane dane wyborców
     private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
     private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
     private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
     private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
-    private List<ElectionUser> voters = new()
+
+    private List<Commissioner> commissioners = new()
     {
-        new ElectionUser {IdElectionUser = 1, Email = "uniquemail@gmail.com", PhoneNumber = "123 456 789", Person = new People {IdPerson = 1, Name = "Adam", Surname = "Kowalski", PESEL = 85293128490, Date = DateOnly.Parse("1985-01-01")}},
-        new ElectionUser {IdElectionUser = 2, Email = "newuniquemail@gmail.com", PhoneNumber = "987 654 312", Person = new People {IdPerson = 2, Name = "Katarzyna", Surname = "Elowska", PESEL = 92731028594, Date =  DateOnly.Parse("1992-01-01")}}
+        new Commissioner { IdCommissioner = 1, Email = "jan.komisarz@gmail.com", PhoneNumber = "+48 9827319823", Rank = "Przewodniczący", Person = new Person { Name = "Jan", Surname = "Kowalski", PESEL = 98273198273 }},
     };
 
-    private List<ElectionUser> filteredVoters = new();
+    private List<Commissioner> filteredCommissioners = new();
 
     private void FilterTable()
     {
-        if (string.IsNullOrWhiteSpace(searchQuery))
-        {
-            filteredVoters = voters;
-        }
-        else
-        {
-            string query = searchQuery.ToLower();
-            filteredVoters = voters.Where(voter =>
-                voter.Person.Name.ToLower().Contains(query) ||
-                voter.Person.Surname.ToLower().Contains(query) ||
-                voter.Person.PESEL.ToString().Contains(query) ||
-                voter.PhoneNumber.ToLower().Contains(query) ||
-                voter.Email.ToLower().Contains(query)).ToList();
-        }
+        // Mockowana logika filtrowania
+        filteredCommissioners = commissioners;
     }
 
     protected override void OnInitialized()
     {
-        filteredVoters = voters;
+        filteredCommissioners = commissioners;
     }
 
-    public class ElectionUser
+    public class Commissioner
     {
-        public int IdElectionUser { get; set; }
+        public int IdCommissioner { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        public People Person { get; set; }
+        public string Rank { get; set; }
+        public Person Person { get; set; }
     }
 
-    public class People
+    public class Person
     {
-        public int IdPerson { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
         public long PESEL { get; set; }
-        public DateOnly Date { get; set; }
     }
 }

@@ -17,7 +17,7 @@
     box-sizing: border-box;
 }
 
-    
+
     .form-container h1 {
         text-align: center;
         font-size: 40px;
@@ -37,7 +37,7 @@ form {
     /*background-color: #fff;*/
     padding: 20px;
     border-radius: 10px;
-   /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
+    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
 }
 
 
@@ -51,10 +51,31 @@ form {
     justify-content: center;
 }
 
+.form-group-smaller {
+    width: 100%;
+    margin-bottom: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 20px;
+}
+
+    .form-group-smaller label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 5px;
+        font-weight: normal;
+    }
+
+    .form-group-smaller .form-input {
+        width: 100%;
+        box-sizing: border-box;
+    }
 
 
 
-.submit-button {
+
+.submit-button, .cancel-button {
     width: 100%;
     padding: 15px;
     font-size: 1.2rem;
@@ -64,14 +85,40 @@ form {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-decoration: none;
+    text-align: center;
     /*transition: background-color 0.3s ease;*/
 }
 
-    button:hover {
+    .submit-button:hover {
         background-color: #164f7c;
+        color: #ffffff;
     }
 
-/* Styl dla większych formularzy z polami w dwóch kolumnach */
+button:hover {
+    background-color: #164f7c;
+}
+
+.cancel-button {
+    background-color: #fff;
+    color: #e60000;
+    border: none;
+}
+
+    .cancel-button:hover {
+        background-color: #bbb;
+    }
+
+.button-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+}
+
 .form-row {
     display: flex;
     justify-content: space-between;
@@ -80,12 +127,9 @@ form {
 }
 
 .form-group-half {
-    width: 48%; /* Połowa szerokości dla dwóch kolumn */
+    width: 48%;
 }
 
-
-
-/* Styl dla pól tekstowych, selectów i inputów liczbowych */
 input, select {
     width: 100%;
     padding: 10px;
@@ -94,3 +138,95 @@ input, select {
     font-size: 1rem;
     box-sizing: border-box;
 }
+
+.status-alert {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.status-alert-blue {
+    background-color: white;
+    color: #1E5899;
+}
+
+.status-alert-red {
+    background-color: white;
+    color: #e60000;
+}
+
+.status-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.status-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.red-submit-button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #C02121;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+    .red-submit-button:hover {
+        background-color: #C02121;
+        color: #ffffff;
+    }
+
+}
+
+form .checkbox-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.vote-form input {
+    width: 10%
+}
+
+.checkbox-label {
+    margin-left: 10px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.add-button {
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #1E5899;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .add-button:hover {
+        background-color: #164f7c;
+        transform: scale(0.98);
+        color: white;
+    }

@@ -1,0 +1,47 @@
+﻿@page "/add-election"
+@using System.ComponentModel.DataAnnotations
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>REJESTROWANIE WYBORÓW</h1>
+    <EditForm Model="@electionModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="rodzaj">RODZAJ</label>
+            <InputSelect @bind-Value="electionModel.Rodzaj" id="rodzaj" class="form-select">
+                <option value="" disabled selected>Wybierz rodzaj wyborów</option>
+                <option value="prezydenckie">Wybory prezydenckie</option>
+                <option value="parlamentarne">Wybory parlamentarne</option>
+                <option value="europejskie">Wybory do parlamentu europejskiego</option>
+                <option value="samorządowe">Wybory samorządowe</option>
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label for="dzien-wyborow">DZIEŃ WYBORÓW</label>
+            <InputDate @bind-Value="electionModel.DzienWyborow" id="dzien-wyborow" class="form-input" />
+        </div>
+
+        <button type="submit" class="submit-button">ZAREJESTRUJ</button>
+    </EditForm>
+</div>
+
+@code {
+    private ElectionModel electionModel = new ElectionModel();
+
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine($"Rodzaj wyborów: {electionModel.Rodzaj}, Dzień wyborów: {electionModel.DzienWyborow}");
+    }
+
+    public class ElectionModel
+    {
+        [Required(ErrorMessage = "Rodzaj wyborów jest wymagany.")]
+        public string Rodzaj { get; set; }
+
+        [Required(ErrorMessage = "Dzień wyborów jest wymagany.")]
+        public DateTime DzienWyborow { get; set; }
+    }
+}

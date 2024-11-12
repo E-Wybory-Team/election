@@ -1,0 +1,38 @@
+﻿@page "/cancelvoter"
+@inject NavigationManager NavManager
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>WYPISYWANIE WYBORCY</h1>
+
+    <form>
+        <div class="form-group">
+            <label for="district">OBWÓD GŁOSOWANIA</label>
+            <input type="text" id="district" value="OKW 1 Kędzierzyn Koźle" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <input type="text" id="pesel" @bind="pesel" placeholder="Nr Pesel wyborcy" />
+        </div>
+
+        <a href="/submitcancelvoter" class="submit-button">DALEJ</a>
+    </form>
+</div>
+
+@code {
+    private string pesel;
+
+    // tutaj metoda do przekierowania razem z peselem musi być zaimplementowana
+    private void GoToSubmitCancelVoter()
+    {
+        if (!string.IsNullOrWhiteSpace(pesel))
+        {
+            NavManager.NavigateTo("/submitcancelvoter");
+        }
+        else
+        {
+            Console.WriteLine("Brak pesel.");
+        }
+    }
+}

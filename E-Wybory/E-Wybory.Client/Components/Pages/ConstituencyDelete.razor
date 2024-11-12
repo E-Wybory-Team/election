@@ -1,0 +1,79 @@
+﻿@page "/deleteconstituency/{constituencyId:int}"
+@inject NavigationManager NavigationManager
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>USUWANIE OKRĘGU WYBORCZEGO</h1>
+    <EditForm Model="@constituencyModel" OnValidSubmit="HandleDeleteSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group-smaller">
+            <label for="number">NUMER OKRĘGU</label>
+            <InputText @bind-Value="constituencyModel.Number" id="number" class="form-input" readonly />
+        </div>
+        <div class="form-group-smaller">
+            <label for="scope">ZASIĘG (POWIATY)</label>
+            <InputText @bind-Value="constituencyModel.Scope" id="scope" class="form-input" readonly />
+        </div>
+
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ</button>
+            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int constituencyId { get; set; }
+
+    private ConstituencyModel constituencyModel = new ConstituencyModel();
+
+    protected override void OnInitialized()
+    {
+        var constituency = GetConstituencyById(constituencyId);
+        if (constituency != null)
+        {
+            constituencyModel = new ConstituencyModel
+                {
+                    Number = constituency.Number.ToString(),
+                    Scope = constituency.Scope
+                };
+        }
+    }
+
+    private Constituency? GetConstituencyById(int id)
+    {
+        var constituencies = new List<Constituency>
+        {
+            new Constituency { Id = 1, Number = 27, Scope = "Powiat 1, Powiat 2" },
+            new Constituency { Id = 2, Number = 41, Scope = "Powiat 3, Powiat 4" }
+        };
+        return constituencies.FirstOrDefault(c => c.Id == id);
+    }
+
+    private void HandleDeleteSubmit()
+    {
+        Console.WriteLine($"Usunięto okręg o numerze: {constituencyModel.Number}");
+        NavigationManager.NavigateTo("/constituencylist");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/constituencylist");
+    }
+
+    public class ConstituencyModel
+    {
+        public string Number { get; set; }
+        public string Scope { get; set; }
+    }
+
+    public class Constituency
+    {
+        public int Id { get; set; }
+        public int Number { get; set; }
+        public string Scope { get; set; }
+    }
+}

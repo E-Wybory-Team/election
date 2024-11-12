@@ -1,0 +1,105 @@
+﻿@page "/deletedistrict/{districtId:int}"
+@inject NavigationManager NavigationManager
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>USUWANIE OBWODU WYBORCZEGO</h1>
+    <EditForm Model="@districtModel" OnValidSubmit="HandleDeleteSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group-smaller">
+            <label>NR OBWODU</label>
+            <InputText @bind-Value="districtModel.DistrictNumber" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>SIEDZIBA</label>
+            <InputText @bind-Value="districtModel.Seat" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>WOJEWÓDZTWO</label>
+            <InputText @bind-Value="districtModel.Voivodeship" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>POWIAT</label>
+            <InputText @bind-Value="districtModel.County" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>GMINA</label>
+            <InputText @bind-Value="districtModel.Province" readonly class="form-input" />
+        </div>
+
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ</button>
+            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int districtId { get; set; }
+
+    private DistrictModel districtModel = new DistrictModel();
+
+    protected override void OnInitialized()
+    {
+        var district = GetDistrictById(districtId);
+        if (district != null)
+        {
+            districtModel = new DistrictModel
+                {
+                    DistrictNumber = district.DistrictNumber,
+                    Seat = district.Seat,
+                    Voivodeship = district.Voivodeship,
+                    County = district.County,
+                    Province = district.Province
+                };
+        }
+    }
+
+    private District? GetDistrictById(int id)
+    {
+        var districts = new List<District>
+        {
+            new District { Id = 1, DistrictNumber = "1", Seat = "Szkoła Podstawowa, ul. Szkolna 5", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Kędzierzyn-Koźle" },
+            new District { Id = 2, DistrictNumber = "2", Seat = "Szkoła Podstawowa, ul. Kościelna 1", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Bierawa" }
+        };
+        return districts.FirstOrDefault(d => d.Id == id);
+    }
+
+    private void HandleDeleteSubmit()
+    {
+        Console.WriteLine($"Usunięto obwód o numerze: {districtModel.DistrictNumber}");
+        NavigationManager.NavigateTo("/districtlist");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/districtlist");
+    }
+
+    public class DistrictModel
+    {
+        public string DistrictNumber { get; set; }
+        public string Seat { get; set; }
+        public string Voivodeship { get; set; }
+        public string County { get; set; }
+        public string Province { get; set; }
+    }
+
+    public class District
+    {
+        public int Id { get; set; }
+        public string DistrictNumber { get; set; }
+        public string Seat { get; set; }
+        public string Accessibility { get; set; }
+        public string Voivodeship { get; set; }
+        public string County { get; set; }
+        public string Province { get; set; }
+    }
+}

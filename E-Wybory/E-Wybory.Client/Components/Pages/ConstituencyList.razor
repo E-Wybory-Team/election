@@ -1,0 +1,66 @@
+﻿@page "/constituencylist"
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">KONFIGURACJA OKRĘGÓW WYBORCZYCH</h2>
+    <button class="add-button" @onclick="AddConstituency">Dodaj okręg</button>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Numer okręgu</th>
+            <th>Zasięg (powiaty)</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var constituency in constituencies)
+        {
+            <tr>
+                <td>@constituency.Number</td>
+                <td>@constituency.Scope</td>
+                <td>
+                    <a href="/modifyconstituency/@constituency.Id">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/deleteconstituency/@constituency.Id">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Constituency> constituencies = new()
+    {
+        new Constituency
+        {
+            Id = 1,
+            Number = 27,
+            Scope = "powiaty: brzeski, głubczycki, kędzierzyńsko-kozielski, kluczborski, krapkowicki, namysłowski, nyski, oleski, opolski, prudnicki, strzelecki; miasto na prawach powiatu: Opole"
+        },
+        new Constituency
+        {
+            Id = 2,
+            Number = 41,
+            Scope = "powiaty: ełcki, giżycki, gołdapski, kętrzyński, mrągowski, nidzicki, olecki, olsztyński, piski, szczycieński, węgorzewski; miasto na prawach powiatu: Olsztyn"
+        }
+    };
+
+    private void AddConstituency()
+    {
+        // Logika dodawania nowego okręgu
+        Console.WriteLine("Dodaj okręg wyborczy");
+    }
+
+    public class Constituency
+    {
+        public int Id { get; set; }
+        public int Number { get; set; }
+        public string Scope { get; set; }
+    }
+}

@@ -1,0 +1,37 @@
+﻿@page "/districtstats"
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>STATYSTYKI GŁOSOWANIA DLA OBWODU</h1>
+
+    <form>
+        <div class="form-group">
+            <label for="district">OBWÓD GŁOSOWANIA</label>
+            <input type="text" id="district" value="@districtName" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="eligibleCount">LICZBA UPRAWNIONYCH DO GŁOSOWANIA</label>
+            <input type="text" id="eligibleCount" value="@eligibleCount" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="noonTurnout">FREKWENCJA NA GODZINĘ 12:00</label>
+            <input type="text" id="noonTurnout" value="@noonTurnout" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="eveningTurnout">FREKWENCJA NA GODZINĘ 17:00</label>
+            <input type="text" id="eveningTurnout" value="@eveningTurnout" readonly />
+        </div>
+
+        <a href="/detailed-results" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
+    </form>
+</div>
+
+@code {
+    private string districtName = "OKW 1 Kędzierzyn Koźle";
+    private string eligibleCount = "150";
+    private string noonTurnout = "23,73 %";
+    private string eveningTurnout = "52,26 %";
+}

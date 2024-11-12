@@ -1,0 +1,22 @@
+﻿@page "/checkvotestatus"
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
+
+    <form>
+        <div class="form-group">
+            <label for="district">OBWÓD GŁOSOWANIA</label>
+            <input type="text" id="district" value="OKW 1 Kędzierzyn Koźle" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <input type="text" id="pesel" placeholder="Nr Pesel wyborcy" />
+        </div>
+
+        <a href="/checkstatusresult">
+            <button type="button" class="submit-button">SPRAWDŹ STATUS</button>
+        </a>
+    </form>
+</div>
