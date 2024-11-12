@@ -8,5 +8,7 @@ namespace E_Wybory.Client.Services
         Task<bool> Register(RegisterViewModel register);
 
         Task<bool> Logout();
+
+        Task<bool> RenewTokenClaims(UserInfoViewModel userInfo);
     }
 }

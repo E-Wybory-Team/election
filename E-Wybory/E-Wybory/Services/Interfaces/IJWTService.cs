@@ -15,5 +15,7 @@ namespace E_Wybory.Services
 
         Task<string> RenewToken(JsonWebToken tokenToRenew);
 
+        Task<string> RenewTokenClaims(string username, ElectionDbContext context, int idUserType);
+
     }
 }

@@ -144,5 +144,10 @@ namespace E_Wybory.Services
 
             return null;
         }
+
+        public async Task<string> RenewTokenClaims(string username, ElectionDbContext context, int idUserType)
+        {
+            return await CreateToken(rsaKey, GenerateClaims(username, context, idUserType));
+        }
     }
 }

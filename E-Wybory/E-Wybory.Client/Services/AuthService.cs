@@ -16,19 +16,7 @@ namespace E_Wybory.Client.Services
         {
             var response =  await _httpClient.PostAsJsonAsync("/api/auth/login", login);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var token = await response.Content.ReadAsStringAsync();
-
-                if(_stateProvider is not null && !string.IsNullOrEmpty(token))
-                {
-                   await _stateProvider.MarkUserAsAuthenticated(token);
-                }
-
-                return true;
-            }
-
-            return false;
+           return await AssignTokenFromRespone(response);
         }
 
         public async Task<bool> Register(RegisterViewModel register)
@@ -50,6 +38,33 @@ namespace E_Wybory.Client.Services
             }
 
             return false;
+        }
+
+        private async Task<bool> AssignTokenFromRespone(HttpResponseMessage response)
+        {
+            if (response is null) return false;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var token = await response.Content.ReadAsStringAsync();
+
+                if (_stateProvider is not null && !string.IsNullOrEmpty(token))
+                {
+                    await _stateProvider.MarkUserAsAuthenticated(token);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<bool> RenewTokenClaims(UserInfoViewModel userInfo)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/renew-token", userInfo);
+
+            return await AssignTokenFromRespone(response);
+            
         }
     }
 }

@@ -60,7 +60,7 @@ namespace E_Wybory.Controllers
                 || request.PhoneNumber == String.Empty || request.Password == String.Empty
                 || request.SelectedDistrictId == 0)
 
-                return BadRequest("Not entered data to all required fields"); 
+                return BadRequest("Not entered data to all required fields");
 
             bool registerResult = await RegisterUser(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
             request.PhoneNumber, request.Password, request.SelectedDistrictId);
@@ -78,7 +78,34 @@ namespace E_Wybory.Controllers
             var authorizationHeader = Request.Headers["Authorization"].ToString();
 
             return string.IsNullOrEmpty(authorizationHeader) ? Ok() : BadRequest("Auth token was not cleared properly");
+
+        }
+
+        [HttpPost]
+        [Route("renew-token")]
+        [Authorize]
+        public async Task<IActionResult> RenewTokenClaims([FromBody] UserInfoViewModel userInfo)
+        {
+            int currentUserTypeId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type.Equals("IdUserType"))?.Value);
             
+            if(currentUserTypeId == 0 || currentUserTypeId == userInfo.CurrentUserType.IdUserType)
+            {
+                var oldToken = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                return Ok(oldToken);
+
+            }
+
+            string? username = User.Claims.FirstOrDefault(c => c.Type.Equals("name"))?.Value;
+            //int idElectionUser = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type.Equals("IdElectionUser"))?.Value);
+
+            if (username is null || !username.Equals(userInfo.Username)) return Unauthorized("Invalid token structure with model compatiblity");
+            //if(idElectionUser == 0 || idElectionUser != userInfo.)
+
+            var newToken = await _tokenService.RenewTokenClaims(username, _context, userInfo.CurrentUserType.IdUserType);
+
+            return  Ok(newToken);
+
         }
 
 
