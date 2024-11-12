@@ -12,11 +12,11 @@
 
     <EditForm FormName="ConstituencyAdd" Model="constituencyModel" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <div class="form-group">
             <label for="constituencyName">NAZWA OKRĘGU</label>
             <InputText id="constituencyName" @bind-Value="constituencyModel.constituencyName" placeholder="Nazwa okręgu wyborczego" />
+            <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
         </div>
 
         <button type="submit" class="submit-button">DODAJ</button>
@@ -36,7 +36,7 @@
     private async void HandleSubmit()
     {
         isAddedConstituency = await ConstituencyManagementService.AddConstituency(constituencyModel);
-        errorMessage = isAddedConstituency ? "Registration successful!" : "Registration fails";
+        errorMessage = isAddedConstituency ? "Adding constituency successful!" : "Adding constituency fails";
     }
 
 

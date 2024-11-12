@@ -16,11 +16,11 @@
 
     <EditForm Model="@districtModel" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <div class="form-group">
             <label for="districtName">NAZWA OBWODU</label>
             <InputText @bind-Value="districtModel.DistrictName" id="districtName" placeholder="Nazwa obwodu wyborczego" />
+            <ValidationMessage For="@(() => districtModel.DistrictName)" />
         </div>
 
         <div>
@@ -40,6 +40,7 @@
         <div class="form-group">
             <label for="districtHead">SIEDZIBA OBWODU</label>
             <InputText @bind-Value="districtModel.DistrictHeadquarters" id="districtHead" placeholder="Siedziba obwodu wyborczego" />
+            <ValidationMessage For="@(() => districtModel.DistrictHeadquarters)" />
         </div>
 
         <div>
@@ -97,6 +98,7 @@
                     </option>
                 }
             </select>
+            <ValidationMessage For="@(() => districtModel.IdConstituency)" />
         </div>
 
         <button type="submit" class="submit-button">DODAJ</button>

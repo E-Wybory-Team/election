@@ -31,16 +31,19 @@
                     </option>
                 }
             </InputSelect>
+            <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdCandidate)" />
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="firstName">IMIĘ</label>
                 <InputText id="firstName" @bind-Value="candidateModel.personViewModel.Name" placeholder="Wprowadź imię kandydata" />
+                <ValidationMessage For="@(() => candidateModel.personViewModel.Name)" />
             </div>
             <div class="form-group">
                 <label for="lastName">NAZWISKO</label>
                 <InputText id="lastName" @bind-Value="candidateModel.personViewModel.Surname" placeholder="Wprowadź nazwisko kandydata" />
+                <ValidationMessage For="@(() => candidateModel.personViewModel.Surname)" />
             </div>
         </div>
 
@@ -48,10 +51,12 @@
             <div class="form-group">
                 <label for="pesel">PESEL</label>
                 <InputText id="pesel" @bind-Value="candidateModel.personViewModel.PESEL" placeholder="Wprowadź nr PESEL kandydata" />
+                <ValidationMessage For="@(() => candidateModel.personViewModel.PESEL)" />
             </div>
             <div class="form-group">
                 <label for="dateBirth">DATA URODZENIA</label>
                 <InputText id="dateBirth" @bind-Value="candidateModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź zawód kandydata" />
+                <ValidationMessage For="@(() => candidateModel.personViewModel.DateOfBirthString)" />
             </div>
         </div>
 
@@ -59,6 +64,7 @@
             <div class="form-group">
                 <label for="occupation">ZAWÓD</label>
                 <InputText id="occupation" @bind-Value="candidateModel.candidateViewModel.JobType" placeholder="Wprowadź zawód kandydata" />
+                <ValidationMessage For="@(() => candidateModel.candidateViewModel.JobType)" />
             </div>
             <div class="form-group">
                 <label for="workplace">MIEJSCE PRACY</label>
@@ -71,6 +77,7 @@
             <div class="form-group">
                 <label for="listNumber">NUMER NA LIŚCIE</label>
                 <InputNumber id="listNumber" @bind-Value="candidateModel.candidateViewModel.PositionNumber" placeholder="Wprowadź numer na liście" />
+                <ValidationMessage For="@(() => candidateModel.candidateViewModel.PositionNumber)" />
             </div>
         </div>
 
@@ -107,6 +114,7 @@
                         </option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdElection)" />
             </div>
         </div>
 
@@ -114,6 +122,7 @@
             <div class="form-group">
                 <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
                 <InputText id="placeOfResidence" @bind-Value="candidateModel.candidateViewModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
+                <ValidationMessage For="@(() => candidateModel.candidateViewModel.PlaceOfResidence)" />
             </div>
             <div class="form-group">
                 <label for="districtNumber">OBWÓD WYBORCZY</label>
@@ -126,6 +135,7 @@
                         </option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdDistrict)" />
             </div>
         </div>
 
@@ -186,7 +196,7 @@
             formSubmitted = await PersonManagementService.PutPerson(candidateModel.personViewModel);
             formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
 
-            errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
+            errorMessage = formSubmitted ? "Candidate modified successful!" : "Candidate modification fails";
         }
     }
 
