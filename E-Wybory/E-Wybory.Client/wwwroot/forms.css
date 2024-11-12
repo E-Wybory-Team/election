@@ -75,7 +75,7 @@ form {
 
 
 
-.submit-button {
+.submit-button, .cancel-button {
     width: 100%;
     padding: 15px;
     font-size: 1.2rem;
@@ -99,6 +99,24 @@ form {
     button:hover {
         background-color: #164f7c;
     }
+
+.cancel-button {
+    background-color: #fff;
+    color: #e60000;
+    border: none;
+}
+    .cancel-button:hover {
+        background-color: #bbb;
+    }
+
+.button-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+}
 
 .form-row {
     display: flex;

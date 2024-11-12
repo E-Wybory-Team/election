@@ -1,0 +1,72 @@
+﻿@page "/change-voter-district"
+@using System.ComponentModel.DataAnnotations
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>ZMIANA OBWODU WYBORCY</h1>
+    <EditForm Model="@voterModel" OnValidSubmit="HandleAddSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <InputText @bind-Value="voterModel.Pesel" id="pesel" class="form-input" placeholder="Nr Pesel wyborcy" />
+        </div>
+        <div class="form-group">
+            <label for="wojewodztwo">WOJEWÓDZTWO</label>
+            <InputSelect @bind-Value="voterModel.Wojewodztwo" id="wojewodztwo" class="form-select">
+                <option value="" disabled selected>Wybierz województwo</option>
+            </InputSelect>
+        </div>
+        <div class="form-group">
+            <label for="powiat">POWIAT</label>
+            <InputSelect @bind-Value="voterModel.Powiat" id="powiat" class="form-select">
+                <option value="" disabled selected>Wybierz powiat</option>
+            </InputSelect>
+        </div>
+        <div class="form-group">
+            <label for="gmina">GMINA</label>
+            <InputSelect @bind-Value="voterModel.Gmina" id="gmina" class="form-select">
+                <option value="" disabled selected>Wybierz gminę</option>
+            </InputSelect>
+        </div>
+        <div class="form-group">
+            <label for="numer-obwodu">NUMER OBWODU</label>
+            <InputSelect @bind-Value="voterModel.NumerObwodu" id="numer-obwodu" class="form-select">
+                <option value="" disabled selected>Wybierz numer obwodu</option>
+            </InputSelect>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="cancel-button">ANULUJ</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private VoterModel voterModel = new VoterModel();
+
+    private void HandleAddSubmit()
+    {
+        Console.WriteLine($"Dodano wyborcę z PESEL: {voterModel.Pesel}");
+    }
+
+    public class VoterModel
+    {
+        [Required(ErrorMessage = "PESEL jest wymagany.")]
+        public string Pesel { get; set; }
+
+        [Required(ErrorMessage = "Województwo jest wymagane.")]
+        public string Wojewodztwo { get; set; }
+
+        [Required(ErrorMessage = "Powiat jest wymagany.")]
+        public string Powiat { get; set; }
+
+        [Required(ErrorMessage = "Gmina jest wymagana.")]
+        public string Gmina { get; set; }
+
+        [Required(ErrorMessage = "Numer obwodu jest wymagany.")]
+        public string NumerObwodu { get; set; }
+    }
+}
