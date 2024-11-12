@@ -6,5 +6,8 @@ namespace E_Wybory.Client.Services
     {
         Task<List<ConstituencyViewModel>> Constituences();
         Task<bool> AddConstituency(ConstituencyViewModel constituencyModel);
+        Task<bool> ConstituencyExists(int constituencyId);
+        Task<ConstituencyViewModel> GetConstituencyById(int id);
+        Task<bool> PutConstituency(ConstituencyViewModel constituencyModel);
     }
 }

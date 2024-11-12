@@ -1,21 +1,20 @@
 ﻿@page "/modifyconstituency/{constituencyId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
 @inject NavigationManager NavigationManager
+@inject IConstituencyManagementService ConstituencyManagementService
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>MODYFIKOWANIE OKRĘGU WYBORCZEGO</h1>
     <EditForm Model="@constituencyModel" OnValidSubmit="HandleModifySubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <div class="form-group-smaller">
-            <label for="number">NUMER OKRĘGU</label>
-            <InputText @bind-Value="constituencyModel.Number" id="number" class="form-input" />
-        </div>
-        <div class="form-group-smaller">
-            <label for="scope">ZASIĘG (POWIATY)</label>
-            <InputText @bind-Value="constituencyModel.Scope" id="scope" class="form-input" />
+            <label for="name">NAZWA OKRĘGU</label>
+            <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" />
+            <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
         </div>
 
         <div class="form-row">
@@ -23,40 +22,38 @@
             <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
     [Parameter]
     public int constituencyId { get; set; }
 
-    private ConstituencyModel constituencyModel = new ConstituencyModel();
+    bool isModifiedConstituency = false;
+    string errorMessage;
 
-    protected override void OnInitialized()
+    private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();
+
+    protected override async Task OnInitializedAsync()
     {
-        var constituency = GetConstituencyById(constituencyId);
-        if (constituency != null)
+        if (! await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
-            constituencyModel = new ConstituencyModel
-                {
-                    Number = constituency.Number.ToString(),
-                    Scope = constituency.Scope
-                };
+            errorMessage = "Constituency not found";
+            Cancel();
+        }
+        else
+        {
+            constituencyModel.idConstituency = constituencyId;
         }
     }
 
-    private Constituency? GetConstituencyById(int id)
+    private async void HandleModifySubmit()
     {
-        var constituencies = new List<Constituency>
-        {
-            new Constituency { Id = 1, Number = 27, Scope = "powiaty: brzeski, głubczycki" },
-            new Constituency { Id = 2, Number = 41, Scope = "powiaty: ełcki, giżycki" }
-        };
-        return constituencies.FirstOrDefault(c => c.Id == id);
-    }
-
-    private void HandleModifySubmit()
-    {
-        Console.WriteLine($"Zapisano zmiany w okręgu o numerze: {constituencyModel.Number}");
+        isModifiedConstituency = await ConstituencyManagementService.PutConstituency(constituencyModel);
+        errorMessage = isModifiedConstituency ? "Constituency modified successful!" : "Constituency modified fails";
         NavigationManager.NavigateTo("/constituencylist");
     }
 
@@ -65,19 +62,4 @@
         NavigationManager.NavigateTo("/constituencylist");
     }
 
-    public class ConstituencyModel
-    {
-        [Required(ErrorMessage = "Numer okręgu jest wymagany.")]
-        public string Number { get; set; }
-
-        [Required(ErrorMessage = "Zasięg jest wymagany.")]
-        public string Scope { get; set; }
-    }
-
-    public class Constituency
-    {
-        public int Id { get; set; }
-        public int Number { get; set; }
-        public string Scope { get; set; }
-    }
 }

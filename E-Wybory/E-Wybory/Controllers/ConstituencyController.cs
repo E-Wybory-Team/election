@@ -114,5 +114,20 @@ namespace E_Wybory.Controllers
             return _context.Constituences.Any(e => e.IdConstituency == id);
         }
 
+        // GET: api/Constituency/exist/5
+        [HttpGet("exist/{id}")]
+        public async Task<IActionResult> IfConstituencyExists(int id)
+        {
+            if(ConstituencyExists(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+            
+        }
+
     }
 }

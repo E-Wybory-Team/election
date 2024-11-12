@@ -1,6 +1,7 @@
 ﻿using E_Wybory.Client.ViewModels;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using static E_Wybory.Client.Components.Pages.ConstituencyDelete;
 
 namespace E_Wybory.Client.Services
 {
@@ -21,6 +22,32 @@ namespace E_Wybory.Client.Services
             {
                 var response = await _httpClient.PostAsJsonAsync("/api/Constituency", constituencyModel);
 
+                return await Task.FromResult(response.IsSuccessStatusCode);
+            }
+
+            public async Task<ConstituencyViewModel> GetConstituencyById(int id)
+            {
+                var response = await _httpClient.GetFromJsonAsync<ConstituencyViewModel>($"/api/Constituency/{id}");
+                return await Task.FromResult(response);
+            }
+
+            public async Task<bool> PutConstituency(ConstituencyViewModel constituencyModel)
+            {
+                var response = await _httpClient.PutAsJsonAsync($"/api/Constituency/{constituencyModel.idConstituency}", constituencyModel);
+
+                return await Task.FromResult(response.IsSuccessStatusCode);
+            }
+
+            public async Task<bool> DeleteConstituency(int constituencyId)
+            {
+                var response = await _httpClient.DeleteAsync($"/api/Constituency/{constituencyId}");
+
+                return await Task.FromResult(response.IsSuccessStatusCode);
+            }
+
+            public async Task<bool> ConstituencyExists(int constituencyId)
+            {
+                var response = await _httpClient.GetAsync($"/api/Constituency/exist/{constituencyId}");
                 return await Task.FromResult(response.IsSuccessStatusCode);
             }
     }
