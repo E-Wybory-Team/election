@@ -3,6 +3,7 @@ using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto.Prng.Drbg;
 using System.Xml.Linq;
 
 namespace E_Wybory.Controllers
@@ -103,6 +104,21 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
 
+            var relatedDisticts = await _context.Districts
+                .Where(d => d.IdConstituency == constituency.IdConstituency)
+                .ToListAsync();
+
+            if (relatedDisticts.Count > 0)
+            {
+                //deleting all related districts to this constituency
+                foreach (var relatedDistict in relatedDisticts)
+                {
+                    _context.Districts.Remove(relatedDistict);
+                }
+                await _context.SaveChangesAsync();
+
+            }
+
             _context.Constituences.Remove(constituency);
             await _context.SaveChangesAsync();
 
@@ -127,6 +143,27 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
             
+        }
+
+
+        [HttpGet("counties/{id}")]
+        public async Task<ActionResult<List<County>>> GetCountiesOfConstituency(int id)
+        {
+            if (!ConstituencyExists(id))
+            {
+                return NotFound("Not found that constituency");
+            }
+
+            var relatedCounties = await _context.Districts
+                .Where(district => district.IdConstituency == id)
+                .SelectMany(district => _context.Provinces
+                    .Where(province => province.IdProvince == district.IdProvince)
+                    .SelectMany(province => _context.Counties
+                        .Where(county => county.IdCounty == province.IdCounty)))
+                .Distinct()
+                .ToListAsync();
+
+            return relatedCounties;
         }
 
     }

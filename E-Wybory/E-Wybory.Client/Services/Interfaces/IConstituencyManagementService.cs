@@ -8,6 +8,8 @@ namespace E_Wybory.Client.Services
         Task<bool> AddConstituency(ConstituencyViewModel constituencyModel);
         Task<bool> ConstituencyExists(int constituencyId);
         Task<ConstituencyViewModel> GetConstituencyById(int id);
+        Task<bool> DeleteConstituency(int constituencyId);
         Task<bool> PutConstituency(ConstituencyViewModel constituencyModel);
+        Task<List<CountyViewModel>> GetCountiesOfConstituency(int constituencyId);
     }
 }

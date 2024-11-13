@@ -44,11 +44,18 @@ namespace E_Wybory.Client.Services
 
                 return await Task.FromResult(response.IsSuccessStatusCode);
             }
-
+            
             public async Task<bool> ConstituencyExists(int constituencyId)
             {
                 var response = await _httpClient.GetAsync($"/api/Constituency/exist/{constituencyId}");
                 return await Task.FromResult(response.IsSuccessStatusCode);
+            }
+
+            public async Task<List<CountyViewModel>> GetCountiesOfConstituency(int constituencyId)
+            {
+            var response = await _httpClient.GetFromJsonAsync<List<CountyViewModel>>($"/api/Constituency/counties/{constituencyId}");
+
+            return await Task.FromResult(response);
             }
     }
 }

@@ -46,7 +46,7 @@
         }
         else
         {
-            constituencyModel.idConstituency = constituencyId;
+            constituencyModel = await ConstituencyManagementService.GetConstituencyById(constituencyId);
         }
     }
 
@@ -54,7 +54,10 @@
     {
         isModifiedConstituency = await ConstituencyManagementService.PutConstituency(constituencyModel);
         errorMessage = isModifiedConstituency ? "Constituency modified successful!" : "Constituency modified fails";
-        NavigationManager.NavigateTo("/constituencylist");
+        if (isModifiedConstituency)
+        {
+            NavigationManager.NavigateTo("/constituencylist");
+        }
     }
 
     private void Cancel()
