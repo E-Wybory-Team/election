@@ -18,6 +18,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<DistrictViewModel> GetDistrictById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<DistrictViewModel>($"/api/District/{id}");
+            return await Task.FromResult(response);
+        }
+
         public async Task<bool> AddDistrict(DistrictViewModel district)
         {
             var response = await _httpClient.PostAsJsonAsync("/api/District", district);
@@ -32,6 +38,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
+        public async Task<bool> DeleteDistrict(int districtId)
+        {
+            var response = await _httpClient.DeleteAsync($"/api/District/{districtId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
         public int? GetProvinceIdFromDistrict(int idDistrict, List<DistrictViewModel> districts)
         {
             var provinceId = districts
@@ -40,6 +52,12 @@ namespace E_Wybory.Client.Services
                 .FirstOrDefault();
 
             return provinceId;
+        }
+
+        public async Task<bool> DistrictExists(int districtId)
+        {
+            var response = await _httpClient.GetAsync($"/api/District/exist/{districtId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
     }

@@ -1,4 +1,8 @@
-﻿@page "/constituency-list"
+﻿@page "/constituencylist"
+@using E_Wybory.Client.ViewModels
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IConstituencyManagementService ConstituencyManagementService
+@inject NavigationManager NavigationManager
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
@@ -10,22 +14,22 @@
 <table class="candidate-table">
     <thead>
         <tr>
-            <th>Numer okręgu</th>
+            <th>Nazwa okręgu</th>
             <th>Zasięg (powiaty)</th>
             <th>Opcje konfiguracji</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var constituency in constituencies)
+        @foreach (var constituency in constituencyModels)
         {
             <tr>
-                <td>@constituency.Number</td>
-                <td>@constituency.Scope</td>
+                <td>@constituency.constituencyName</td>
+                <td>@string.Join(", ", relatedCounties[constituency.idConstituency].Select(county => county.CountyName))</td>
                 <td>
-                    <a href="/modifyconstituency/@constituency.Id">
+                    <a href="/modifyconstituency/@constituency.idConstituency">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/deleteconstituency/@constituency.Id">
+                    <a href="/deleteconstituency/@constituency.idConstituency">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
@@ -35,32 +39,23 @@
 </table>
 
 @code {
-    private List<Constituency> constituencies = new()
+
+    private List<ConstituencyViewModel> constituencyModels = new List<ConstituencyViewModel>();
+    private Dictionary<int, List<CountyViewModel>> relatedCounties = new Dictionary<int, List<CountyViewModel>>();
+
+    protected override async Task OnInitializedAsync()
     {
-        new Constituency
+        constituencyModels = await ConstituencyManagementService.Constituences();
+
+        foreach(var constituencyModel in constituencyModels)
         {
-            Id = 1,
-            Number = 27,
-            Scope = "powiaty: brzeski, głubczycki, kędzierzyńsko-kozielski, kluczborski, krapkowicki, namysłowski, nyski, oleski, opolski, prudnicki, strzelecki; miasto na prawach powiatu: Opole"
-        },
-        new Constituency
-        {
-            Id = 2,
-            Number = 41,
-            Scope = "powiaty: ełcki, giżycki, gołdapski, kętrzyński, mrągowski, nidzicki, olecki, olsztyński, piski, szczycieński, węgorzewski; miasto na prawach powiatu: Olsztyn"
+            relatedCounties.Add(constituencyModel.idConstituency, await ConstituencyManagementService.GetCountiesOfConstituency(constituencyModel.idConstituency));
         }
-    };
+    }
 
     private void AddConstituency()
     {
-        // Logika dodawania nowego okręgu
-        Console.WriteLine("Dodaj okręg wyborczy");
+        NavigationManager.NavigateTo("/addconstituency");
     }
 
-    public class Constituency
-    {
-        public int Id { get; set; }
-        public int Number { get; set; }
-        public string Scope { get; set; }
-    }
 }

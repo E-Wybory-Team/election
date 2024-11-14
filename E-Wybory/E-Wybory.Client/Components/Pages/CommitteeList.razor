@@ -1,4 +1,7 @@
 ﻿@page "/committeelist"
+@using E_Wybory.Client.ViewModels
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IElectionTypeManagementService ElectionTypeManagementService
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
@@ -58,23 +61,16 @@
 </table>
 
 @code {
-    private List<string> electionTypes = new() { "Parlamentarne", "Samorządowe", "Prezydenckie" };
-    private List<string> voivodeships = new() { "Opolskie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "1", "2", "3" };
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
 
-    private List<Party> parties = new()
-    {
-        new Party { Id = 1, ListNumber = "11", Name = "KOMITET WYBORCZY WYBORCÓW MNIEJSZOŚCI NIEMIECKIEJ", Acronym = "KWW MNIEJSZOŚĆ NIEMIECKA", Address = "ul. Marii Konopnickiej 6, 45-004 Opole", PartyType = "Polityczna", IsCoalition = "nie", Website = "http://mniejszoscnemiecka.eu" }
-    };
+    private List<PartyViewModel> parties = new List<PartyViewModel>();
 
     private List<Party> filteredParties = new();
 
     private void FilterTable()
     {
         // Mockowana logika filtrowania
-        filteredParties = parties;
+        //filteredParties = parties;
     }
 
     private void AddParty()
@@ -84,7 +80,7 @@
 
     protected override void OnInitialized()
     {
-        filteredParties = parties;
+        //filteredParties = parties;
     }
 
     public class Party

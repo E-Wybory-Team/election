@@ -1,4 +1,4 @@
-﻿@page "/modify-district"
+﻿@page "/modifydistrict"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.FilterData
@@ -147,6 +147,7 @@
 
     private async void HandleSubmit()
     {
+        districtModel.IdProvince = SelectedProvinceId;
         isModifiedDistrict = await DistrictManagementService.PutDistrict(districtModel);
         errorMessage = isModifiedDistrict ? "District edition successful!" : "District edition fails";
     }

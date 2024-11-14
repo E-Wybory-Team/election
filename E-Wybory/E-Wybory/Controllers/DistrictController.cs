@@ -9,6 +9,7 @@ using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
 using E_Wybory.Client.ViewModels;
+using static E_Wybory.Client.Components.Pages.ConstituencyList;
 
 namespace E_Wybory.Controllers
 {
@@ -46,7 +47,7 @@ namespace E_Wybory.Controllers
 
         // PUT: api/Districts/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, [FromBody] DistrictViewModel districtModel)
+        public async Task<IActionResult> PutDistrict(int id, [FromBody] DistrictViewModel districtModel)
         {
             if (!EnteredRequiredData(districtModel))
             {
@@ -116,8 +117,20 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
 
+            var relatedElectionUsers = await _context.ElectionUsers
+                .Where(user => user.IdDistrict == id)
+                .ToListAsync();
+
+            if (relatedElectionUsers.Count > 0)
+            {
+                return Conflict("There are election users set to this district!");
+            }
+
             _context.Districts.Remove(district);
             await _context.SaveChangesAsync();
+
+            //_context.Districts.Remove(district);
+            //await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -125,6 +138,21 @@ namespace E_Wybory.Controllers
         private bool DistrictExists(int id)
         {
             return _context.Districts.Any(e => e.IdDistrict == id);
+        }
+
+        // GET: api/District/exist/5
+        [HttpGet("exist/{id}")]
+        public async Task<IActionResult> IfDistrictExists(int id)
+        {
+            if (DistrictExists(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+
         }
 
         private bool EnteredRequiredData(DistrictViewModel districtModel)

@@ -1,4 +1,6 @@
-﻿@page "/district-list"
+﻿@page "/districtlist"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IDistrictManagementService ConstituencyManagementService
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 

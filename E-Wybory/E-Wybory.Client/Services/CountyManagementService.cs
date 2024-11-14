@@ -18,6 +18,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<CountyViewModel> GetCountyById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<CountyViewModel>($"/api/County/{id}");
+            return await Task.FromResult(response);
+        }
+
         public int? GetVoivodeshipIdFromCounty(int idCounty, List<CountyViewModel> counties)
         {
             return counties

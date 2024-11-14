@@ -104,21 +104,6 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
 
-            var relatedDisticts = await _context.Districts
-                .Where(d => d.IdConstituency == constituency.IdConstituency)
-                .ToListAsync();
-
-            if (relatedDisticts.Count > 0)
-            {
-                //deleting all related districts to this constituency
-                foreach (var relatedDistict in relatedDisticts)
-                {
-                    _context.Districts.Remove(relatedDistict);
-                }
-                await _context.SaveChangesAsync();
-
-            }
-
             _context.Constituences.Remove(constituency);
             await _context.SaveChangesAsync();
 

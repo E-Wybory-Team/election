@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Matching;
 using E_Wybory.ExtensionMethods;
 using System.Xml.Linq;
+using static E_Wybory.Client.Components.Pages.DetailedStats;
 
 namespace E_Wybory.Controllers
 {
@@ -203,7 +204,7 @@ namespace E_Wybory.Controllers
                         PositionNumber = candidate.PositionNumber,
                         Workplace = candidate.Workplace,
                         IdPerson = candidate.IdPerson,
-                        IdDistrict = candidate.IdDistrict,
+                        IdDistrict = candidate.IdDistrict.Value,
                         IdParty = candidate.IdParty,
                         IdElection = candidate.IdElection
                     },
@@ -212,6 +213,51 @@ namespace E_Wybory.Controllers
             }
 
             return Ok(candidatePersonViewModels);
+        }
+
+
+        // GET: api/FilterWrapper/Districts
+        [HttpGet("Districts")]
+        public async Task<ActionResult<List<DistrictViewModel>>> GetFilteredDistricts(
+            [FromQuery] int? voivodeshipId,
+            [FromQuery] int? countyId,
+            [FromQuery] int? provinceId)
+        {
+            var districts = await _context.Districts
+                .Include(district => district.IdProvinceNavigation)
+                .ThenInclude(province => province.IdCountyNavigation)
+                .ThenInclude(voivodeship => voivodeship.IdVoivodeshipNavigation)
+                .ToListAsync();
+
+            Console.WriteLine($"number of districts: {districts.Count}");
+
+            var filteredDistricts = new List<DistrictViewModel>();
+
+            foreach (var district in districts)
+            {
+                if ((voivodeshipId != null &&
+                     await FilteringMethods.GetDistrictIdVoivodeship(_context, district.IdDistrict) != voivodeshipId)
+                    || (countyId != null &&
+                     await FilteringMethods.GetDistrictIdCounty(_context, district.IdDistrict) != countyId)
+                    || (provinceId != null &&
+                     await FilteringMethods.GetDistrictIdProvince(_context, district.IdDistrict) != provinceId))
+                {
+                    // Skip this candidate if any of the filter conditions are not met
+                    continue;
+                }
+
+                filteredDistricts.Add(new DistrictViewModel
+                {
+                    IdDistrict = district.IdDistrict,
+                    DistrictName = district.DistrictName,
+                    DisabledFacilities = district.DisabledFacilities,
+                    DistrictHeadquarters = district.DistrictHeadquarters,
+                    IdConstituency = district.IdConstituency,
+                    IdProvince = district.IdProvince.Value
+                });
+            }
+
+                return Ok(filteredDistricts);
         }
     }
 }

@@ -4,14 +4,8 @@
 @using E_Wybory.Client.ViewModels
 @using E_Wybory.Client.Services;
 @inject IPartyManagementService PartyManagementService
-@inject ICandidateManagementService CandidateManagementService
-@inject IDistrictManagementService DistrictManagementService
-@inject IVoivodeshipManagementService VoivodeshipManagementService
 @inject IPersonManagementService PersonManagementService
-@inject IProvinceManagementService ProvinceManagementService
-@inject ICountyManagementService CountyManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
-@inject IElectionManagementService ElectionManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
 @using FilterData;
 
@@ -122,6 +116,14 @@
                 <td>@candidate.candidateViewModel.EducationStatus</td>
                 <td>@age</td>
                 <td>@partyName</td>
+                <td>
+                    <a href="/modify/@candidate">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/delete/@candidate">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
             </tr>
             
         }

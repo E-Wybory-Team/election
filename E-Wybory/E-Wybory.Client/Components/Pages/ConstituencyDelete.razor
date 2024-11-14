@@ -10,11 +10,11 @@
     <h1>USUWANIE OKRĘGU WYBORCZEGO</h1>
     <EditForm Model="@constituencyModel" OnValidSubmit="HandleDeleteSubmit">
         <DataAnnotationsValidator />
+        <ValidationSummary />
 
         <div class="form-group-smaller">
             <label for="name">NAZWA OKRĘGU</label>
             <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" readonly />
-            <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
         </div>
         <div>
             <div class="filter-group">
