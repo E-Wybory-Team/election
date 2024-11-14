@@ -50,7 +50,6 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
     public virtual DbSet<Voter> Voters { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Candidate>(entity =>
@@ -89,7 +88,7 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasOne(d => d.IdDistrictNavigation).WithMany(p => p.Candidates)
                 .HasForeignKey(d => d.IdDistrict)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FkDistrictsCandidates");
 
             entity.HasOne(d => d.IdElectionNavigation).WithMany(p => p.Candidates)
@@ -163,7 +162,7 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasOne(d => d.IdConstituencyNavigation).WithMany(p => p.Districts)
                 .HasForeignKey(d => d.IdConstituency)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FkConstituencyDistrict");
 
             entity.HasOne(d => d.IdProvinceNavigation).WithMany(p => p.Districts)
@@ -428,7 +427,6 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasOne(d => d.IdDistrictNavigation).WithMany(p => p.Votes)
                 .HasForeignKey(d => d.IdDistrict)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Votes_Districts");
 
             entity.HasOne(d => d.IdElectionNavigation).WithMany(p => p.Votes)
@@ -441,7 +439,7 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
         {
             entity.HasKey(e => e.IdVoter).HasName("PRIMARY");
 
-            entity.HasIndex(e => e.IdDistrict, "FkDistrictsVoters");
+            entity.HasIndex(e => e.IdDistrict, "idDistrict");
 
             entity.HasIndex(e => e.IdElectionUser, "uniqueElectionUser").IsUnique();
 
@@ -451,8 +449,8 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasOne(d => d.IdDistrictNavigation).WithMany(p => p.Voters)
                 .HasForeignKey(d => d.IdDistrict)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("FkDistrictsVoters");
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("idDistrict");
 
             entity.HasOne(d => d.IdElectionUserNavigation).WithOne(p => p.Voter)
                 .HasForeignKey<Voter>(d => d.IdElectionUser)

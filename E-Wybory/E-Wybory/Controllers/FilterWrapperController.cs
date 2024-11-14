@@ -36,15 +36,15 @@ namespace E_Wybory.Controllers
         {
             var filterListWrapperFull = new FilterListWrapperFull();
 
-            
-            filterListWrapperFull.ElectionFilter = await _context.ElectionTypes.Select(v => new ElectionTypeViewModel()
-                {
-                    IdElectionType = v.IdElectionType,
-                    ElectionTypeName = v.ElectionTypeName
-                }).ToListAsync();
-           
 
-            if (filterListWrapperFull.FilterListWrapper.VoivodeshipFilter.Count == 0) 
+            filterListWrapperFull.ElectionFilter = await _context.ElectionTypes.Select(v => new ElectionTypeViewModel()
+            {
+                IdElectionType = v.IdElectionType,
+                ElectionTypeName = v.ElectionTypeName
+            }).ToListAsync();
+
+
+            if (filterListWrapperFull.FilterListWrapper.VoivodeshipFilter.Count == 0)
             {
                 filterListWrapperFull.FilterListWrapper.VoivodeshipFilter = await _context.Voivodeships.Select(v => new VoivodeshipViewModel()
                 {
@@ -145,6 +145,72 @@ namespace E_Wybory.Controllers
             return Ok(filterListWrapper);
         }
 
+
+        // GET: api/FilterWrapper/DistrictLists
+        [HttpGet("DistrictLists")]
+        public async Task<ActionResult<FilterListWrapper>> GetFilteredDistrictLists(
+            [FromQuery] int? constituencyId,
+            [FromQuery] int? voivodeshipId,
+            [FromQuery] int? countyId)
+        {
+            var filterListWrapper = new FilterListWrapperDistrict();
+
+            filterListWrapper.ConstituencyFilter = await _context.Constituences.Select(v => new ConstituencyViewModel()
+            {
+                idConstituency = v.IdConstituency,
+                constituencyName= v.ConstituencyName
+            }).ToListAsync();
+
+            if (constituencyId.HasValue)
+            {
+                filterListWrapper.FilterListWrapper.VoivodeshipFilter = await _context.Districts
+                .Where(district => district.IdConstituency == constituencyId)
+                .SelectMany(district => _context.Provinces
+                .Where(province => province.IdProvince == district.IdProvince)
+                .SelectMany(province => _context.Counties
+                .Where(county => county.IdCounty == province.IdCounty)
+                .Select(county => county.IdVoivodeshipNavigation)
+                )
+                )
+                .Distinct()
+                .Select(voivodeship => new VoivodeshipViewModel
+                {
+                idVoivodeship= voivodeship.IdVoivodeship,
+                voivodeshipName = voivodeship.VoivodeshipName
+                })
+                .ToListAsync();
+            }
+
+            if (voivodeshipId.HasValue)
+            {
+                filterListWrapper.FilterListWrapper.CountyFilter = await _context.Counties
+                    .Where(c => c.IdVoivodeship == voivodeshipId)
+                    .Select(c => new CountyViewModel
+                    {
+                        IdCounty = c.IdCounty,
+                        CountyName = c.CountyName,
+                        IdVoivodeship = c.IdVoivodeship
+                    })
+                    .ToListAsync();
+            }
+
+
+            if (countyId.HasValue)
+            {
+                filterListWrapper.FilterListWrapper.ProvinceFilter = await _context.Provinces
+                    .Where(p => countyId == p.IdCounty)
+                    .Select(p => new ProvinceViewModel
+                    {
+                        IdProvince = p.IdProvince,
+                        IdCounty = p.IdCounty,
+                        ProvinceName = p.ProvinceName
+                    })
+                    .ToListAsync();
+            }
+
+            return Ok(filterListWrapper);
+        }
+
         // GET: api/FilterWrapper/Candidates
         [HttpGet("Candidates")]
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidates(
@@ -204,7 +270,7 @@ namespace E_Wybory.Controllers
                         PositionNumber = candidate.PositionNumber,
                         Workplace = candidate.Workplace,
                         IdPerson = candidate.IdPerson,
-                        IdDistrict = candidate.IdDistrict.Value,
+                        IdDistrict = candidate.IdDistrict.GetValueOrDefault(),
                         IdParty = candidate.IdParty,
                         IdElection = candidate.IdElection
                     },
@@ -219,45 +285,49 @@ namespace E_Wybory.Controllers
         // GET: api/FilterWrapper/Districts
         [HttpGet("Districts")]
         public async Task<ActionResult<List<DistrictViewModel>>> GetFilteredDistricts(
-            [FromQuery] int? voivodeshipId,
-            [FromQuery] int? countyId,
-            [FromQuery] int? provinceId)
+        [FromQuery] int? constituencyId,
+        [FromQuery] int? voivodeshipId,
+        [FromQuery] int? countyId,
+        [FromQuery] int? provinceId)
         {
             var districts = await _context.Districts
+                .Include(district => district.IdConstituencyNavigation)
                 .Include(district => district.IdProvinceNavigation)
                 .ThenInclude(province => province.IdCountyNavigation)
-                .ThenInclude(voivodeship => voivodeship.IdVoivodeshipNavigation)
+                .ThenInclude(county => county.IdVoivodeshipNavigation)
                 .ToListAsync();
-
-            Console.WriteLine($"number of districts: {districts.Count}");
 
             var filteredDistricts = new List<DistrictViewModel>();
 
             foreach (var district in districts)
             {
-                if ((voivodeshipId != null &&
-                     await FilteringMethods.GetDistrictIdVoivodeship(_context, district.IdDistrict) != voivodeshipId)
-                    || (countyId != null &&
-                     await FilteringMethods.GetDistrictIdCounty(_context, district.IdDistrict) != countyId)
-                    || (provinceId != null &&
-                     await FilteringMethods.GetDistrictIdProvince(_context, district.IdDistrict) != provinceId))
+                // Check for null values in navigation properties before accessing them
+                var districtConstituencyId = district.IdConstituency;
+                var districtVoivodeshipId = district.IdProvinceNavigation?.IdCountyNavigation?.IdVoivodeshipNavigation?.IdVoivodeship;
+                var districtCountyId = district.IdProvinceNavigation?.IdCountyNavigation?.IdCounty;
+                var districtProvinceId = district.IdProvince;
+
+                if ((constituencyId != null && districtConstituencyId != constituencyId) ||
+                    (voivodeshipId != null && districtVoivodeshipId != voivodeshipId) ||
+                    (countyId != null && districtCountyId != countyId) ||
+                    (provinceId != null && districtProvinceId != provinceId))
                 {
-                    // Skip this candidate if any of the filter conditions are not met
-                    continue;
+                    continue; // Skip this district if it doesn't match the filter
                 }
 
+                // Add to the filtered list if it meets the criteria
                 filteredDistricts.Add(new DistrictViewModel
                 {
                     IdDistrict = district.IdDistrict,
                     DistrictName = district.DistrictName,
                     DisabledFacilities = district.DisabledFacilities,
                     DistrictHeadquarters = district.DistrictHeadquarters,
-                    IdConstituency = district.IdConstituency,
-                    IdProvince = district.IdProvince.Value
+                    IdConstituency = district.IdConstituency.GetValueOrDefault(),
+                    IdProvince = district.IdProvince
                 });
             }
 
-                return Ok(filteredDistricts);
+            return Ok(filteredDistricts);
         }
     }
 }

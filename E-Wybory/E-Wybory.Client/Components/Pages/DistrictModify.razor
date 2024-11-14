@@ -1,9 +1,10 @@
-﻿@page "/modifydistrict"
+﻿@page "/modifydistrict/{districtId:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IDistrictManagementService DistrictManagementService
@@ -17,6 +18,7 @@
     <EditForm FormName="districtModify" Model="@districtModel" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
 
+        <!--
         <div>
             <div class="filter-group">
                 <label>Obwód do edycji</label>
@@ -31,7 +33,7 @@
                 </select>
                 <ValidationMessage For="@(() => districtModel.IdDistrict)" />
             </div>
-        </div>
+        </div> -->
 
         <div class="form-group">
             <label for="districtName">NAZWA OBWODU</label>
@@ -126,6 +128,9 @@
 </div>
 
 @code {
+    [Parameter]
+    public int districtId { get; set; }
+
     private int? SelectedVoivodeshipId { get; set; } = null;
     private int? SelectedCountyId { get; set; } = null;
     private int? SelectedProvinceId { get; set; } = null;
@@ -140,9 +145,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        districts = await DistrictManagementService.Districts();
-        wrapper.VoivodeshipFilter = await VoivodeshipManagementService.Voivodeships();
-        constituencies = await ConstituencyManagementService.Constituences();
+        if (!await DistrictManagementService.DistrictExists(districtId))
+        {
+            errorMessage = "District not found";
+            NavigationManager.NavigateTo("/districtlist");
+        }
+        else
+        {
+            districtModel = await DistrictManagementService.GetDistrictById(districtId);
+            districts = await DistrictManagementService.Districts();
+            wrapper.VoivodeshipFilter = await VoivodeshipManagementService.Voivodeships();
+            constituencies = await ConstituencyManagementService.Constituences();
+        }
     }
 
     private async void HandleSubmit()

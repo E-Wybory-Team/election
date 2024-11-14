@@ -157,8 +157,7 @@ namespace E_Wybory.Controllers
 
         private bool EnteredRequiredData(DistrictViewModel districtModel)
         {
-            if (districtModel.DistrictName == String.Empty || districtModel.DistrictHeadquarters == String.Empty
-                 || districtModel.IdConstituency == 0 )
+            if (districtModel.DistrictName == String.Empty || districtModel.DistrictHeadquarters == String.Empty )
             {
                 return false;
             }

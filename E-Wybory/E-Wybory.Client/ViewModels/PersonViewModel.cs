@@ -9,7 +9,7 @@ namespace E_Wybory.Client.ViewModels
         [Required(ErrorMessage = "Imię jest obowiązkowe!")] public string Name { get; set; } = String.Empty;
         [Required(ErrorMessage = "Nazwisko jest obowiąakowe!")] public string Surname { get; set; } = String.Empty;
         [Required(ErrorMessage = "PESEL jest obowiązkowy!")] public string PESEL { get; set; } = String.Empty;
-        [Required(ErrorMessage = "Data urodzenia jest obiowiązkowa!")] public DateTime BirthDate { get; set; } = DateTime.MinValue;
+        [Required(ErrorMessage = "Data urodzenia jest obowiązkowa!")] public DateTime BirthDate { get; set; } = DateTime.MinValue;
 
         [Required(ErrorMessage = "Tekstowa data urodzenia jest obowiązkowa!")]
         public string DateOfBirthString

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 namespace E_Wybory.Domain.Entities;
-
 public partial class Voivodeship
 {
     public int IdVoivodeship { get; set; }

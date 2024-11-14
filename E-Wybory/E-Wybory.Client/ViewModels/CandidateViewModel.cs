@@ -12,7 +12,7 @@ namespace E_Wybory.Client.ViewModels
         public string? EducationStatus { get; set; } = null;
         public string? Workplace { get; set; } = null;
         [Required] public int IdPerson { get; set; } = 0;
-        [Required(ErrorMessage = "Obwód jest obowiązkowy!")] public int IdDistrict { get; set; } = 0;
+        public int? IdDistrict { get; set; } = null;
         public int? IdParty { get; set; } = null;
         [Required(ErrorMessage = "Wybór wyborów jest obowiązkowy!")] public int IdElection { get; set; } = 0;
     }

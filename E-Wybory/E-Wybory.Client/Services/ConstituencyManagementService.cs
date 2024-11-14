@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using static E_Wybory.Client.Components.Pages.ConstituencyDelete;
+using static E_Wybory.Client.Components.Pages.DetailedStats;
 
 namespace E_Wybory.Client.Services
 {
@@ -31,7 +32,17 @@ namespace E_Wybory.Client.Services
                 return await Task.FromResult(response);
             }
 
-            public async Task<bool> PutConstituency(ConstituencyViewModel constituencyModel)
+        public string? GetConstituencyNameById(int id, List<ConstituencyViewModel> constituences)
+        {
+            var constituencyName = constituences
+                .Where(p => p.idConstituency == id)
+                .Select(p => p.constituencyName)
+                .FirstOrDefault();
+
+            return constituencyName;
+        }
+
+        public async Task<bool> PutConstituency(ConstituencyViewModel constituencyModel)
             {
                 var response = await _httpClient.PutAsJsonAsync($"/api/Constituency/{constituencyModel.idConstituency}", constituencyModel);
 

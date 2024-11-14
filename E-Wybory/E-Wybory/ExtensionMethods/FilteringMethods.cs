@@ -1,4 +1,5 @@
-﻿using E_Wybory.Domain.Entities;
+﻿using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
@@ -85,6 +86,21 @@ namespace E_Wybory.ExtensionMethods
                             .Select(c => c.IdProvinceNavigation)
                             .Select(c => c.IdProvince)
                             .FirstOrDefaultAsync();
+        }
+
+        public static Task<List<Voivodeship>> GetVoivodeshipsOfConstituency(ElectionDbContext _context, int idConstituency)
+        {
+            return _context.Districts
+                .Where(district => district.IdConstituency == idConstituency)
+                .SelectMany(district => _context.Provinces
+                .Where(province => province.IdProvince == district.IdProvince)
+                .SelectMany(province => _context.Counties
+                .Where(county => county.IdCounty == province.IdCounty)
+                .Select(county => county.IdVoivodeshipNavigation) 
+                    )
+                )
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

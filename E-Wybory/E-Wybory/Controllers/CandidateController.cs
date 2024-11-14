@@ -154,7 +154,7 @@ namespace E_Wybory.Controllers
         private bool EnteredRequiredData(CandidateViewModel model)
         {
             if (model.JobType == String.Empty || model.PlaceOfResidence == String.Empty || model.PositionNumber == 0
-                || model.IdPerson == 0 || model.IdElection == 0 || model.IdDistrict == 0)
+                || model.IdPerson == 0 || model.IdElection == 0)
             {
                 return false;
             }

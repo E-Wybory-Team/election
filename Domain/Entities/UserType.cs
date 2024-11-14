@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
 namespace E_Wybory.Domain.Entities;
-
 public partial class UserType
 {
     public int IdUserType { get; set; }

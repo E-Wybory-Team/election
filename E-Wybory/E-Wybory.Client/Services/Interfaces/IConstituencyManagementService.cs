@@ -11,5 +11,6 @@ namespace E_Wybory.Client.Services
         Task<bool> DeleteConstituency(int constituencyId);
         Task<bool> PutConstituency(ConstituencyViewModel constituencyModel);
         Task<List<CountyViewModel>> GetCountiesOfConstituency(int constituencyId);
+        string? GetConstituencyNameById(int id, List<ConstituencyViewModel> constituences);
     }
 }

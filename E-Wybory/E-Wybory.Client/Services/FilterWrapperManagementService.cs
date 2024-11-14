@@ -1,4 +1,5 @@
-﻿using E_Wybory.Client.FilterData;
+﻿using E_Wybory.Client.Components.Pages;
+using E_Wybory.Client.FilterData;
 using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using System.Net.Http.Json;
@@ -58,6 +59,19 @@ namespace E_Wybory.Client.Services
             return response;
         }
 
+        public async Task<FilterListWrapperDistrict> GetFilteredListsDistricts(int? constituencyId, int? voivodeshipId, int? countyId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/DistrictLists", new Dictionary<string, int?>
+            {
+            {"constituencyId", constituencyId},
+            { "voivodeshipId", voivodeshipId },
+            { "countyId", countyId }
+            });
+
+            var response = await _httpClient.GetFromJsonAsync<FilterListWrapperDistrict>(url);
+            return response;
+        }
+
         public async Task<List<CandidatePersonViewModel>> GetFilteredCandidates(
             int? electionTypeId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId)
             {
@@ -73,6 +87,21 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>(url);
             return response;
             }
+
+        public async Task<List<DistrictViewModel>> GetFilteredDistricts(
+            int? constituencyId, int? voivodeshipId, int? countyId, int? provinceId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/Districts", new Dictionary<string, int?>
+            {
+                {"constituencyId", constituencyId},
+                { "voivodeshipId", voivodeshipId },
+                { "countyId", countyId },
+                { "provinceId", provinceId }
+            });
+
+            var response = await _httpClient.GetFromJsonAsync<List<DistrictViewModel>>(url);
+            return response;
+        }
 
     }
 }
