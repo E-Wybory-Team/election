@@ -70,7 +70,7 @@ else
 }
 
 @code {
-    private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+    private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&algorithm=SHA1&digits=6&period=30";
 
     private string? message;
     private ClaimsPrincipal user = default!;
@@ -128,7 +128,6 @@ else
 
     private async ValueTask LoadSharedKeyAndQrCodeUriAsync(ClaimsPrincipal user)
     {
-        // Load the authenticator key & QR code URI to display on the form
         var unformattedKey = await AuthService.GetAuthenticatorKeyAsync(GetUserId(user));
         if (string.IsNullOrEmpty(unformattedKey))
         {

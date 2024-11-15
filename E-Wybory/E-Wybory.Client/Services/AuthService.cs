@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using E_Wybory.Client.Components.Pages;
 using E_Wybory.Client.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -109,16 +110,38 @@ namespace E_Wybory.Client.Services
         {
             if (!userAuthenticatorKeys.ContainsKey(userId))
             {
-                userAuthenticatorKeys[userId] = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+                userAuthenticatorKeys[userId] = ConvertToBase32(Guid.NewGuid().ToByteArray()).Substring(0, 16);
             }
             return Task.FromResult(userAuthenticatorKeys[userId]);  
         }
 
         public Task<string> ResetAuthenticatorKeyAsync(int userId)
         {
-            var newKey = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+            var newKey = ConvertToBase32(Guid.NewGuid().ToByteArray()).Substring(0, 16);
             userAuthenticatorKeys[userId] = newKey;
             return Task.FromResult(newKey);
+        }
+
+        private string ConvertToBase32(byte[] data)
+        {
+            const string base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+            StringBuilder result = new StringBuilder((data.Length + 4) / 5 * 8);
+
+            for (int i = 0; i < data.Length; i += 5)
+            {
+                int buffer = data[i] << 24;
+                if (i + 1 < data.Length) buffer |= data[i + 1] << 16;
+                if (i + 2 < data.Length) buffer |= data[i + 2] << 8;
+                if (i + 3 < data.Length) buffer |= data[i + 3];
+                if (i + 4 < data.Length) buffer |= data[i + 4] >> 8;
+
+                for (int bitOffset = 35; bitOffset >= 0; bitOffset -= 5)
+                {
+                    result.Append(base32Chars[(buffer >> bitOffset) & 0x1F]);
+                }
+            }
+
+            return result.ToString();
         }
     }
 }
