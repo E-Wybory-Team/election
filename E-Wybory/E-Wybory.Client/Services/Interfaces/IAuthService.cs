@@ -10,5 +10,18 @@ namespace E_Wybory.Client.Services
         Task<bool> Logout();
 
         Task<bool> RenewTokenClaims(UserInfoViewModel userInfo);
+
+        Task<bool> VerifyTwoFactorTokenAsync(int userId, string code);
+
+        Task<int> CountRecoveryCodesAsync(int userId);
+
+        Task SetTwoFactorEnabledAsync(int userId, bool enabled);
+
+        Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId, int maxRecoveryCodes);
+
+        Task<string> GetAuthenticatorKeyAsync(int userId);
+
+        Task<string> ResetAuthenticatorKeyAsync(int userId);
+
     }
 }

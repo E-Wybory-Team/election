@@ -1,5 +1,6 @@
 ﻿using E_Wybory.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Text.Encodings.Web;
 //using Microsoft.Extensions.Http;
 
 namespace E_Wybory.Client.BuilderClientExtensionMethods
@@ -20,6 +21,8 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
                 client.BaseAddress = new Uri(endpointUri);
             })
             .AddHttpMessageHandler<AuthHttpMessageHandler>();
+
+            services.AddSingleton<UrlEncoder>(UrlEncoder.Default);
 
 
             services.AddScoped<AuthenticationStateProvider, ElectionAuthStateProvider>();
