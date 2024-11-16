@@ -21,13 +21,13 @@ public partial class Candidate
 
     public int IdPerson { get; set; }
 
-    public int IdDistrict { get; set; }
+    public int? IdDistrict { get; set; }
 
     public int? IdParty { get; set; }
 
     public int IdElection { get; set; }
 
-    public virtual District IdDistrictNavigation { get; set; } = null!;
+    public virtual District? IdDistrictNavigation { get; set; }
 
     public virtual Election IdElectionNavigation { get; set; } = null!;
 

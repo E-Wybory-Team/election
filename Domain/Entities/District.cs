@@ -13,7 +13,7 @@ public partial class District
 
     public string DistrictHeadquarters { get; set; } = null!;
 
-    public int IdConstituency { get; set; }
+    public int? IdConstituency { get; set; }
 
     public int? IdProvince { get; set; }
 
@@ -21,7 +21,7 @@ public partial class District
 
     public virtual ICollection<ElectionUser> ElectionUsers { get; set; } = new List<ElectionUser>();
 
-    public virtual Constituence IdConstituencyNavigation { get; set; } = null!;
+    public virtual Constituence? IdConstituencyNavigation { get; set; } = null!;
 
     public virtual Province? IdProvinceNavigation { get; set; }
 
