@@ -142,13 +142,23 @@ namespace E_Wybory.Controllers
 
         [HttpPost()]
         [Route("enable-2fa")]
-
+        [Authorize]
         public async Task<IActionResult> EnableTwoFactorAuth([FromBody] TwoFactorEnabledRequest enabledRequest)
         {
             UserWrapper user = new(User);
             if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return Unauthorized("Wrong user identification compared claim to model!");
 
             var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
+
+            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return Unauthorized("User with UserSecret does not exists!");
+
+            electionUser.Is2Faenabled = enabledRequest.IsEnabled;
+
+            _context.ElectionUsers.Update(electionUser);
+
+            await _context.SaveChangesAsync();  
+
+            return Ok();
 
             return Ok();
 
