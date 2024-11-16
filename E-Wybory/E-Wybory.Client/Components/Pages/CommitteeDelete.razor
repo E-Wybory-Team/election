@@ -1,4 +1,4 @@
-﻿@page "/modifycommittee/{committeeId:int}"
+﻿@page "/deletecommittee/{committeeId:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
@@ -7,49 +7,41 @@
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
-    <h1>MODYFIKOWANIE KOMITETU WYBORCZEGO</h1>
+    <h1>USUWANIE KOMITETU WYBORCZEGO</h1>
     <EditForm Model="@committeeModel" OnValidSubmit="HandleAddSubmit">
         <DataAnnotationsValidator />
 
         <div class="form-group">
             <label for="nr-listy">NR LISTY</label>
-            <InputNumber @bind-Value="committeeModel.ListCommiteeNumber" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
+            <InputNumber @bind-Value="committeeModel.ListCommiteeNumber" id="nr-listy" readonly class="form-input" placeholder="Wprowadź nr listy komitetu" />
         </div>
         <div class="form-group-smaller">
             <label for="nazwa">NAZWA KOMITETU</label>
-            <InputText @bind-Value="committeeModel.PartyName" id="nazwa" class="form-input" placeholder="Wprowadź nazwę komitetu" />
-            <ValidationMessage For="@(() => committeeModel.PartyName)" />
+            <InputText @bind-Value="committeeModel.PartyName" id="nazwa" readonly class="form-input" placeholder="Wprowadź nazwę komitetu" />
         </div>
         <div class="form-group-smaller">
             <label for="skrot">SKRÓT</label>
-            <InputText @bind-Value="committeeModel.Abbreviation" id="skrot" class="form-input" placeholder="Wprowadź skrót komitetu" />
+            <InputText @bind-Value="committeeModel.Abbreviation" id="skrot" readonly class="form-input" placeholder="Wprowadź skrót komitetu" />
         </div>
         <div class="form-group-smaller">
             <label for="adres">ADRES</label>
-            <InputText @bind-Value="committeeModel.PartyAddress" id="adres" class="form-input" placeholder="Wprowadź adres komitetu" />
+            <InputText @bind-Value="committeeModel.PartyAddress" id="adres" readonly class="form-input" placeholder="Wprowadź adres komitetu" />
         </div>
         <div class="form-group-smaller">
             <label for="type">TYP PARTII</label>
-            <InputText @bind-Value="committeeModel.PartyType" id="type" class="form-input" placeholder="Wprowadź typ partii" />
+            <InputText @bind-Value="committeeModel.PartyType" id="type" readonly class="form-input" placeholder="Wprowadź typ partii" />
         </div>
         <div>
             <label for="coalition">PARTIA KOALICYJNA</label>
-            <input type="checkbox" id="coalition" @bind="committeeModel.IsCoalition" />
-            @if (committeeModel.IsCoalition)
-            {
-                <span>Tak</span>
-            }
-            else
-            {
-                <span>Nie</span>
-            }
+            <input type="checkbox" id="coalition" checked="@(committeeModel.IsCoalition)" disabled />
+            <span>@(committeeModel.IsCoalition ? "Tak" : "Nie")</span>
         </div>
         <div class="form-group-smaller">
             <label for="adres">STRONA WWW</label>
-            <InputText @bind-Value="committeeModel.Website" id="website" class="form-input" placeholder="Wprowadź stronę internetową" />
+            <InputText @bind-Value="committeeModel.Website" id="website" readonly class="form-input" placeholder="Wprowadź stronę internetową" />
         </div>
 
-        <button type="submit" class="submit-button">MODYFIKUJ</button>
+        <button type="submit" class="submit-button">USUŃ</button>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -62,7 +54,7 @@
     public int committeeId { get; set; }
 
     private PartyViewModel committeeModel = new PartyViewModel();
-    bool isModifiedCommittee = false;
+    bool isDeletedCommittee = false;
     string errorMessage;
 
 
@@ -81,8 +73,12 @@
 
     private async void HandleAddSubmit()
     {
-        isModifiedCommittee = await PartyManagementService.PutParty(committeeModel);
-        errorMessage = isModifiedCommittee ? "Committee edition successful!" : "Committee edition fails";
+        isDeletedCommittee = await PartyManagementService.DeleteParty(committeeId);
+        errorMessage = isDeletedCommittee ? "Committee deleted successful!" : "Committee deletion fails";
+        if (isDeletedCommittee)
+        {
+            Cancel();
+        }
     }
 
     private void Cancel()

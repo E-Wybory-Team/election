@@ -422,7 +422,6 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
             entity.HasOne(d => d.IdCandidateNavigation).WithMany(p => p.Votes)
                 .HasForeignKey(d => d.IdCandidate)
-                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FkCandidatesVotes");
 
             entity.HasOne(d => d.IdDistrictNavigation).WithMany(p => p.Votes)

@@ -122,10 +122,10 @@
                 <td>@partyName</td>
                 <td>@candidate.candidateViewModel.PositionNumber</td>
                 <td>
-                    <a href="/modifycandidate">
+                    <a href="/modifycandidate/@candidate.candidateViewModel.IdCandidate">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/delete/@candidate">
+                    <a href="/deletecandidate/@candidate.candidateViewModel.IdCandidate">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>

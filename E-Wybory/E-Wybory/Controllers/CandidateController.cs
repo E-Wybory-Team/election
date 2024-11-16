@@ -161,6 +161,21 @@ namespace E_Wybory.Controllers
 
             return true;
         }
+
+        // GET: api/Candidate/exist/5
+        [HttpGet("exist/{id}")]
+        public async Task<IActionResult> IfCandidateExists(int id)
+        {
+            if (CandidateExists(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
     }
 }
 

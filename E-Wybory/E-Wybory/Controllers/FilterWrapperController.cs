@@ -232,20 +232,22 @@ namespace E_Wybory.Controllers
 
             foreach (var candidate in candidates)
             {
-                if ((electionTypeId != null &&
-                     await FilteringMethods.GetCandidateIdElectionType(_context, candidate.IdCandidate) != electionTypeId)
-                    || (voivodeshipId != null &&
-                     await FilteringMethods.GetCandidateIdVoivodeship(_context, candidate.IdCandidate) != voivodeshipId)
-                    || (countyId != null &&
-                     await FilteringMethods.GetCandidateIdCounty(_context, candidate.IdCandidate) != countyId)
-                    || (provinceId != null &&
-                     await FilteringMethods.GetCandidateIdProvince(_context, candidate.IdCandidate) != provinceId)
-                    || (districtId != null && candidate.IdDistrict != districtId))
+                var candidateElectionTypeId = candidate.IdElectionNavigation.IdElectionType;
+                var candidateVoivodeshipId = candidate.IdDistrictNavigation?.IdProvinceNavigation?.IdCountyNavigation.IdVoivodeship;
+                var candidateCountyId = candidate.IdDistrictNavigation?.IdProvinceNavigation?.IdCounty;
+                var candidateProvinceId = candidate.IdDistrictNavigation?.IdProvince;
+
+                // Filter conditions
+                if ((electionTypeId != null && candidateElectionTypeId != electionTypeId) ||
+                    (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
+                    (countyId != null && candidateCountyId != countyId) ||
+                    (provinceId != null && candidateProvinceId != provinceId) ||
+                    (districtId != null && candidate.IdDistrict != districtId))
                 {
-                    // Skip this candidate if any of the filter conditions are not met
-                    continue;
+                    continue; // Skip this candidate if it doesn't match the filter conditions
                 }
 
+                // Retrieve person data for the current candidate
                 var personViewModel = await _context.People
                     .Where(p => p.IdPerson == candidate.IdPerson)
                     .Select(person => new PersonViewModel
@@ -258,6 +260,7 @@ namespace E_Wybory.Controllers
                     })
                     .FirstOrDefaultAsync();
 
+                // Add the candidate and their person data to the list
                 candidatePersonViewModels.Add(new CandidatePersonViewModel
                 {
                     candidateViewModel = new CandidateViewModel
