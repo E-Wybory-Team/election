@@ -17,6 +17,9 @@ using E_Wybory.Client.ViewModels;
 using E_Wybory.Services;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
+using E_Wybory.Application.DTOs;
+using E_Wybory.Application.Wrappers;
+using OtpNet;
 
 
 namespace E_Wybory.Controllers
@@ -105,6 +108,71 @@ namespace E_Wybory.Controllers
 
         }
 
+        [HttpPost]
+        [Route("verify-2fa")]
+        [Authorize]
+        public async Task<IActionResult> Verify2fa([FromBody] TwoFactorAuthVerifyRequest verReq)
+        {
+            UserWrapper user = new UserWrapper(User);
+
+            if (user.Id == 0 || verReq.UserId == 0 || verReq.UserId != user.Id) return Unauthorized("Wrong user identification compared claim to model!");
+
+            var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
+
+            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return Unauthorized("User with UserSecret does not exists!");
+
+            bool verResult = VerifyTotpCode(electionUser.UserSecret, verReq.Code);
+            
+            return verResult ? Ok() : Unauthorized("Wrong TOTP code!");
+
+        }
+
+        [HttpGet("{userId}")]
+        [Route("count-rec-codes")]
+
+        public async Task<IActionResult> CountRecCodes(int userId)
+        {
+            UserWrapper user = new(User);
+            if (userId == 0 || user.Id == 0 || user.Id != userId) return Unauthorized("Wrong user identification compared claim to model!");
+            
+            //Do sth with recovery codes here
+            
+            return Ok(new CountResponse { Count = 0});
+        }
+
+        [HttpPost()]
+        [Route("enable-2fa")]
+
+        public async Task<IActionResult> EnableTwoFactorAuth([FromBody] TwoFactorEnabledRequest enabledRequest)
+        {
+            UserWrapper user = new(User);
+            if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return Unauthorized("Wrong user identification compared claim to model!");
+
+            var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
+
+            return Ok();
+
+        }
+
+
+        private bool VerifyTotpCode(string userSecret, string code, int timeWindow = 30)
+        {
+            try
+            {
+                byte[] secretBytes = Base32Encoding.ToBytes(userSecret);
+
+                Totp totp = new Totp(secretBytes, step: timeWindow, mode: OtpHashMode.Sha1);
+
+                bool isCodeValid = totp.VerifyTotp(code, out long timeStepMatched, window: new VerificationWindow(previous: 1, future: 1));
+
+                return isCodeValid;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error verifying TOTP code: {ex.Message}");
+                return false;
+            }
+        }
 
         private async Task<string> AuthenticateUser(string email, string password)
         {

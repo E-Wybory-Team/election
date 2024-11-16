@@ -57,7 +57,7 @@ namespace E_Wybory.Services
             var key = new RsaSecurityKey(rsaPrivateKey);
             var token = handler.CreateToken(new SecurityTokenDescriptor()
             {
-                Issuer = "https://localhost:8443",
+                Issuer = "e-wybory.gov.pl",//"https://localhost:8443",
                 Subject = await claimsIdentity,
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
                 Expires = DateTime.UtcNow.AddMinutes(JWT_TOKEN_VALIDATION_MINS),
@@ -76,10 +76,11 @@ namespace E_Wybory.Services
 
             if(electionUser is null) return new ClaimsIdentity();
 
-            var claims = new List<Claim>() 
+            var claims = new List<Claim>()
             {
                 new Claim("sub", Guid.NewGuid().ToString()),
                 new Claim("name", username),
+                //new Claim("OrgName", "E-Wybory"),
                 //new Claim("Roles", "Wyborca"), //By default
                 new Claim("IdElectionUser", electionUser.IdElectionUser.ToString()),
                 new Claim("IdDistrict", electionUser.IdDistrict.ToString()),

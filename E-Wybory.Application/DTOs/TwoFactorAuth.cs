@@ -14,14 +14,23 @@ namespace E_Wybory.Application.DTOs
         [DataType(DataType.Text)]
         [Display(Name = "Kod weryfikacyjny")]
         public string Code { get; set; } = string.Empty;
+
+        public int UserId { get; set; } = 0;
     }
 
     public class TwoFactorAuthResponse
     {
         [Required]
-        public string QRCodeUri { get; } = string.Empty;
-        [Required]
         public string Secret { get; } = string.Empty;
 
+    }
+
+    public class TwoFactorEnabledRequest
+    {
+        [Required]
+        public int UserId { get; set; } = 0;
+
+        [Required] 
+        public bool IsEnabled { get; set; } = false;
     }
 }

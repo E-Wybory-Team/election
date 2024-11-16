@@ -7,6 +7,7 @@
 @using System.Text.Encodings.Web
 @using System.Security.Claims
 @using E_Wybory.Application.DTOs
+@using E_Wybory.Application.Wrappers
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject IAuthService AuthService
@@ -73,7 +74,7 @@ else
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&algorithm=SHA1&digits=6&period=30";
 
     private string? message;
-    private ClaimsPrincipal user = default!;
+    private UserWrapper user = default!;
     private string? sharedKey;
     private string? authenticatorUri;
     private IEnumerable<string>? recoveryCodes;
@@ -88,22 +89,18 @@ else
     {
         var result = await AuthStateProvider.GetAuthenticationStateAsync();
 
-        user = result.User;
+        user = new UserWrapper(result.User);
 
         await LoadSharedKeyAndQrCodeUriAsync(user);
     }
 
-    private int GetUserId(ClaimsPrincipal user){
-
-        return Convert.ToInt32(user.Claims.FirstOrDefault(c => c.Type.Equals("IdElectionUser"))?.Value);
-    }
 
     private async Task OnValidSubmitAsync()
     {
         // Strip spaces and hyphens
         var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-        var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsync(GetUserId(user), verificationCode);
+        var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsync(user.Id, verificationCode);
 
         if (!is2faTokenValid)
         {
@@ -111,14 +108,14 @@ else
             return;
         }
 
-        await AuthService.SetTwoFactorEnabledAsync(GetUserId(user), true);
-        Logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", GetUserId(user));
+        await AuthService.SetTwoFactorEnabledAsync(user.Id, true);
+        Logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", user.Id);
 
         message = "Twoja aplikacja MFA została dodana";
 
-        if (await AuthService.CountRecoveryCodesAsync(GetUserId(user)) == 0)
+        if (await AuthService.CountRecoveryCodesAsync(user.Id) == 0)
         {
-            recoveryCodes = await AuthService.GenerateNewTwoFactorRecoveryCodesAsync(GetUserId(user), 10)!;
+            recoveryCodes = await AuthService.GenerateNewTwoFactorRecoveryCodesAsync(user.Id, 10)!;
         }
         else
         {
@@ -126,18 +123,18 @@ else
         }
     }
 
-    private async ValueTask LoadSharedKeyAndQrCodeUriAsync(ClaimsPrincipal user)
+    private async ValueTask LoadSharedKeyAndQrCodeUriAsync(UserWrapper user)
     {
-        var unformattedKey = await AuthService.GetAuthenticatorKeyAsync(GetUserId(user));
+        var unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
         if (string.IsNullOrEmpty(unformattedKey))
         {
-            await AuthService.ResetAuthenticatorKeyAsync(GetUserId(user));
-            unformattedKey = await AuthService.GetAuthenticatorKeyAsync(GetUserId(user));
+            await AuthService.ResetAuthenticatorKeyAsync(user.Id);
+            unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
         }
 
         sharedKey = FormatKey(unformattedKey!);
 
-        authenticatorUri = GenerateQrCodeUri("test@example.com", unformattedKey!);
+        authenticatorUri = GenerateQrCodeUri(user, unformattedKey!);
     }
 
     private string FormatKey(string unformattedKey)
@@ -156,11 +153,11 @@ else
         return result.ToString().ToLowerInvariant();
     }
 
-    private string GenerateQrCodeUri(string email, string unformattedKey)
+    private string GenerateQrCodeUri(UserWrapper user, string unformattedKey)
     {
         return string.Format(CultureInfo.InvariantCulture, AuthenticatorUriFormat,
-            UrlEncoder.Encode("E-Wybory"),
-            UrlEncoder.Encode(email),
+            UrlEncoder.Encode(user.Issuer!),
+            UrlEncoder.Encode(user.Username!),
             unformattedKey);
     }
 }

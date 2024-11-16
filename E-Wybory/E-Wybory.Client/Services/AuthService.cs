@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using E_Wybory.Application.DTOs;
 using E_Wybory.Client.Components.Pages;
 using E_Wybory.Client.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -76,23 +77,35 @@ namespace E_Wybory.Client.Services
         private readonly Dictionary<int, bool> user2faEnabled = new();
         private readonly Dictionary<int, List<string>> userRecoveryCodes = new();
 
-        public Task<bool> VerifyTwoFactorTokenAsync(int userId, string code)
+        public async Task<bool> VerifyTwoFactorTokenAsync(int userId, string code)
         {
-            return Task.FromResult(code == "123456");
+            var req2fa = new TwoFactorAuthVerifyRequest() { UserId = userId, Code = code };
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/verify-2fa", req2fa);
+
+            return response.IsSuccessStatusCode;
 
         }
 
-        public Task<int> CountRecoveryCodesAsync(int userId)
+        public async Task<int> CountRecoveryCodesAsync(int userId)
         {
             // return Task.FromResult(6);
-            return Task.FromResult(userRecoveryCodes.ContainsKey(userId) ? userRecoveryCodes[userId].Count : 0);
+            //return Task.FromResult(userRecoveryCodes.ContainsKey(userId) ? userRecoveryCodes[userId].Count : 0);
 
+            var response = await _httpClient.GetAsync($"api/auth/count-rec-codes/{userId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var countResponse = await response.Content.ReadFromJsonAsync<CountResponse>();
+                return Convert.ToInt32(countResponse?.Count);
+            }
+
+            return 0;
         }
 
-        public Task SetTwoFactorEnabledAsync(int userId, bool enabled)
+        public async Task SetTwoFactorEnabledAsync(int userId, bool enabled)
         {
-            user2faEnabled[userId] = enabled;
-            return Task.CompletedTask;
+            var enable2fa = new TwoFactorEnabledRequest() { UserId = userId, IsEnabled = enabled };
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/enable-2fa", enable2fa);
+            
         }
 
         public Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId, int maxRecoveryCodes)
