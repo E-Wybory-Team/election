@@ -16,5 +16,15 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public string? GetElectionTypeNameById(int electionTypeId, List<ElectionTypeViewModel> electionTypes)
+        {
+            var party = electionTypes
+                .Where(p => p.IdElectionType == electionTypeId)
+                .Select(p => p.ElectionTypeName)
+                .FirstOrDefault();
+
+            return party;
+        }
+
     }
 }
