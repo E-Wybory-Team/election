@@ -47,6 +47,19 @@ namespace E_Wybory.Client.Services
             return response;
         }
 
+        public async Task<FilterListWrapper> GetFilteredListsWrapper(int? voivodeshipId, int? countyId, int? provinceId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/ListsWrapper", new Dictionary<string, int?>
+            {
+                { "voivodeshipId", voivodeshipId },
+                { "countyId", countyId },
+                { "provinceId", provinceId }
+            });
+
+            var response = await _httpClient.GetFromJsonAsync<FilterListWrapper>(url);
+            return response;
+        }
+
         public async Task<FilterListWrapper> GetFilteredLists(int? voivodeshipId, int? countyId)
         {
             var url = BuildUrlWithParameters("/api/FilterWrapper/RegionLists", new Dictionary<string, int?>
@@ -100,6 +113,21 @@ namespace E_Wybory.Client.Services
             });
 
             var response = await _httpClient.GetFromJsonAsync<List<DistrictViewModel>>(url);
+            return response;
+        }
+
+        public async Task<List<UserPersonViewModel>> GetFilteredUsers(
+            int? voivodeshipId, int? countyId, int? provinceId, int? districtId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/Users", new Dictionary<string, int?>
+            {
+                { "voivodeshipId", voivodeshipId },
+                { "countyId", countyId },
+                { "provinceId", provinceId },
+                { "districtId", districtId }
+            });
+
+            var response = await _httpClient.GetFromJsonAsync<List<UserPersonViewModel>>(url);
             return response;
         }
 

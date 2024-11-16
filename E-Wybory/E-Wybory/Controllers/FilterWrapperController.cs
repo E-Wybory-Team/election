@@ -97,6 +97,68 @@ namespace E_Wybory.Controllers
             return Ok(filterListWrapperFull);
         }
 
+
+        // GET: api/FilterWrapper/ListsWrapper
+        [HttpGet("ListsWrapper")]
+        public async Task<ActionResult<FilterListWrapper>> GetFilteredListsWrapper(
+            [FromQuery] int? voivodeshipId,
+            [FromQuery] int? countyId,
+            [FromQuery] int? provinceId)
+        {
+            var filterListWrapper = new FilterListWrapper();
+
+
+            filterListWrapper.VoivodeshipFilter = await _context.Voivodeships.Select(v => new VoivodeshipViewModel()
+            {
+                idVoivodeship = v.IdVoivodeship,
+                voivodeshipName = v.VoivodeshipName
+            }).ToListAsync();
+            
+
+            if (voivodeshipId.HasValue)
+            {
+                filterListWrapper.CountyFilter = await _context.Counties
+                    .Where(c => c.IdVoivodeship == voivodeshipId)
+                    .Select(c => new CountyViewModel
+                    {
+                        IdCounty = c.IdCounty,
+                        CountyName = c.CountyName,
+                        IdVoivodeship = c.IdVoivodeship
+                    })
+                    .ToListAsync();
+            }
+
+
+            if (countyId.HasValue)
+            {
+                filterListWrapper.ProvinceFilter = await _context.Provinces
+                    .Where(p => countyId == p.IdCounty)
+                    .Select(p => new ProvinceViewModel
+                    {
+                        IdProvince = p.IdProvince,
+                        IdCounty = p.IdCounty,
+                        ProvinceName = p.ProvinceName
+                    })
+                    .ToListAsync();
+            }
+
+
+            if (provinceId.HasValue)
+            {
+                filterListWrapper.DistrictFilter = await _context.Districts
+                    .Where(p => provinceId == p.IdProvince)
+                    .Select(p => new DistrictViewModel
+                    {
+                        IdDistrict = p.IdDistrict,
+                        DistrictName = p.DistrictName,
+                        DistrictHeadquarters = p.DistrictHeadquarters,
+                        IdProvince = p.IdProvince ?? 0
+                    })
+                    .ToListAsync();
+            }
+            return Ok(filterListWrapper);
+        }
+
         // GET: api/FilterWrapper/RegionLists
         [HttpGet("RegionLists")]
         public async Task<ActionResult<FilterListWrapper>> GetFilteredLists(
@@ -331,6 +393,74 @@ namespace E_Wybory.Controllers
             }
 
             return Ok(filteredDistricts);
+        }
+
+
+        // GET: api/FilterWrapper/Users
+        [HttpGet("Users")]
+        public async Task<ActionResult<List<UserPersonViewModel>>> GetFilteredUsers(
+            [FromQuery] int? voivodeshipId,
+            [FromQuery] int? countyId,
+            [FromQuery] int? provinceId,
+            [FromQuery] int? districtId)
+        {
+            var users = await _context.ElectionUsers
+                .Include(user => user.Voter)
+                .Include(user => user.IdDistrictNavigation)
+                .ThenInclude(district => district.IdProvinceNavigation)
+                .ThenInclude(province => province.IdCountyNavigation)
+                .ThenInclude(county => county.IdVoivodeshipNavigation)
+                .ToListAsync();
+
+            var userPersonViewModels = new List<UserPersonViewModel>();
+
+            foreach (var user in users)
+            {
+                var userVoivodeshipId = user.Voter?.IdDistrictNavigation?.IdProvinceNavigation?.IdCountyNavigation.IdVoivodeship;
+                var userCountyId = user.Voter?.IdDistrictNavigation?.IdProvinceNavigation?.IdCounty;
+                var userProvinceId = user.Voter?.IdDistrictNavigation?.IdProvince;
+                var voterDistrictId = user.Voter?.IdDistrict;
+
+                // Filter conditions
+                if ((voivodeshipId != null && userVoivodeshipId != voivodeshipId) ||
+                    (countyId != null && userCountyId != countyId) ||
+                    (provinceId != null && userProvinceId != provinceId) ||
+                    (districtId != null && voterDistrictId != districtId))
+                {
+                    continue; // Skip this candidate if it doesn't match the filter conditions
+                }
+
+                // Retrieve person data for the current candidate
+                var personViewModel = await _context.People
+                    .Where(p => p.IdPerson == user.IdPerson)
+                    .Select(person => new PersonViewModel
+                    {
+                        IdPerson = person.IdPerson,
+                        Name = person.Name,
+                        Surname = person.Surname,
+                        PESEL = person.Pesel,
+                        BirthDate = person.BirthDate
+                    })
+                    .FirstOrDefaultAsync();
+
+                // Add the user and their person data to the list
+                userPersonViewModels.Add(new UserPersonViewModel
+                {
+                    userViewModel = new ElectionUserViewModel
+                    {
+                        IdElectionUser = user.IdElectionUser,
+                        Email = user.Email,
+                        PhoneNumber = user.PhoneNumber,
+                        Password = user.Password,
+                        IdPerson = user.IdPerson,
+                        IdDistrict = voterDistrictId!.GetValueOrDefault(),
+                        UserSecret = user.UserSecret
+                    },
+                    personViewModel = personViewModel
+                });
+            }
+
+            return Ok(userPersonViewModels);
         }
     }
 }

@@ -1,5 +1,9 @@
 ﻿@page "/voterslist"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+@inject IFilterWrapperManagementService FilterWrapperService
 
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
@@ -12,47 +16,60 @@
 <div class="filters">
     <div class="filter-group">
         <label>Województwo</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
             <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in voivodeships)
+            @foreach (var voivodeship in wrapper.VoivodeshipFilter)
             {
-                <option value="@voivodeship">@voivodeship</option>
+                <option value="@voivodeship.idVoivodeship">
+                    @voivodeship.voivodeshipName
+                </option>
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Powiat</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
             <option value="">Wybierz powiat</option>
-            @foreach (var county in counties)
+            @foreach (var county in wrapper.CountyFilter)
             {
-                <option value="@county">@county</option>
+                @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                {
+                    <option value="@county.IdCounty">
+                        @county.CountyName
+                    </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Gmina</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
             <option value="">Wybierz gminę</option>
-            @foreach (var province in provinces)
+            @foreach (var province in wrapper.ProvinceFilter)
             {
-                <option value="@province">@province</option>
+                @if (province.IdCounty == SelectedCountyId)
+                {
+                    <option value="@province.IdProvince">
+                        @province.ProvinceName
+                    </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Numer obwodu</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
             <option value="">Wybierz numer obwodu</option>
-            @foreach (var districtNumber in districtNumbers)
+            @foreach (var district in wrapper.DistrictFilter)
             {
-                <option value="@districtNumber">@districtNumber</option>
+                @if (district.IdProvince == SelectedProvinceId)
+                {
+                    <option value="@district.IdDistrict">
+                        @district.DistrictName - @district.DistrictHeadquarters
+                    </option>
+                }
             }
         </select>
-    </div>
-    <div class="filter-group">
-        <label>Szukaj</label>
-        <input type="text" @bind="searchQuery" @bind:event="oninput" placeholder="Wpisz wyszukiwaną frazę" />
     </div>
 </div>
 
@@ -72,20 +89,20 @@
         @{
             int index = 1;
         }
-        @foreach (var voter in filteredVoters)
+        @foreach (var voter in filteredUsers)
         {
             <tr>
                 <td>@index</td>
-                <td>@voter.Person.Name</td>
-                <td>@voter.Person.Surname</td>
-                <td>@voter.Person.PESEL</td>
-                <td>@voter.PhoneNumber</td>
-                <td>@voter.Email</td>
+                <td>@voter.personViewModel.Name</td>
+                <td>@voter.personViewModel.Surname</td>
+                <td>@voter.personViewModel.PESEL</td>
+                <td>@voter.userViewModel.PhoneNumber</td>
+                <td>@voter.userViewModel.Email</td>
                 <td>
-                    <a href="/modifyvoter/@voter.IdElectionUser">
+                    <a href="/modifyvoter/@voter.userViewModel.IdElectionUser">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/voterdelete/@voter.IdElectionUser">
+                    <a href="/voterdelete/@voter.userViewModel.IdElectionUser">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
@@ -96,59 +113,49 @@
 </table>
 
 @code {
-    private ElectionUser? selectedVoter;
-    private string searchQuery = string.Empty;
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
+    private int? SelectedDistrictId { get; set; } = null;
 
-    // Mockowane dane wyborców
-    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
-    private List<ElectionUser> voters = new()
+    private List<UserPersonViewModel> filteredUsers = new List<UserPersonViewModel>();
+    private FilterListWrapper wrapper = new FilterListWrapper();
+
+    private async Task FilterTable()
     {
-        new ElectionUser {IdElectionUser = 1, Email = "uniquemail@gmail.com", PhoneNumber = "123 456 789", Person = new People {IdPerson = 1, Name = "Adam", Surname = "Kowalski", PESEL = 85293128490, Date = DateOnly.Parse("1985-01-01")}},
-        new ElectionUser {IdElectionUser = 2, Email = "newuniquemail@gmail.com", PhoneNumber = "987 654 312", Person = new People {IdPerson = 2, Name = "Katarzyna", Surname = "Elowska", PESEL = 92731028594, Date =  DateOnly.Parse("1992-01-01")}}
-    };
-
-    private List<ElectionUser> filteredVoters = new();
-
-    private void FilterTable()
-    {
-        if (string.IsNullOrWhiteSpace(searchQuery))
-        {
-            filteredVoters = voters;
-        }
-        else
-        {
-            string query = searchQuery.ToLower();
-            filteredVoters = voters.Where(voter =>
-                voter.Person.Name.ToLower().Contains(query) ||
-                voter.Person.Surname.ToLower().Contains(query) ||
-                voter.Person.PESEL.ToString().Contains(query) ||
-                voter.PhoneNumber.ToLower().Contains(query) ||
-                voter.Email.ToLower().Contains(query)).ToList();
-        }
+        wrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        filteredUsers = await FilterWrapperService.GetFilteredUsers(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
     }
 
-    protected override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
-        filteredVoters = voters;
+        await FilterTable();
     }
 
-    public class ElectionUser
+    private async Task OnVoivodeshipChanged()
     {
-        public int IdElectionUser { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public People Person { get; set; }
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+        await FilterTable();
     }
 
-    public class People
+    private async Task OnCountyChanged()
     {
-        public int IdPerson { get; set; }
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public long PESEL { get; set; }
-        public DateOnly Date { get; set; }
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+        await FilterTable();
     }
+
+    private async Task OnProvinceChanged()
+    {
+        SelectedDistrictId = null;
+        await FilterTable();
+    }
+
+    private async Task OnDistrictChanged()
+    {
+        await FilterTable();
+    }
+
 }
