@@ -21,7 +21,7 @@ public partial class District
 
     public virtual ICollection<ElectionUser> ElectionUsers { get; set; } = new List<ElectionUser>();
 
-    public virtual Constituence? IdConstituencyNavigation { get; set; }
+    public virtual Constituence? IdConstituencyNavigation { get; set; } = null!;
 
     public virtual Province? IdProvinceNavigation { get; set; }
 

@@ -13,7 +13,7 @@ public partial class Voter
 
     public virtual ICollection<ElectionVoter> ElectionVoters { get; set; } = new List<ElectionVoter>();
 
-    public virtual District? IdDistrictNavigation { get; set; }
+    public virtual District? IdDistrictNavigation { get; set; } = null!;
 
     public virtual ElectionUser IdElectionUserNavigation { get; set; } = null!;
 }

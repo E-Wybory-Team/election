@@ -224,6 +224,7 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
                 .HasColumnName("email");
             entity.Property(e => e.IdDistrict).HasColumnName("idDistrict");
             entity.Property(e => e.IdPerson).HasColumnName("idPerson");
+            entity.Property(e => e.Is2Faenabled).HasColumnName("is2FAEnabled");
             entity.Property(e => e.Password)
                 .HasMaxLength(100)
                 .HasColumnName("password");
