@@ -167,6 +167,6 @@
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);
 
-        errorMessage = (isAddedPerson && isAddedCandidate) ? "Candidate added successful!" : "Adding of candidate fails";
+        errorMessage = isAddedCandidate ? "Candidate added successful!" : "Adding of candidate fails";
     }
 }

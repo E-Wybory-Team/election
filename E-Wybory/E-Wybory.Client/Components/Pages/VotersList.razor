@@ -4,6 +4,8 @@
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @inject IFilterWrapperManagementService FilterWrapperService
+@inject IElectionUserManagementService ElectionUserManagementService
+@inject IVoterManagementService VoterManagementService
 
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
@@ -99,10 +101,10 @@
                 <td>@voter.userViewModel.PhoneNumber</td>
                 <td>@voter.userViewModel.Email</td>
                 <td>
-                    <a href="/modifyvoter/@voter.userViewModel.IdElectionUser">
+                    <a href="/modifyvoter/@votersIds[voter.userViewModel.IdElectionUser]">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/voterdelete/@voter.userViewModel.IdElectionUser">
+                    <a href="/voterdelete/@votersIds[voter.userViewModel.IdElectionUser]">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
@@ -120,6 +122,7 @@
 
     private List<UserPersonViewModel> filteredUsers = new List<UserPersonViewModel>();
     private FilterListWrapper wrapper = new FilterListWrapper();
+    private Dictionary<int, int> votersIds = new Dictionary<int, int>();
 
     private async Task FilterTable()
     {
@@ -130,6 +133,11 @@
     protected async override Task OnInitializedAsync()
     {
         await FilterTable();
+        foreach (var filteredUser in filteredUsers)
+        {
+            int voterId = await VoterManagementService.GetVoterIdByElectionUserId(filteredUser.userViewModel.IdElectionUser);
+            votersIds[filteredUser.userViewModel.IdElectionUser] = voterId;
+        }
     }
 
     private async Task OnVoivodeshipChanged()
@@ -142,6 +150,7 @@
 
     private async Task OnCountyChanged()
     {
+       
         SelectedProvinceId = null;
         SelectedDistrictId = null;
         await FilterTable();

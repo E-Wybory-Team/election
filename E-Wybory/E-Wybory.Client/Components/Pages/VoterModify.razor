@@ -1,60 +1,85 @@
 ﻿@page "/modifyvoter/{voterId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
+@inject IVoterManagementService VoterManagementService
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>ZMIANA OBWODU WYBORCY</h1>
-    <EditForm Model="@voterModel" OnValidSubmit="HandleModifySubmit">
+    <EditForm Model="@voterModel" OnValidSubmit="HandleAddSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <div class="form-group-smaller">
             <label for="pesel">PESEL WYBORCY</label>
-            <InputText @bind-Value="voterModel.PESEL" id="pesel" class="form-input" readonly />
+            <InputText @bind-Value="@EnteredPesel" id="pesel" class="form-input" placeholder="Nr Pesel wyborcy" />
+            <ValidationMessage For="@(() => personModel.PESEL)" />
         </div>
         <div class="form-group-smaller">
             <label for="wojewodztwo">WOJEWÓDZTWO</label>
-            <select @bind="voterModel.Wojewodztwo" id="wojewodztwo" class="form-input">
+            <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
                 <option value="">Wybierz województwo</option>
-                @foreach (var woj in voivodeships)
+                @foreach (var voivodeship in wrapper.VoivodeshipFilter)
                 {
-                    <option value="@woj">@woj</option>
+                    <option value="@voivodeship.idVoivodeship">
+                        @voivodeship.voivodeshipName
+                    </option>
                 }
             </select>
         </div>
         <div class="form-group-smaller">
             <label for="powiat">POWIAT</label>
-            <select @bind="voterModel.Powiat" id="powiat" class="form-input">
+            <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
                 <option value="">Wybierz powiat</option>
-                @foreach (var pow in counties)
+                @foreach (var county in wrapper.CountyFilter)
                 {
-                    <option value="@pow">@pow</option>
+                    @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                    {
+                        <option value="@county.IdCounty">
+                            @county.CountyName
+                        </option>
+                    }
                 }
             </select>
         </div>
         <div class="form-group-smaller">
             <label for="gmina">GMINA</label>
-            <select @bind="voterModel.Gmina" id="gmina" class="form-input">
+            <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
                 <option value="">Wybierz gminę</option>
-                @foreach (var gmina in provinces)
+                @foreach (var province in wrapper.ProvinceFilter)
                 {
-                    <option value="@gmina">@gmina</option>
+                    @if (province.IdCounty == SelectedCountyId)
+                    {
+                        <option value="@province.IdProvince">
+                            @province.ProvinceName
+                        </option>
+                    }
                 }
             </select>
         </div>
         <div class="form-group-smaller">
             <label for="numer-obwodu">NUMER OBWODU</label>
-            <select @bind="voterModel.NumerObwodu" id="numer-obwodu" class="form-input">
-                <option value="">Wybierz numer obwodu</option>
-                @foreach (var obwod in districtNumbers)
+            <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+                <option value="">Wybierz obwód wyborczy</option>
+                @foreach (var district in wrapper.DistrictFilter)
                 {
-                    <option value="@obwod">@obwod</option>
+                    @if (district.IdProvince == SelectedProvinceId)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
                 }
             </select>
         </div>
+
         <div class="form-row">
-            <button type="submit" class="red-submit-button">ZMIEŃ</button>
+            <button type="submit" class="submit-button">DODAJ</button>
             <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
@@ -64,68 +89,79 @@
     [Parameter]
     public int voterId { get; set; }
 
-    private VoterModel voterModel = new VoterModel();
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
+    private int? SelectedDistrictId { get; set; } = null;
+    private string? EnteredPesel = String.Empty;
 
-    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
+    private FilterListWrapper wrapper = new FilterListWrapper();
 
-    protected override void OnInitialized()
+    bool isAddedVoter = false;
+    string errorMessage;
+
+    private VoterViewModel voterModel = new VoterViewModel();
+    private PersonViewModel personModel = new PersonViewModel();
+    private ElectionUserViewModel userViewModel = new ElectionUserViewModel();
+
+    protected override async Task OnInitializedAsync()
     {
-        var voter = GetVoterById(voterId);
-        if (voter != null)
+        if (!await VoterManagementService.VoterExists(voterId))
         {
-            voterModel = new VoterModel
-                {
-                    PESEL = voter.Person.PESEL.ToString(),
-                    Wojewodztwo = "Mazowieckie",
-                    Powiat = "Powiat 1",
-                    Gmina = "Gmina 1",
-                    NumerObwodu = "Obwód 1"
-                };
+            errorMessage = "Voter not found";
+            Cancel();
         }
-    }
-
-    private ElectionUser? GetVoterById(int id)
-    {
-        // Mockowanie wyborcy na podstawie ID
-        var voters = new List<ElectionUser>
+        else
         {
-            new ElectionUser { IdElectionUser = 1, Person = new People { PESEL = 85293128490 } },
-            new ElectionUser { IdElectionUser = 2, Person = new People { PESEL = 92731028594 } }
-        };
-        return voters.FirstOrDefault(v => v.IdElectionUser == id);
+            voterModel = await VoterManagementService.GetVoterById(voterId);
+            await FilterRegions();
+        }
+
     }
 
-    private void HandleModifySubmit()
+    private async Task HandleAddSubmit()
     {
-        Console.WriteLine($"Zmieniono dane wyborcy o numerze PESEL: {voterModel.PESEL}");
+            //userViewModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
+            voterModel.IdElectionUser = userViewModel.IdElectionUser;
+            voterModel.IdVoter = await VoterManagementService.GetVoterIdByElectionUserId(userViewModel.IdElectionUser);
+            isAddedVoter = await VoterManagementService.PutVoter(voterModel);
     }
 
     private void Cancel()
     {
-        // Przekierowanie na stronę VotersList po kliknięciu "Anuluj"
         NavigationManager.NavigateTo("/voterslist");
     }
 
-    public class VoterModel
+    private async Task OnVoivodeshipChanged()
     {
-        public string PESEL { get; set; }
-        public string Wojewodztwo { get; set; }
-        public string Powiat { get; set; }
-        public string Gmina { get; set; }
-        public string NumerObwodu { get; set; }
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+
+        await FilterRegions();
     }
 
-    public class ElectionUser
+    private async Task OnCountyChanged()
     {
-        public int IdElectionUser { get; set; }
-        public People Person { get; set; }
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+
+        await FilterRegions();
     }
 
-    public class People
+    private async Task OnProvinceChanged()
     {
-        public long PESEL { get; set; }
+        SelectedDistrictId = null;
+        await FilterRegions();
+    }
+
+    private async Task OnDistrictChanged()
+    {
+        voterModel.IdDistrict = SelectedDistrictId;
+    }
+
+    private async Task FilterRegions()
+    {
+        wrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
     }
 }
