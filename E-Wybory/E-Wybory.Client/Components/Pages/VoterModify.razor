@@ -17,7 +17,7 @@
 
         <div class="form-group-smaller">
             <label for="pesel">PESEL WYBORCY</label>
-            <InputText @bind-Value="@EnteredPesel" id="pesel" class="form-input" placeholder="Nr Pesel wyborcy" />
+            <InputText @bind-Value="@EnteredPesel" id="pesel" readonly class="form-input" placeholder="Nr Pesel wyborcy" />
             <ValidationMessage For="@(() => personModel.PESEL)" />
         </div>
         <div class="form-group-smaller">
@@ -83,6 +83,10 @@
             <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
@@ -97,7 +101,7 @@
 
     private FilterListWrapper wrapper = new FilterListWrapper();
 
-    bool isAddedVoter = false;
+    bool isModifiedVoter = false;
     string errorMessage;
 
     private VoterViewModel voterModel = new VoterViewModel();
@@ -114,6 +118,16 @@
         else
         {
             voterModel = await VoterManagementService.GetVoterById(voterId);
+            try
+            {
+                userViewModel = await ElectionUserManagementService.GetElectionUserById(voterModel.IdElectionUser);
+                personModel = await PersonManagementService.GetPersonById(userViewModel.IdPerson);
+                EnteredPesel = personModel.PESEL;
+            }
+            catch(Exception ex)
+            {
+                errorMessage = "Nie ma powiązanego użytkownika w bazie!";
+            }
             await FilterRegions();
         }
 
@@ -121,10 +135,9 @@
 
     private async Task HandleAddSubmit()
     {
-            //userViewModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
-            voterModel.IdElectionUser = userViewModel.IdElectionUser;
-            voterModel.IdVoter = await VoterManagementService.GetVoterIdByElectionUserId(userViewModel.IdElectionUser);
-            isAddedVoter = await VoterManagementService.PutVoter(voterModel);
+        isModifiedVoter = await VoterManagementService.PutVoter(voterModel);
+        errorMessage = isModifiedVoter ? "Updating voter successful!" : "Updating voter fails";
+        Cancel();
     }
 
     private void Cancel()

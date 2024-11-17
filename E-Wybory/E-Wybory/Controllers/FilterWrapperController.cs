@@ -422,7 +422,8 @@ namespace E_Wybory.Controllers
                 var voterDistrictId = user.Voter?.IdDistrict;
 
                 // Filter conditions
-                if ((voivodeshipId != null && userVoivodeshipId != voivodeshipId) ||
+                if ( (user.Voter == null) ||
+                    (voivodeshipId != null && userVoivodeshipId != voivodeshipId) ||
                     (countyId != null && userCountyId != countyId) ||
                     (provinceId != null && userProvinceId != provinceId) ||
                     (districtId != null && voterDistrictId != districtId))

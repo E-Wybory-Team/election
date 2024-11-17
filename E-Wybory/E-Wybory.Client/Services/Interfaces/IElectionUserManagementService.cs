@@ -6,5 +6,6 @@ namespace E_Wybory.Client.Services
     {
         Task<ElectionUserViewModel> GetElectionUserByPersonId(int id);
         Task<bool> UserExists(int id);
+        Task<ElectionUserViewModel> GetElectionUserById(int id);
     }
 }

@@ -14,6 +14,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<ElectionUserViewModel> GetElectionUserById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ElectionUserViewModel>($"/api/ElectionUser/{id}");
+            return await Task.FromResult(response);
+        }
+
         public async Task<bool> UserExists(int id)
         {
             var response = await _httpClient.GetAsync($"/api/ElectionUser/exist/{id}");
