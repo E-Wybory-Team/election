@@ -115,25 +115,23 @@ namespace E_Wybory.Controllers
         {
             UserWrapper user = new UserWrapper(User);
 
-            if (user.Id == 0 || verReq.UserId == 0 || verReq.UserId != user.Id) return Unauthorized("Wrong user identification compared claim to model!");
+            if (user.Id == 0 || verReq.UserId == 0 || verReq.UserId != user.Id) return NotFound("Wrong user identification compared claim to model!");
 
             var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
 
-            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return Unauthorized("User with UserSecret does not exists!");
+            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
 
             bool verResult = VerifyTotpCode(electionUser.UserSecret, verReq.Code);
             
-            return verResult ? Ok() : Unauthorized("Wrong TOTP code!");
+            return verResult ? Ok() : Unauthorized("Wrong TOTP code");
 
         }
 
-        [HttpGet("{userId}")]
-        [Route("count-rec-codes")]
-
+        [HttpGet("count-rec-codes/{userId}")]
         public async Task<IActionResult> CountRecCodes(int userId)
         {
             UserWrapper user = new(User);
-            if (userId == 0 || user.Id == 0 || user.Id != userId) return Unauthorized("Wrong user identification compared claim to model!");
+            if (userId == 0 || user.Id == 0 || user.Id != userId) return NotFound("Wrong user identification compared claim to model!");
             
             //Do sth with recovery codes here
             
@@ -146,24 +144,80 @@ namespace E_Wybory.Controllers
         public async Task<IActionResult> EnableTwoFactorAuth([FromBody] TwoFactorEnabledRequest enabledRequest)
         {
             UserWrapper user = new(User);
-            if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return Unauthorized("Wrong user identification compared claim to model!");
+            if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return NotFound("Wrong user identification compared claim to model!");
 
             var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
 
-            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return Unauthorized("User with UserSecret does not exists!");
+            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
 
             electionUser.Is2Faenabled = enabledRequest.IsEnabled;
 
             _context.ElectionUsers.Update(electionUser);
-
             await _context.SaveChangesAsync();  
 
-            return Ok();
+            return  Ok();
 
-            return Ok();
 
         }
 
+        private const int maxRecoveryCodes = 6;
+
+        [HttpGet("gen-rec-codes/{userId}")]
+        [Authorize]
+
+        public async Task<IActionResult> GenerateNewTwoFactorRecoveryCodes(int userId)
+        {
+            var codes = new List<string>();
+            for (int i = 0; i < maxRecoveryCodes; i++)
+            {
+                codes.Add(Guid.NewGuid().ToString().Substring(0, 8));
+            }
+            //userRecoveryCodes[userId] = codes;
+            return Ok(codes);
+        }
+
+        [HttpGet("get-auth-key/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetAuthenticatorKey(int userId)
+        {
+            UserWrapper user = new(User);
+            if (userId == 0 || user.Id == 0 || user.Id != userId) return NotFound("Wrong user identification compared claim to model!");
+
+            var electionUser = await _context.ElectionUsers.FindAsync(userId);
+            if (electionUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            if (string.IsNullOrEmpty(electionUser.UserSecret))
+            {
+                electionUser.UserSecret = Base32Encoding.ToString(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+                _context.ElectionUsers.Update(electionUser);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(electionUser.UserSecret);
+        }
+
+        [HttpPost("reset-auth-key/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> ResetAuthenticatorKey(int userId)
+        {
+            UserWrapper user = new(User);
+            if (userId == 0 || user.Id == 0 || user.Id != userId) return NotFound("Wrong user identification compared claim to model!");
+
+            var electionUser = await _context.ElectionUsers.FindAsync(userId);
+            if (electionUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            electionUser.UserSecret = Base32Encoding.ToString(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+            _context.ElectionUsers.Update(electionUser);
+            await _context.SaveChangesAsync();
+
+            return Ok(electionUser.UserSecret);
+        }
 
         private bool VerifyTotpCode(string userSecret, string code, int timeWindow = 30)
         {
@@ -183,6 +237,28 @@ namespace E_Wybory.Controllers
                 return false;
             }
         }
+
+        //private string ConvertToBase32(byte[] data)
+        //{
+        //    const string base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        //    StringBuilder result = new StringBuilder((data.Length + 4) / 5 * 8);
+
+        //    for (int i = 0; i < data.Length; i += 5)
+        //    {
+        //        int buffer = data[i] << 24;
+        //        if (i + 1 < data.Length) buffer |= data[i + 1] << 16;
+        //        if (i + 2 < data.Length) buffer |= data[i + 2] << 8;
+        //        if (i + 3 < data.Length) buffer |= data[i + 3];
+        //        if (i + 4 < data.Length) buffer |= data[i + 4] >> 8;
+
+        //        for (int bitOffset = 35; bitOffset >= 0; bitOffset -= 5)
+        //        {
+        //            result.Append(base32Chars[(buffer >> bitOffset) & 0x1F]);
+        //        }
+        //    }
+
+        //    return result.ToString();
+        //}
 
         private async Task<string> AuthenticateUser(string email, string password)
         {
@@ -270,5 +346,9 @@ namespace E_Wybory.Controllers
 
             return true;
         }
+       
+
+        
+        
     }
 }

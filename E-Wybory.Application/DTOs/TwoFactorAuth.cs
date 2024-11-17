@@ -9,8 +9,8 @@ namespace E_Wybory.Application.DTOs
 {
     public class TwoFactorAuthVerifyRequest
     {
-        [Required]
-        [StringLength(7, ErrorMessage = "Kod {0} musi mieć długość pomiędzy {2} a {1} znaki.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Podaj kod weryfikacyjny")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Kod weryfikacyjny musi składać się z 6 cyfr.")]
         [DataType(DataType.Text)]
         [Display(Name = "Kod weryfikacyjny")]
         public string Code { get; set; } = string.Empty;

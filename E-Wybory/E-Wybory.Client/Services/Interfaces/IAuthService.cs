@@ -15,9 +15,9 @@ namespace E_Wybory.Client.Services
 
         Task<int> CountRecoveryCodesAsync(int userId);
 
-        Task SetTwoFactorEnabledAsync(int userId, bool enabled);
+        Task<bool> SetTwoFactorEnabledAsync(int userId, bool enabled);
 
-        Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId, int maxRecoveryCodes);
+        Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId);
 
         Task<string> GetAuthenticatorKeyAsync(int userId);
 

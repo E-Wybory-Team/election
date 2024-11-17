@@ -11,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Components\Pages\EnableAuthenticator.razor.js" />
+    <None Remove="Components\Pages\QrCode.razor.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Components\Pages\EnableAuthenticator.razor.js" />
+    <Content Include="Components\Pages\QrCode.razor.js" />
   </ItemGroup>
 
   <ItemGroup>

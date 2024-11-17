@@ -73,9 +73,9 @@ namespace E_Wybory.Client.Services
         //https://learn.microsoft.com/en-us/aspnet/core/blazor/security/server/qrcodes-for-authenticator-apps?view=aspnetcore-8.0
         //https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-enable-qrcodes?view=aspnetcore-8.0#using-a-different-qr-code-library
 
-        private readonly Dictionary<int, string> userAuthenticatorKeys = new();
-        private readonly Dictionary<int, bool> user2faEnabled = new();
-        private readonly Dictionary<int, List<string>> userRecoveryCodes = new();
+        //private readonly Dictionary<int, string> userAuthenticatorKeys = new();
+        //private readonly Dictionary<int, bool> user2faEnabled = new();
+        //private readonly Dictionary<int, List<string>> userRecoveryCodes = new();
 
         public async Task<bool> VerifyTwoFactorTokenAsync(int userId, string code)
         {
@@ -101,60 +101,47 @@ namespace E_Wybory.Client.Services
             return 0;
         }
 
-        public async Task SetTwoFactorEnabledAsync(int userId, bool enabled)
+        public async Task<bool> SetTwoFactorEnabledAsync(int userId, bool enabled)
         {
             var enable2fa = new TwoFactorEnabledRequest() { UserId = userId, IsEnabled = enabled };
             var response = await _httpClient.PostAsJsonAsync("/api/auth/enable-2fa", enable2fa);
-            
+
+            return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
-        public Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId, int maxRecoveryCodes)
+        public async Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId)
         {
-            var codes = new List<string>();
-            for (int i = 0; i < maxRecoveryCodes; i++)
+            var response = await _httpClient.GetAsync($"api/auth/gen-rec-codes/{userId}");
+            if (response.IsSuccessStatusCode)
             {
-                codes.Add(Guid.NewGuid().ToString().Substring(0, 8));
-            }
-            userRecoveryCodes[userId] = codes;
-            return Task.FromResult((IEnumerable<string>)codes);
-        }
-
-        public Task<string> GetAuthenticatorKeyAsync(int userId)
-        {
-            if (!userAuthenticatorKeys.ContainsKey(userId))
-            {
-                userAuthenticatorKeys[userId] = ConvertToBase32(Guid.NewGuid().ToByteArray()).Substring(0, 16);
-            }
-            return Task.FromResult(userAuthenticatorKeys[userId]);  
-        }
-
-        public Task<string> ResetAuthenticatorKeyAsync(int userId)
-        {
-            var newKey = ConvertToBase32(Guid.NewGuid().ToByteArray()).Substring(0, 16);
-            userAuthenticatorKeys[userId] = newKey;
-            return Task.FromResult(newKey);
-        }
-
-        private string ConvertToBase32(byte[] data)
-        {
-            const string base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-            StringBuilder result = new StringBuilder((data.Length + 4) / 5 * 8);
-
-            for (int i = 0; i < data.Length; i += 5)
-            {
-                int buffer = data[i] << 24;
-                if (i + 1 < data.Length) buffer |= data[i + 1] << 16;
-                if (i + 2 < data.Length) buffer |= data[i + 2] << 8;
-                if (i + 3 < data.Length) buffer |= data[i + 3];
-                if (i + 4 < data.Length) buffer |= data[i + 4] >> 8;
-
-                for (int bitOffset = 35; bitOffset >= 0; bitOffset -= 5)
-                {
-                    result.Append(base32Chars[(buffer >> bitOffset) & 0x1F]);
-                }
+                var recCodes = await response.Content.ReadFromJsonAsync<IEnumerable<string>>();
+                return recCodes!;
             }
 
-            return result.ToString();
+            return new List<string>();
         }
+
+        public async Task<string> GetAuthenticatorKeyAsync(int userId)
+        {
+            var response = await _httpClient.GetAsync($"api/auth/get-auth-key/{userId}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+            return string.Empty;
+
+            //return ConvertToBase32(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+        }
+
+        public async Task<string> ResetAuthenticatorKeyAsync(int userId)
+        {
+            var response = await _httpClient.PostAsync($"api/auth/reset-auth-key/{userId}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+            return string.Empty;
+        }
+
     }
 }
