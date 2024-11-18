@@ -115,6 +115,34 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
+
+        // GET: api/Election/active
+        [HttpGet("active")]
+        public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
+        {
+            var currentDate = DateTime.UtcNow;
+
+            var activeElections = await _context.Elections
+                .Where(record => record.ElectionStartDate <= currentDate && record.ElectionEndDate >= currentDate)
+                .Select(record => new ElectionViewModel
+                {
+                    IdElection = record.IdElection,
+                    ElectionStartDate = record.ElectionStartDate,
+                    ElectionEndDate = record.ElectionEndDate,
+                    ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                    IdElectionType = record.IdElectionType
+                })
+                .ToListAsync();
+
+            if (activeElections == null || activeElections.Count() == 0)
+            {
+                return NotFound("No active elections found.");
+            }
+
+            return Ok(activeElections);
+        }
+
+
         private bool ElectionExists(int id)
         {
             return _context.Elections.Any(e => e.IdElection == id);

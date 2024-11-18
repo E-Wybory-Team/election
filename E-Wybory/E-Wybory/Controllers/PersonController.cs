@@ -128,6 +128,33 @@ namespace E_Wybory.Controllers
             return Ok(person?.IdPerson ?? 0);
         }
 
+        // GET: api/People/fromUser/3
+        [HttpGet("fromUser/{electionUserId}")]
+        public async Task<ActionResult<PersonViewModel>> GetPersonIdByPeselAsync(int electionUserId)
+        {
+            var electionUser = await _context.ElectionUsers.Where(u => u.IdElectionUser == electionUserId).FirstOrDefaultAsync();
+            if(electionUser == null)
+            {
+                return NotFound("Not found user with that ID");
+            }
+            var person = await _context.People.Where(p => p.IdPerson == electionUser.IdPerson).FirstOrDefaultAsync();
+            if(person == null)
+            {
+                return NotFound("Not found that person");
+            }
+
+            var personModel = new PersonViewModel()
+            {
+                IdPerson = person.IdPerson,
+                Name = person.Name,
+                Surname = person.Surname,
+                PESEL = person.Pesel,
+                BirthDate = person.BirthDate
+            };
+
+            return Ok(personModel);
+        }
+
 
         // GET: api/People/dataFromId/3
         [HttpGet("dataFromId/{idPerson}")]

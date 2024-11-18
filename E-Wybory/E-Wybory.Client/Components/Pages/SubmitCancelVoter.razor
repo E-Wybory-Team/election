@@ -1,53 +1,134 @@
-﻿@page "/submitcancelvoter"
+﻿@page "/submitcancelvoter/{idVoter:int}/{idDistrict:int?}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.ViewModels
+@inject NavigationManager NavManager
+@inject IVoterManagementService VoterManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IElectionVoterManagementService ElectionVoterManagementService
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>WYPISYWANIE WYBORCY</h1>
 
-    <form>
+    <form @onsubmit="HandleSubmit">
         <div class="form-group">
             <label for="district">OBWÓD GŁOSOWANIA</label>
-            <input type="text" id="district" value="OKW 1 Kędzierzyn Koźle" readonly />
+            <input type="text" id="district" value="@districtViewModel?.DistrictName - @districtViewModel?.DistrictHeadquarters" readonly />
         </div>
 
         <div class="form-group">
             <label for="pesel">PESEL WYBORCY</label>
-            <input type="text" id="pesel" value="@voterData.PESEL" readonly />
+            <input type="text" id="pesel" value="@personModel.PESEL" readonly />
         </div>
 
         <div class="form-group">
             <label for="firstName">IMIĘ</label>
-            <input type="text" id="firstName" value="@voterData.FirstName" readonly />
+            <input type="text" id="firstName" value="@personModel.Name" readonly />
         </div>
 
         <div class="form-group">
             <label for="lastName">NAZWISKO</label>
-            <input type="text" id="lastName" value="@voterData.LastName" readonly />
+            <input type="text" id="lastName" value="@personModel.Surname" readonly />
         </div>
 
         <div class="form-group">
             <label for="birthDate">DATA URODZENIA</label>
-            <input type="text" id="birthDate" value="@voterData.BirthDate" readonly />
+            <input type="text" id="birthDate" value="@personModel.DateOfBirthString" readonly />
         </div>
 
         <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
     </form>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private Voter voterData = new Voter
-        {
-            PESEL = "12345678901",
-            FirstName = "Jan",
-            LastName = "Kowalski",
-            BirthDate = "01.01.1985"
-        };
+    [Parameter] public int idVoter { get; set; }
+    [Parameter] public int? idDistrict { get; set; }
 
-    public class Voter
+    private string errorMessage;
+    private bool formSubmitted = false;
+
+    private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
+    private PersonViewModel personModel = new PersonViewModel();
+    private VoterViewModel voterModel = new VoterViewModel();
+    private DistrictViewModel? districtViewModel = null;
+
+    protected override async Task OnInitializedAsync()
     {
-        public string PESEL { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string BirthDate { get; set; }
+        try
+        {
+            activeElections = await ElectionManagementService.GetActiveElections();
+            if (activeElections.Count == 0)
+            {
+                errorMessage = "No active elections found!";
+                NavManager.NavigateTo("/cancelvoter");
+                return;
+            }
+            var voterExists = await VoterManagementService.VoterExists(idVoter);
+            if (!voterExists)
+            {
+                errorMessage = "Voter not found!";
+                NavManager.NavigateTo("/cancelvoter");
+                return;
+            }
+            else
+            {
+                voterModel = await VoterManagementService.GetVoterById(idVoter);
+            }
+
+            personModel = await PersonManagementService.GetPersonIdByIdElectionUser(voterModel.IdElectionUser);
+
+            if(idDistrict != null && idDistrict == voterModel.IdDistrict)
+            {
+                districtViewModel = await DistrictManagementService.GetDistrictById(idDistrict.Value);
+            }
+            else
+            {
+                errorMessage = "Nie podano obwodu bądź niezwiązany z wyborcą!";
+                NavManager.NavigateTo("/cancelvoter");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Wyborca o podanym ID nie istnieje!";
+            NavManager.NavigateTo("/cancelvoter");
+        }
+
+    }
+
+
+    private async Task HandleSubmit()
+    {
+        if (activeElections.Count == 0)
+        {
+            errorMessage = "No active elections found!";
+            return;
+        }
+
+        foreach (var activeElection in activeElections)
+        {
+            var electionVoted = await ElectionVoterManagementService.ElectionVoterExists(idVoter, activeElection.IdElection);
+            if (electionVoted)
+            {
+                errorMessage = "Voter already voted in this election!";
+                return;
+            }
+
+            var electionVoterViewModel = new ElectionVoterViewModel
+            {
+                IdElection = activeElection.IdElection,
+                IdVoter = idVoter,
+                VoteTime = DateTime.Now
+            };
+
+            formSubmitted = await ElectionVoterManagementService.AddElectionVoter(electionVoterViewModel);
+            errorMessage = formSubmitted ? "Voter canceled successfully!" : "Canceling the voter failed!";
+        }
     }
 }

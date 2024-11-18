@@ -11,5 +11,6 @@ namespace E_Wybory.Client.Services
         Task<bool> DeleteVoter(int VoterId);
         Task<bool> VoterExists(int voterId);
         Task<int> GetVoterIdByElectionUserId(int userId);
+        Task<VoterViewModel> GetVoterByElectionUserId(int userId);
     }
 }

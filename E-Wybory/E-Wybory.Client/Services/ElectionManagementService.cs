@@ -51,5 +51,19 @@ namespace E_Wybory.Client.Services
             return electionTypeId;
         }
 
+        public async Task<List<ElectionViewModel>> GetActiveElections()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<List<ElectionViewModel>>("/api/Election/active");
+                return response ?? new List<ElectionViewModel>();
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No active elections found. Returning an empty list.");
+                return new List<ElectionViewModel>();
+            }
+        }
+
     }
 }

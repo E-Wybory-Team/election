@@ -54,7 +54,16 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult($"{person.Name} {person.Surname} - wiek: {CountPersonAge(person.BirthDate)}");
         }
 
-        public int CountPersonAge(DateTime birthDate)
+        
+
+        public async Task<PersonViewModel> GetPersonIdByIdElectionUser(int electionUserId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<PersonViewModel>($"/api/Person/fromUser/{electionUserId}");
+            return await Task.FromResult(response);
+        }
+    
+
+    public int CountPersonAge(DateTime birthDate)
         {
             var today = DateTime.Today;
             var age = today.Year - birthDate.Year;

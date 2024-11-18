@@ -11,5 +11,6 @@ namespace E_Wybory.Client.Services
         Task<PersonViewModel> GetPersonById(int id);
         Task<String> GetPersonNameSurnameById(int id);
         int CountPersonAge(DateTime birthDate);
+        Task<PersonViewModel> GetPersonIdByIdElectionUser(int electionUserId);
     }
 }

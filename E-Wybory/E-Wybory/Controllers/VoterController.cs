@@ -174,5 +174,27 @@ namespace E_Wybory.Controllers
 
             return voter.IdVoter;
         }
+
+        [HttpGet("voterRecord/{userId}")]
+        public async Task<ActionResult<VoterViewModel>> GetVoterByElectionUserId(int userId)
+        {
+            var voter = await _context.Voters.Where(user => user.IdElectionUser == userId).FirstOrDefaultAsync();
+
+            if (voter != null)
+            {
+                var voterModel = new VoterViewModel()
+                {
+                    IdVoter = voter.IdVoter,
+                    IdElectionUser = userId,
+                    IdDistrict = voter.IdDistrict
+                };
+
+                return voterModel;
+            }
+            else
+            {
+                return NotFound("Not found that voter");
+            }
+        }
     }
 }
