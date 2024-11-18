@@ -37,6 +37,11 @@ namespace E_Wybory.Application.Wrappers
             get => _user?.FindFirst(c => c.Type.Equals("iss"))?.Value;
         }
 
+        public bool TwoFAenabled
+        {
+            get => Convert.ToBoolean(_user?.FindFirst(c => c.Type.Equals("TwoFAenabled"))?.Value);
+        }
+
         public bool IsValid()
         {
             if (_user is null || _user.Claims is null || _user.Claims.Count() == 0) return false;

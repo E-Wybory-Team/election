@@ -109,6 +109,31 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost]
+        [Route("verify-2fa-first")]
+        [Authorize]
+        public async Task<IActionResult> Verify2faOnFirstRegistration([FromBody] TwoFactorAuthVerifyRequest verReq)
+        {
+            UserWrapper user = new UserWrapper(User);
+
+            if(user.TwoFAenabled) return BadRequest("2FA is already enabled for this user!");
+
+            if (user.Id == 0 || verReq.UserId == 0 || verReq.UserId != user.Id) return NotFound("Wrong user identification compared claim to model!");
+
+            var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
+
+            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with 2fa capabilities does not exists!");
+
+            bool verResult = VerifyTotpCode(electionUser.UserSecret, verReq.Code);
+            
+            return verResult ? Ok() : Unauthorized("Wrong TOTP code");
+
+            //usersecret + temp jako tymczasowe? , tylko z jakich znaków składa się guid?
+            //osobny endpoint na pierwszą werysikację, a potem inn na podawanie weryfikowanie samego kodu po właczeniu 2fa, żeby claimy tam pakować 
+
+
+        }
+
+        [HttpPost]
         [Route("verify-2fa")]
         [Authorize]
         public async Task<IActionResult> Verify2fa([FromBody] TwoFactorAuthVerifyRequest verReq)
@@ -119,11 +144,15 @@ namespace E_Wybory.Controllers
 
             var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
 
-            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
+            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with 2fa capabilities does not exists!");
 
             bool verResult = VerifyTotpCode(electionUser.UserSecret, verReq.Code);
-            
+
             return verResult ? Ok() : Unauthorized("Wrong TOTP code");
+
+            //usersecret + temp jako tymczasowe? , tylko z jakich znaków składa się guid?
+            //osobny endpoint na pierwszą werysikację, a potem inn na podawanie weryfikowanie samego kodu po właczeniu 2fa, żeby claimy tam pakować 
+
 
         }
 
@@ -152,6 +181,7 @@ namespace E_Wybory.Controllers
 
             electionUser.Is2Faenabled = enabledRequest.IsEnabled;
 
+            //tutaj pakujesz claimy które są 2fAEnabled 
             _context.ElectionUsers.Update(electionUser);
             await _context.SaveChangesAsync();  
 

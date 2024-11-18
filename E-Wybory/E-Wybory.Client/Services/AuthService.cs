@@ -80,7 +80,7 @@ namespace E_Wybory.Client.Services
         public async Task<bool> VerifyTwoFactorTokenAsync(int userId, string code)
         {
             var req2fa = new TwoFactorAuthVerifyRequest() { UserId = userId, Code = code };
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/verify-2fa", req2fa);
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/verify-2fa-first", req2fa);
 
             return response.IsSuccessStatusCode;
 
