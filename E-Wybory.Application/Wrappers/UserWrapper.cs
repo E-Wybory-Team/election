@@ -39,7 +39,7 @@ namespace E_Wybory.Application.Wrappers
 
         public bool TwoFAenabled
         {
-            get => Convert.ToBoolean(_user?.FindFirst(c => c.Type.Equals("TwoFAenabled"))?.Value);
+            get => Convert.ToBoolean(_user?.FindFirst(c => c.Type.Equals("2FAenabled"))?.Value);
         }
 
         public bool IsValid()

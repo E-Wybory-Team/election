@@ -77,12 +77,11 @@ namespace E_Wybory.Client.Services
         //private readonly Dictionary<int, bool> user2faEnabled = new();
         //private readonly Dictionary<int, List<string>> userRecoveryCodes = new();
 
-        public async Task<bool> VerifyTwoFactorTokenAsync(int userId, string code)
+        public async Task<bool> VerifyTwoFactorTokenAsyncFirst(TwoFactorAuthVerifyRequest req2fa)
         {
-            var req2fa = new TwoFactorAuthVerifyRequest() { UserId = userId, Code = code };
             var response = await _httpClient.PostAsJsonAsync("/api/auth/verify-2fa-first", req2fa);
 
-            return response.IsSuccessStatusCode;
+            return await AssignTokenFromRespone(response);
 
         }
 
@@ -133,15 +132,18 @@ namespace E_Wybory.Client.Services
             //return ConvertToBase32(Guid.NewGuid().ToByteArray()).Substring(0, 16);
         }
 
-        public async Task<string> ResetAuthenticatorKeyAsync(int userId)
+        public async Task<bool> Reset2FAasync(int userId)
         {
-            var response = await _httpClient.PostAsync($"api/auth/reset-auth-key/{userId}", null);
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadAsStringAsync();
-            }
-            return string.Empty;
+            var response = await _httpClient.PostAsync($"api/auth/reset-2fa/{userId}", null);
+           return await AssignTokenFromRespone(response);
         }
 
+        public async Task<bool> VerifyTwoFactorTokenAsync(TwoFactorAuthVerifyRequest req2fa)
+        {
+            
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/verify-2fa", req2fa);
+
+            return await AssignTokenFromRespone(response);
+        }
     }
 }

@@ -17,5 +17,7 @@ namespace E_Wybory.Services
 
         Task<string> RenewTokenClaims(string username, ElectionDbContext context, int idUserType);
 
+        Task<string> TwoFaVeryfiedToken(string username, ElectionDbContext context, int idUserType, bool is2FAveryfied);
+
     }
 }

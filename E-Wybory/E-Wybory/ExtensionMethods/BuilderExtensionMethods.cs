@@ -108,6 +108,9 @@ namespace E_Wybory.ExtensionMethods {
             {
                 options.TokenValidationParameters = validationParameters.Clone();
                 options.TokenValidationParameters.IssuerSigningKey = new RsaSecurityKey(rsaKey);
+
+
+
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = (ctx) =>
@@ -126,6 +129,15 @@ namespace E_Wybory.ExtensionMethods {
                 };
                 options.SaveToken = true;
                 options.MapInboundClaims = false;
+            });
+
+            builder.Services.AddAuthorization(options => 
+            {
+                options.AddPolicy("2FAenabled", policy =>
+                policy.RequireClaim("2FAenabled"));
+
+                options.AddPolicy("2FAdisabled", policy =>
+                policy.RequireClaim("2FAdisabled"));
             });
 
             return builder;

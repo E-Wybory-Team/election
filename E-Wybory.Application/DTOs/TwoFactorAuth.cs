@@ -18,12 +18,7 @@ namespace E_Wybory.Application.DTOs
         public int UserId { get; set; } = 0;
     }
 
-    public class TwoFactorAuthResponse
-    {
-        [Required]
-        public string Secret { get; } = string.Empty;
-
-    }
+    
 
     public class TwoFactorEnabledRequest
     {

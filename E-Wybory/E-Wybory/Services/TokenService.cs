@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text;
+using ZstdSharp.Unsafe;
 
 namespace E_Wybory.Services
 {
@@ -70,7 +71,7 @@ namespace E_Wybory.Services
 
 
 
-        public async Task<ClaimsIdentity> GenerateClaims(string username, ElectionDbContext context, int idUserType = -1)
+        private async Task<ClaimsIdentity> GenerateClaims(string username, ElectionDbContext context, int? idUserType = null, bool? twoFaVeryfied = null)
         {
             var electionUser = await context.ElectionUsers.Where(e => e.Email.Equals(username)).FirstOrDefaultAsync();
 
@@ -82,9 +83,13 @@ namespace E_Wybory.Services
                 new Claim("name", username),
                 //new Claim("OrgName", "E-Wybory"),
                 //new Claim("Roles", "Wyborca"), //By default
+                electionUser.Is2Faenabled ? new Claim("2FAenabled", "true") : new Claim("2FAdisabled", "true"),
                 new Claim("IdElectionUser", electionUser.IdElectionUser.ToString()),
                 new Claim("IdDistrict", electionUser.IdDistrict.ToString()),
             };
+
+            if (electionUser.Is2Faenabled && (twoFaVeryfied.HasValue && twoFaVeryfied.Value))
+                claims.Add(new Claim("Roles", "2FAveryfiedUser"));
 
             var userTypeSet = await GetRole(electionUser.IdElectionUser, context, idUserType);
 
@@ -100,12 +105,12 @@ namespace E_Wybory.Services
             return new ClaimsIdentity(claims);
         }
 
-        public async Task<UserTypeSet?> GetRole(int idElectionUser, ElectionDbContext context, int idUserType = -1)
+        public async Task<UserTypeSet?> GetRole(int idElectionUser, ElectionDbContext context, int? idUserType = null)
         {
             var userTypeSet = await context.UserTypeSets
                 .Include(u => u.IdElectionUserNavigation)
                 .Include(u => u.IdUserTypeNavigation.IdUserTypesGroupNavigation)
-                .Where(u => u.IdElectionUser == idElectionUser && (idUserType < 0 || 
+                .Where(u => u.IdElectionUser == idElectionUser && (idUserType == null || 
                         u.IdUserTypeNavigation.IdUserType == idUserType))
                 .OrderBy(u => u.IdUserTypeSet) //How to get default user role? "Wyborca" by deafult?
                 .FirstOrDefaultAsync();
@@ -152,6 +157,11 @@ namespace E_Wybory.Services
         public async Task<string> RenewTokenClaims(string username, ElectionDbContext context, int idUserType)
         {
             return await CreateToken(rsaKey, GenerateClaims(username, context, idUserType));
+        }
+
+        public async Task<string> TwoFaVeryfiedToken(string username, ElectionDbContext context, int idUserType, bool is2FAveryfied)
+        {
+            return await CreateToken(rsaKey, GenerateClaims(username, context, idUserType: idUserType, twoFaVeryfied: is2FAveryfied));
         }
     }
 }

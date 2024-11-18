@@ -1,4 +1,5 @@
-﻿using E_Wybory.Client.ViewModels;
+﻿using E_Wybory.Application.DTOs;
+using E_Wybory.Client.ViewModels;
 namespace E_Wybory.Client.Services
 {
     public interface IAuthService
@@ -11,17 +12,19 @@ namespace E_Wybory.Client.Services
 
         Task<bool> RenewTokenClaims(UserInfoViewModel userInfo);
 
-        Task<bool> VerifyTwoFactorTokenAsync(int userId, string code);
+        Task<bool> VerifyTwoFactorTokenAsyncFirst(TwoFactorAuthVerifyRequest ver2fa);
+
+        Task<bool> VerifyTwoFactorTokenAsync(TwoFactorAuthVerifyRequest ver2fa);
 
         Task<int> CountRecoveryCodesAsync(int userId);
 
-        Task<bool> SetTwoFactorEnabledAsync(int userId, bool enabled);
+       //Task<bool> SetTwoFactorEnabledAsync(int userId, bool enabled);
 
         Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId);
 
         Task<string> GetAuthenticatorKeyAsync(int userId);
 
-        Task<string> ResetAuthenticatorKeyAsync(int userId);
+        Task<bool> Reset2FAasync(int userId);
 
     }
 }

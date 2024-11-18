@@ -1,4 +1,4 @@
-﻿@page "/Account/Manage/EnableAuthenticator"
+﻿@page "/account/enable-2fa"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 @using System.ComponentModel.DataAnnotations
@@ -18,10 +18,12 @@
  @inject ILogger<EnableAuthenticator> Logger
 
 <PageTitle>Skonfiguruj aplikację uwierzytelniającą</PageTitle>
-@if (recoveryCodes is not null)
+@if(is2faEnabled) @* (recoveryCodes is not null) *@
 {
-    @*     <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" />
- *@}
+    @*     <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" /> *@
+    <button @onclick="OnReset2FAClick" class="btn btn-primary">Zresetuj konto na aplikacji 2FA</button>
+
+}
 else
 {
     <h3>Skonfiguruj aplikację uwierzytelniającą</h3>
@@ -67,13 +69,15 @@ else
             </li>
         </ol>
     </div>
-    <StatusMessage Message="@message" />
 }
+<StatusMessage Message="@message" />
+
 
 @code {
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&algorithm=SHA1&digits=6&period=30";
 
     private string? message;
+    private bool is2faEnabled = false;
     private UserWrapper user = default!;
     private string? sharedKey;
     private string? authenticatorUri;
@@ -85,22 +89,32 @@ else
     [SupplyParameterFromForm]
     private TwoFactorAuthVerifyRequest Input { get; set; } = new();
 
+    private async Task OnReset2FAClick()
+    {
+        bool result = await AuthService.Reset2FAasync(user.Id);
+
+        if(result)
+            StateHasChanged();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var result = await AuthStateProvider.GetAuthenticationStateAsync();
 
         user = new UserWrapper(result.User);
 
-        await LoadSharedKeyAndQrCodeUriAsync(user);
+        is2faEnabled = user.TwoFAenabled;
+        if(!is2faEnabled)
+            await LoadSharedKeyAndQrCodeUriAsync(user);
     }
 
 
     private async Task OnValidSubmitAsync()
     {
         // Usuń spacje i myślniki
-        var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
-
-        var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsync(user.Id, verificationCode);
+        Input.Code = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+        Input.UserId = user.Id;
+        var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsyncFirst(Input);
 
         if (!is2faTokenValid)
         {
@@ -108,7 +122,7 @@ else
             return;
         }
 
-        await AuthService.SetTwoFactorEnabledAsync(user.Id, true);
+        //await AuthService.SetTwoFactorEnabledAsync(user.Id, true);
         Logger.LogInformation("Użytkownik o ID '{UserId}' włączył 2FA za pomocą aplikacji uwierzytelniającej.", user.Id);
 
         message = "Twoja aplikacja MFA została dodana";
@@ -126,11 +140,11 @@ else
     private async ValueTask LoadSharedKeyAndQrCodeUriAsync(UserWrapper user)
     {
         var unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
-        if (string.IsNullOrEmpty(unformattedKey))
-        {
-            await AuthService.ResetAuthenticatorKeyAsync(user.Id);
-            unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
-        }
+        // if (string.IsNullOrEmpty(unformattedKey))
+        // {
+        //     await AuthService.ResetAuthenticatorKeyAsync(user.Id);
+        //     unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
+        // }
 
         sharedKey = FormatKey(unformattedKey!);
 

@@ -115,8 +115,21 @@ namespace E_Wybory.Controllers
         {
             UserWrapper user = new UserWrapper(User);
 
-            if(user.TwoFAenabled) return BadRequest("2FA is already enabled for this user!");
+            if (user.TwoFAenabled) return BadRequest("2FA is already enabled for this user!");
 
+            var actionResult = await VerifyTwoFactorTokenWithUser(user, verReq, shouldEnable: true);
+
+            if (actionResult is OkObjectResult okResult)
+            {
+                okResult.Value = await _tokenService.RenewTokenClaims(user.Username!, _context, user.IdUserType);   
+            }
+
+            return actionResult;
+        }
+
+
+        private async Task<IActionResult> VerifyTwoFactorTokenWithUser(UserWrapper user, TwoFactorAuthVerifyRequest verReq, bool shouldEnable = false)
+        {
             if (user.Id == 0 || verReq.UserId == 0 || verReq.UserId != user.Id) return NotFound("Wrong user identification compared claim to model!");
 
             var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
@@ -124,34 +137,32 @@ namespace E_Wybory.Controllers
             if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with 2fa capabilities does not exists!");
 
             bool verResult = VerifyTotpCode(electionUser.UserSecret, verReq.Code);
-            
-            return verResult ? Ok() : Unauthorized("Wrong TOTP code");
 
-            //usersecret + temp jako tymczasowe? , tylko z jakich znaków składa się guid?
-            //osobny endpoint na pierwszą werysikację, a potem inn na podawanie weryfikowanie samego kodu po właczeniu 2fa, żeby claimy tam pakować 
+            if (verResult && shouldEnable)
+            {
+                electionUser.Is2Faenabled = true;
+                _context.ElectionUsers.Update(electionUser);
+                await _context.SaveChangesAsync();
+            }
 
-
+            return verResult ? Ok("") : Unauthorized("Wrong TOTP code");
         }
 
         [HttpPost]
         [Route("verify-2fa")]
-        [Authorize]
+        [Authorize(Policy = "2FAenabled")]
         public async Task<IActionResult> Verify2fa([FromBody] TwoFactorAuthVerifyRequest verReq)
         {
             UserWrapper user = new UserWrapper(User);
 
-            if (user.Id == 0 || verReq.UserId == 0 || verReq.UserId != user.Id) return NotFound("Wrong user identification compared claim to model!");
+            var actionResult = await VerifyTwoFactorTokenWithUser(user, verReq, shouldEnable: false);
 
-            var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
+            if (actionResult is OkObjectResult okResult)
+            {
+                okResult.Value = await _tokenService.TwoFaVeryfiedToken(user.Username!, _context, user.IdUserType, is2FAveryfied: true);
+            }
 
-            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with 2fa capabilities does not exists!");
-
-            bool verResult = VerifyTotpCode(electionUser.UserSecret, verReq.Code);
-
-            return verResult ? Ok() : Unauthorized("Wrong TOTP code");
-
-            //usersecret + temp jako tymczasowe? , tylko z jakich znaków składa się guid?
-            //osobny endpoint na pierwszą werysikację, a potem inn na podawanie weryfikowanie samego kodu po właczeniu 2fa, żeby claimy tam pakować 
+            return actionResult;
 
 
         }
@@ -167,6 +178,8 @@ namespace E_Wybory.Controllers
             return Ok(new CountResponse { Count = 0});
         }
 
+
+        //póki co zostawiam może się przydać
         [HttpPost()]
         [Route("enable-2fa")]
         [Authorize]
@@ -179,9 +192,7 @@ namespace E_Wybory.Controllers
 
             if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
 
-            electionUser.Is2Faenabled = enabledRequest.IsEnabled;
 
-            //tutaj pakujesz claimy które są 2fAEnabled 
             _context.ElectionUsers.Update(electionUser);
             await _context.SaveChangesAsync();  
 
@@ -229,9 +240,9 @@ namespace E_Wybory.Controllers
             return Ok(electionUser.UserSecret);
         }
 
-        [HttpPost("reset-auth-key/{userId}")]
+        [HttpPost("reset-2fa/{userId}")]
         [Authorize]
-        public async Task<IActionResult> ResetAuthenticatorKey(int userId)
+        public async Task<IActionResult> Reset2FA(int userId)
         {
             UserWrapper user = new(User);
             if (userId == 0 || user.Id == 0 || user.Id != userId) return NotFound("Wrong user identification compared claim to model!");
@@ -242,11 +253,15 @@ namespace E_Wybory.Controllers
                 return NotFound("User not found");
             }
 
-            electionUser.UserSecret = Base32Encoding.ToString(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+            electionUser.UserSecret = null;
+            electionUser.Is2Faenabled = false;
+
             _context.ElectionUsers.Update(electionUser);
             await _context.SaveChangesAsync();
 
-            return Ok(electionUser.UserSecret);
+            string newToken = await _tokenService.RenewTokenClaims(user.Username!, _context, user.IdUserType);
+
+            return Ok(newToken);
         }
 
         private bool VerifyTotpCode(string userSecret, string code, int timeWindow = 30)
