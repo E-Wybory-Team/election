@@ -63,31 +63,39 @@ namespace E_Wybory.Controllers
                 hexString.AppendFormat("{0:x2}", b);
             }
 
-            if (context.People.Any(person => person.Pesel == PESEL)
-                || context.ElectionUsers.Any(user => user.Email == email))
+            if (context.ElectionUsers.Any(user => user.Email == email))
             {
                 return false;
             }
 
+            var personId = 0;
+
             //add new People's record
-            var person = new Person();
+            if (!context.People.Any(person => person.Pesel == PESEL))
+            {
+                var person = new Person();
 
-            person.Name = name;
-            person.Surname = surname;
-            person.Pesel = PESEL;
-            person.BirthDate = birthdate;
+                person.Name = name;
+                person.Surname = surname;
+                person.Pesel = PESEL;
+                person.BirthDate = birthdate;
 
-            Console.Write(idDistrict);
-            context.People.Add(person);
-            context.SaveChanges();
-            var newPersonId = person.IdPerson; //save to use in user
+                //Console.Write(idDistrict);
+                context.People.Add(person);
+                context.SaveChanges();
+                personId = person.IdPerson; //save to use in user
+            }
+            else
+            {
+               personId = context.People.Where(p => p.Pesel == PESEL).FirstOrDefault().IdPerson;
+            }
 
             //add new user
             var user = new ElectionUser();
             user.Email = email;
             user.PhoneNumber = phoneNumber;
             user.Password = hexString.ToString();
-            user.IdPerson = newPersonId;
+            user.IdPerson = personId;
 
             //idDistrict = 1;
             user.IdDistrict = idDistrict;
@@ -138,7 +146,6 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("register")]
-        [Authorize(Roles = "Administrator")]
         public IActionResult Register([FromBody] RegisterViewModel request)
         {
             //if(ModelState.IsValid)

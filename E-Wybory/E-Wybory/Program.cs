@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using E_Wybory.Client.BuilderClientExtensionMethods;
 using E_Wybory.Services;
+using System.Text.Json.Serialization;
 
 
 var rsaKey = RSA.Create();

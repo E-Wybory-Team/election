@@ -1,47 +1,98 @@
 ﻿@page "/modify-election"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@inject NavigationManager NavigationManager
+@inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>MODYFIKOWANIE WYBORÓW</h1>
     <EditForm Model="@electionModel" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
+        
+        <div class="form-group">
+            <label for="currentElection">WYBORY DO EDYCJI</label>
+            <InputSelect id="currentElection" @bind-Value="SelectedElectionId">
+                <option value="">Wybierz wybory</option>
+                @foreach (var election in elections)
+                {
+                    String electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
+                    <option value="@election.IdElection">
+                        @electionTypeName - @election.ElectionStartDate - Tura: @election.ElectionTour
+                    </option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => electionModel.IdElection)" />
+        </div>
 
         <div class="form-group">
             <label for="rodzaj">RODZAJ</label>
-            <InputSelect @bind-Value="electionModel.Rodzaj" id="rodzaj" class="form-select">
-                <option value="" disabled selected>Wybierz rodzaj wyborów</option>
-                <option value="prezydenckie">Wybory prezydenckie</option>
-                <option value="parlamentarne">Wybory parlamentarne</option>
-                <option value="europejskie">Wybory do parlamentu europejskiego</option>
-                <option value="samorządowe">Wybory samorządowe</option>
+            <InputSelect @bind-Value="electionModel.IdElectionType">
+                <option value="">Wybierz rodzaj</option>
+                @foreach (var electionType in electionTypes)
+                {
+                    <option value="@electionType.IdElectionType">
+                        @electionType.ElectionTypeName
+                    </option>
+                }
             </InputSelect>
+            <ValidationMessage For="@(() => electionModel.IdElectionType)" />
         </div>
 
         <div class="form-group">
-            <label for="dzien-wyborow">DZIEŃ WYBORÓW</label>
-            <InputDate @bind-Value="electionModel.DzienWyborow" id="dzien-wyborow" class="form-input" />
+            <label for="dzien-wyborow">ROZPOCZĘCIE WYBORÓW</label>
+            <InputText @bind-Value="electionModel.DateOfStartString" id="dzien-wyborow" type="datetime-local" placeholder="Wprowadź datę rozpoczęcia wyborów" />
+            <ValidationMessage For="@(() => electionModel.ElectionStartDate)" />
         </div>
 
-        <button type="submit" class="submit-button">MODYFIKUJ</button>
+        <div class="form-group">
+            <label for="dzien-wyborow-koniec">KONIEC WYBORÓW</label>
+            <InputText @bind-Value="electionModel.DateOfEndString" id="dzien-wyborow-koniec" type="datetime-local" placeholder="Wprowadź datę zakończenia wyborów" />
+            <ValidationMessage For="@(() => electionModel.ElectionEndDate)" />
+        </div>
+
+        <div class="form-group">
+            <label for="tura">TURA WYBORÓW</label>
+            <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
+        </div>
+
+        <button type="submit" class="submit-button">MODYFIKUJ WYBORY</button>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private ElectionModel electionModel = new ElectionModel();
+    private ElectionViewModel electionModel = new ElectionViewModel();
+    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
 
-    private void HandleValidSubmit()
+    private int SelectedElectionId { get; set; } = 0;
+    bool isModifiedElection = false;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"Rodzaj wyborów: {electionModel.Rodzaj}, Dzień wyborów: {electionModel.DzienWyborow}");
+        elections = await ElectionManagementService.Elections();
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }
 
-    public class ElectionModel
+    private async Task HandleValidSubmit()
     {
-        [Required(ErrorMessage = "Rodzaj wyborów jest wymagany.")]
-        public string Rodzaj { get; set; }
-
-        [Required(ErrorMessage = "Dzień wyborów jest wymagany.")]
-        public DateTime DzienWyborow { get; set; }
+        if (SelectedElectionId != 0) //only if selected
+        {
+            electionModel.IdElection = SelectedElectionId;
+            isModifiedElection = await ElectionManagementService.PutElection(electionModel);
+            errorMessage = isModifiedElection ? "Modified election successful!" : "Modified election fails";
+            if (isModifiedElection)
+            {
+                NavigationManager.NavigateTo("/configure-election");
+            }
+        }
     }
+
 }

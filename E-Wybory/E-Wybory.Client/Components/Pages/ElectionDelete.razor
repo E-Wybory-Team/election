@@ -1,0 +1,99 @@
+﻿@page "/delete-election"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@inject NavigationManager NavigationManager
+@inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>USUWANIE WYBORÓW</h1>
+    <EditForm Model="@electionModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        
+        <div class="form-group">
+            <label for="currentElection">WYBORY</label>
+            <select id="currentElection" @bind="SelectedElectionId" @bind:after="FillInputs">
+                <option value="">Wybierz wybory</option>
+                @foreach (var election in elections)
+                {
+                    String electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
+                    <option value="@election.IdElection">
+                        @electionTypeName - @election.ElectionStartDate - Tura: @election.ElectionTour
+                    </option>
+                }
+            </select>
+            <ValidationMessage For="@(() => electionModel.IdElection)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rodzaj">RODZAJ</label>
+            <InputText @bind-Value="selectedElectionTypeName" id="rodzaj" class="form-control" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="dzien-wyborow">ROZPOCZĘCIE WYBORÓW</label>
+            <InputText @bind-Value="electionModel.DateOfStartString" id="dzien-wyborow" readonly type="datetime-local" placeholder="Wprowadź datę rozpoczęcia wyborów" />
+        </div>
+
+        <div class="form-group">
+            <label for="dzien-wyborow-koniec">KONIEC WYBORÓW</label>
+            <InputText @bind-Value="electionModel.DateOfEndString" id="dzien-wyborow-koniec" readonly type="datetime-local" placeholder="Wprowadź datę zakończenia wyborów" />
+        </div>
+
+        <div class="form-group">
+            <label for="tura">TURA WYBORÓW</label>
+            <InputNumber @bind-Value="electionModel.ElectionTour" readonly id="tura" />
+        </div>
+
+        <button type="submit" class="submit-button">USUŃ WYBORY</button>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    private ElectionViewModel electionModel = new ElectionViewModel();
+    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
+
+    private int SelectedElectionId { get; set; } = 0;
+    private string selectedElectionTypeName = String.Empty;
+    bool isDeletedElection = false;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        elections = await ElectionManagementService.Elections();
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
+    }
+
+    private async Task FillInputs()
+    {
+        if (SelectedElectionId != 0)
+        {
+            electionModel = await ElectionManagementService.GetElectionById(SelectedElectionId);
+            selectedElectionTypeName = electionTypes.FirstOrDefault(et => et.IdElectionType == electionModel.IdElectionType)?.ElectionTypeName ?? "Wybierz rodzaj";
+        }
+        else
+        {
+            electionModel = new ElectionViewModel();
+            electionModel.ElectionTour = 0;
+            selectedElectionTypeName = String.Empty;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (SelectedElectionId != 0) //only if selected
+        {
+            isDeletedElection = await ElectionManagementService.DeleteElection(SelectedElectionId);
+            errorMessage = isDeletedElection ? "Deleted election successful!" : "Deleted election fails";
+            NavigationManager.NavigateTo("/configure-election");
+        }
+    }
+
+}

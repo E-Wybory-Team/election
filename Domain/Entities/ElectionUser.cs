@@ -19,6 +19,9 @@ public partial class ElectionUser
 
     public string? UserSecret { get; set; }
 
+    public bool Is2Faenabled { get; set; }
+
+
     public virtual District IdDistrictNavigation { get; set; } = null!;
 
     public virtual Person IdPersonNavigation { get; set; } = null!;

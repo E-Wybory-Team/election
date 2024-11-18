@@ -15,17 +15,18 @@
 
     <EditForm FormName="Auth" Model="@loginModel" OnValidSubmit="HandleLogin">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <div class="form-row">
             <div class="input-group">
                 <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
                 <InputText @bind-Value="loginModel.Username" placeholder="E-MAIL lub TELEFON" class="form-input" />
+                <ValidationMessage For="@(() => loginModel.Username)" />
             </div>
 
             <div class="input-group">
                 <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
                 <InputText @bind-Value="loginModel.Password" type="password" placeholder="HASŁO" class="form-input" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
         </div>
 

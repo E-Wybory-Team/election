@@ -1,4 +1,11 @@
 ﻿@page "/districtlist"
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IDistrictManagementService DistrictManagementService
+@inject IConstituencyManagementService ConstituencyManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject NavigationManager NavigationManager
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
@@ -9,42 +16,42 @@
 
 <div class="filters">
     <div class="filter-group-4columns">
-        <label>Numer okręgu</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz numer okręgu</option>
-            @foreach (var districtNumber in districtNumbers)
+        <label>Okręg</label>
+        <select @bind="@SelectedConstituencyId" @bind:after="OnConstituencyChanged">
+            <option value="">Wybierz okręg</option>
+            @foreach (var constituency in wrapper.ConstituencyFilter)
             {
-                <option value="@districtNumber">@districtNumber</option>
+                <option value="@constituency.idConstituency">@constituency.constituencyName</option>
             }
         </select>
     </div>
     <div class="filter-group-4columns">
         <label>Województwo</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedVoivodeshipId" @bind:after="OnVoivodeshipChanged">
             <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in voivodeships)
+            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
             {
-                <option value="@voivodeship">@voivodeship</option>
+                <option value="@voivodeship.idVoivodeship">@voivodeship.voivodeshipName</option>
             }
         </select>
     </div>
     <div class="filter-group-4columns">
         <label>Powiat</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedCountyId" @bind:after="OnCountyChanged">
             <option value="">Wybierz powiat</option>
-            @foreach (var county in counties)
+            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
             {
-                <option value="@county">@county</option>
+                <option value="@county.IdCounty">@county.CountyName</option>
             }
         </select>
     </div>
     <div class="filter-group-4columns">
         <label>Gmina</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedProvinceId" @bind:after="OnProvinceChanged">
             <option value="">Wybierz gminę</option>
-            @foreach (var province in provinces)
+            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
             {
-                <option value="@province">@province</option>
+                <option value="@province.IdProvince">@province.ProvinceName</option>
             }
         </select>
     </div>
@@ -53,13 +60,10 @@
 <table class="candidate-table">
     <thead>
         <tr>
-            <th>Numer obwodu</th>
+            <th>Nazwa obwodu</th>
             <th>Siedziba</th>
             <th><img src="images/Accessibility.png" alt="Accessibility" class="icon-accessibility" /></th>
-            <th>Numer okręgu</th>
-            <th>Województwo</th>
-            <th>Powiat</th>
-            <th>Gmina</th>
+            <th>Nazwa okręgu</th>
             <th>Skład komisji</th>
             <th>Opcje konfiguracji</th>
         </tr>
@@ -67,20 +71,31 @@
     <tbody>
         @foreach (var district in filteredDistricts)
         {
+            var constituencyName = String.Empty;
+            var forDisabled = String.Empty;
+            if (district.DisabledFacilities)
+            {
+                forDisabled = "Tak";
+            }
+            else
+            {
+                forDisabled = "Nie";
+            }
+
+            if (district.IdConstituency != 0 && district.IdConstituency != null)
+                constituencyName = ConstituencyManagementService.GetConstituencyNameById(district.IdConstituency.GetValueOrDefault(), constituences);
+
             <tr>
-                <td>@district.DistrictNumber</td>
-                <td>@district.Seat</td>
-                <td>@district.Accessibility</td>
-                <td>@district.DistrictNumber</td>
-                <td>@district.Voivodeship</td>
-                <td>@district.County</td>
-                <td>@district.Province</td>
+                <td>@district.DistrictName</td>
+                <td>@district.DistrictHeadquarters</td>
+                <td>@forDisabled</td>
+                <td>@constituencyName</td>
                 <td><img src="images/CommitteeMembers.png" alt="Committee" class="icon" title="Skład komisji" /></td> @* tutaj jeszcze przekierowanie do składu wybranej komisji *@
                 <td>
-                    <a href="/modifydistrict/@district.Id">
+                    <a href="/modifydistrict/@district.IdDistrict">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
                     </a>
-                    <a href="/deletedistrict/@district.Id">
+                    <a href="/deletedistrict/@district.IdDistrict">
                         <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
                     </a>
                 </td>
@@ -90,42 +105,58 @@
 </table>
 
 @code {
-    private List<string> voivodeships = new() { "Opolskie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "1", "2", "3" };
+    private int? SelectedConstituencyId { get; set; } = null;
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
 
-    private List<District> districts = new()
+    private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
+    private List<ConstituencyViewModel> constituences = new List<ConstituencyViewModel>();
+    private FilterListWrapperDistrict wrapper = new FilterListWrapperDistrict();
+
+    private async Task FilterTable()
     {
-        new District { Id = 1, DistrictNumber = "1", Seat = "Szkoła Podstawowa, Stare Koźle ul. Szkolna 5, 47-223 Kędzierzyn-Koźle", Accessibility = "tak", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Kędzierzyn-Koźle" },
-        new District { Id = 2, DistrictNumber = "2", Seat = "Szkoła Podstawowa, ul. Kościelna 1, 47-240 Bierawa", Accessibility = "nie", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Bierawa" }
-    };
-
-    private List<District> filteredDistricts = new();
-
-    private void FilterTable()
-    {
-        filteredDistricts = districts; // Mockowana logika filtrowania
+        wrapper = await FilterWrapperService.GetFilteredListsDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId);
+        filteredDistricts = await FilterWrapperService.GetFilteredDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
     }
 
     private void AddDistrict()
     {
-        Console.WriteLine("Dodaj Obwód"); // Mockowana logika dodawania
+        NavigationManager.NavigateTo("/adddistrict");
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        filteredDistricts = districts;
+        filteredDistricts = await FilterWrapperService.GetFilteredDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        wrapper.ConstituencyFilter = await ConstituencyManagementService.Constituences();
+        constituences = await ConstituencyManagementService.Constituences();
     }
 
-    public class District
+    private async Task OnConstituencyChanged()
     {
-        public int Id { get; set; }
-        public string DistrictNumber { get; set; }
-        public string Seat { get; set; }
-        public string Accessibility { get; set; }
-        public string Voivodeship { get; set; }
-        public string County { get; set; }
-        public string Province { get; set; }
+        SelectedVoivodeshipId = null;
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnVoivodeshipChanged()
+    {
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnCountyChanged()
+    {
+        SelectedProvinceId = null;
+        await FilterTable();
+    }
+
+    private async Task OnProvinceChanged()
+    {
+        await FilterTable();
     }
 }

@@ -1,134 +1,194 @@
 ﻿@page "/modifydistrict/{districtId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager NavigationManager
+@inject IConstituencyManagementService ConstituencyManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject IDistrictManagementService DistrictManagementService
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>MODYFIKOWANIE OBWODU WYBORCZEGO</h1>
-    <EditForm Model="@districtModel" OnValidSubmit="HandleSubmit">
+
+    <EditForm FormName="districtModify" Model="@districtModel" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
-        <div class="form-group-smaller">
-            <label for="districtNumber">NR OBWODU</label>
-            <InputText @bind-Value="districtModel.DistrictNumber" id="districtNumber" placeholder="Nr obwodu wyborczego" />
+        <!--
+        <div>
+            <div class="filter-group">
+                <label>Obwód do edycji</label>
+                <select @bind="@districtModel.IdDistrict">
+                    <option value="">Wybierz obwód</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
+                </select>
+                <ValidationMessage For="@(() => districtModel.IdDistrict)" />
+            </div>
+        </div> -->
+
+        <div class="form-group">
+            <label for="districtName">NAZWA OBWODU</label>
+            <InputText @bind-Value="districtModel.DistrictName" id="districtName" placeholder="Nazwa obwodu wyborczego" />
+            <ValidationMessage For="@(() => districtModel.DistrictName)" />
         </div>
 
-        <div class="form-group-smaller">
-            <label for="seat">SIEDZIBA</label>
-            <InputText @bind-Value="districtModel.Seat" id="seat" placeholder="Siedziba obwodu" />
+        <div>
+            <label for="disabledFacilities">WYPOSAŻENIE DLA NIEPEŁNOSPRAWNYCH</label>
+            <input type="checkbox" id="disabledFacilities" @bind="districtModel.DisabledFacilities" />
+            @if (districtModel.DisabledFacilities)
+            {
+                <span>Tak</span>
+            }
+            else
+            {
+                <span>Nie</span>
+            }
         </div>
 
-        <div class="form-group-smaller">
-            <label for="accessibility">DOSTĘPNOŚĆ</label>
-            <InputSelect @bind-Value="districtModel.Accessibility" id="accessibility">
-                <option value="tak">Tak</option>
-                <option value="nie">Nie</option>
-            </InputSelect>
+
+        <div class="form-group">
+            <label for="districtHead">SIEDZIBA OBWODU</label>
+            <InputText @bind-Value="districtModel.DistrictHeadquarters" id="districtHead" placeholder="Siedziba obwodu wyborczego" />
+            <ValidationMessage For="@(() => districtModel.DistrictHeadquarters)" />
         </div>
 
-        <div class="form-group-smaller">
-            <label for="voivodeship">WOJEWÓDZTWO</label>
-            <InputSelect @bind-Value="districtModel.Voivodeship" id="voivodeship">
-                @foreach (var voivodeship in voivodeships)
+        <div>
+            <div class="filter-group">
+                <label>Województwo</label>
+                <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+                    <option value="">Wybierz województwo</option>
+                    @foreach (var voivodeship in wrapper.VoivodeshipFilter)
+                    {
+                        <option value="@voivodeship.idVoivodeship">
+                            @voivodeship.voivodeshipName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Powiat</label>
+                <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+                    <option value="">Wybierz powiat</option>
+                    @foreach (var county in wrapper.CountyFilter)
+                    {
+                        @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                        {
+                            <option value="@county.IdCounty">
+                                @county.CountyName
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Gmina</label>
+                <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+                    <option value="">Wybierz gminę</option>
+                    @foreach (var province in wrapper.ProvinceFilter)
+                    {
+                        @if (province.IdCounty == SelectedCountyId)
+                        {
+                            <option value="@province.IdProvince">
+                                @province.ProvinceName
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div>
+            <label>Okręg</label>
+            <select @bind="districtModel.IdConstituency">
+                <option value="">Wybierz okręg</option>
+                @foreach (var constituency in constituencies)
                 {
-                    <option value="@voivodeship">@voivodeship</option>
+                    <option value="@constituency.idConstituency">
+                        @constituency.constituencyName
+                    </option>
                 }
-            </InputSelect>
+            </select>
+            <ValidationMessage For="@(() => districtModel.IdConstituency)" />
         </div>
 
-        <div class="form-group-smaller">
-            <label for="county">POWIAT</label>
-            <InputSelect @bind-Value="districtModel.County" id="county">
-                @foreach (var county in counties)
-                {
-                    <option value="@county">@county</option>
-                }
-            </InputSelect>
-        </div>
-
-        <div class="form-group-smaller">
-            <label for="province">GMINA</label>
-            <InputSelect @bind-Value="districtModel.Province" id="province">
-                @foreach (var province in provinces)
-                {
-                    <option value="@province">@province</option>
-                }
-            </InputSelect>
-        </div>
-
-        <div class="form-row">
-            <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
-            <a href="/PKWHome" class="add-button">ANULUJ</a>
-        </div>
+        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
     [Parameter]
     public int districtId { get; set; }
 
-    private DistrictModel districtModel = new DistrictModel();
-    private List<string> voivodeships = new() { "Opolskie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
 
-    protected override void OnInitialized()
+    private DistrictViewModel districtModel = new DistrictViewModel();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    private List<ConstituencyViewModel> constituencies = new List<ConstituencyViewModel>();
+    private FilterListWrapper wrapper = new FilterListWrapper();
+
+    bool isModifiedDistrict = false;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
     {
-        var district = GetDistrictById(districtId);
-        if (district != null)
+        if (!await DistrictManagementService.DistrictExists(districtId))
         {
-            districtModel = new DistrictModel
-                {
-                    DistrictNumber = district.DistrictNumber,
-                    Seat = district.Seat,
-                    Accessibility = district.Accessibility,
-                    Voivodeship = district.Voivodeship,
-                    County = district.County,
-                    Province = district.Province
-                };
+            errorMessage = "District not found";
+            NavigationManager.NavigateTo("/districtlist");
+        }
+        else
+        {
+            districtModel = await DistrictManagementService.GetDistrictById(districtId);
+            districts = await DistrictManagementService.Districts();
+            wrapper.VoivodeshipFilter = await VoivodeshipManagementService.Voivodeships();
+            constituencies = await ConstituencyManagementService.Constituences();
         }
     }
 
-    private District? GetDistrictById(int id)
+    private async void HandleSubmit()
     {
-        var districts = new List<District>
-        {
-            new District { Id = 1, DistrictNumber = "1", Seat = "Szkoła Podstawowa, ul. Szkolna 5", Accessibility = "tak", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Kędzierzyn-Koźle" },
-            new District { Id = 2, DistrictNumber = "2", Seat = "Szkoła Podstawowa, ul. Kościelna 1", Accessibility = "nie", Voivodeship = "Opolskie", County = "Kędzierzyńsko-Kozielski", Province = "Bierawa" }
-        };
-        return districts.FirstOrDefault(d => d.Id == id);
+        districtModel.IdProvince = SelectedProvinceId;
+        isModifiedDistrict = await DistrictManagementService.PutDistrict(districtModel);
+        errorMessage = isModifiedDistrict ? "District edition successful!" : "District edition fails";
     }
 
-    private void HandleSubmit()
+    private async Task FilterRegions()
     {
-        Console.WriteLine($"Zmodyfikowano obwód: {districtModel.DistrictNumber}");
-        NavigationManager.NavigateTo("/districtlist");
+        wrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId);
     }
 
-    private void Cancel()
+    private async Task OnVoivodeshipChanged()
     {
-        NavigationManager.NavigateTo("/districtlist");
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        await FilterRegions();
     }
 
-    public class DistrictModel
+    private async Task OnCountyChanged()
     {
-        public string DistrictNumber { get; set; }
-        public string Seat { get; set; }
-        public string Accessibility { get; set; }
-        public string Voivodeship { get; set; }
-        public string County { get; set; }
-        public string Province { get; set; }
+        SelectedProvinceId = null;
+
+        await FilterRegions();
     }
 
-    public class District
+    private async Task OnProvinceChanged()
     {
-        public int Id { get; set; }
-        public string DistrictNumber { get; set; }
-        public string Seat { get; set; }
-        public string Accessibility { get; set; }
-        public string Voivodeship { get; set; }
-        public string County { get; set; }
-        public string Province { get; set; }
+        await FilterRegions();
     }
+
 }

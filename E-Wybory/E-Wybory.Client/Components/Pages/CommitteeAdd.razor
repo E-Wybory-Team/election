@@ -1,36 +1,48 @@
 ﻿@page "/addcommittee"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@inject IPartyManagementService PartyManagementService
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
     <h1>DODAWANIE KOMITETU WYBORCZEGO</h1>
     <EditForm Model="@committeeModel" OnValidSubmit="HandleAddSubmit">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
-        <div class="form-group-smaller">
+        <div class="form-group">
             <label for="nr-listy">NR LISTY</label>
-            <InputText @bind-Value="committeeModel.NrListy" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
+            <InputNumber @bind-Value="committeeModel.ListCommiteeNumber" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
         </div>
         <div class="form-group-smaller">
-            <label for="nazwa">NAZWA</label>
-            <InputText @bind-Value="committeeModel.Nazwa" id="nazwa" class="form-input" placeholder="Wprowadź nazwę komitetu" />
+            <label for="nazwa">NAZWA KOMITETU</label>
+            <InputText @bind-Value="committeeModel.PartyName" id="nazwa" class="form-input" placeholder="Wprowadź nazwę komitetu" />
+            <ValidationMessage For="@(() => committeeModel.PartyName)" />
         </div>
         <div class="form-group-smaller">
             <label for="skrot">SKRÓT</label>
-            <InputText @bind-Value="committeeModel.Skrot" id="skrot" class="form-input" placeholder="Wprowadź skrót komitetu" />
+            <InputText @bind-Value="committeeModel.Abbreviation" id="skrot" class="form-input" placeholder="Wprowadź skrót komitetu" />
         </div>
         <div class="form-group-smaller">
             <label for="adres">ADRES</label>
-            <InputText @bind-Value="committeeModel.Adres" id="adres" class="form-input" placeholder="Wprowadź adres komitetu" />
+            <InputText @bind-Value="committeeModel.PartyAddress" id="adres" class="form-input" placeholder="Wprowadź adres komitetu" />
         </div>
         <div class="form-group-smaller">
-            <label for="adres">TYP PARTII</label>
+            <label for="type">TYP PARTII</label>
             <InputText @bind-Value="committeeModel.PartyType" id="type" class="form-input" placeholder="Wprowadź typ partii" />
+            <ValidationMessage For="@(() => committeeModel.PartyType)" />
         </div>
-        <div class="form-group-smaller">
-            <label for="adres">PARTIA KOALICYJNA</label>
-            <InputText @bind-Value="committeeModel.isCoalition" id="coalition" class="form-input" placeholder="Czy partia koalicyjna" />
+        <div>
+            <label for="coalition">PARTIA KOALICYJNA</label>
+            <input type="checkbox" id="coalition" @bind="committeeModel.IsCoalition" />
+            @if (committeeModel.IsCoalition)
+            {
+                <span>Tak</span>
+            }
+            else
+            {
+                <span>Nie</span>
+            }
         </div>
         <div class="form-group-smaller">
             <label for="adres">STRONA WWW</label>
@@ -39,38 +51,21 @@
 
         <button type="submit" class="submit-button">DODAJ</button>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private CommitteeModel committeeModel = new CommitteeModel();
+    private PartyViewModel committeeModel = new PartyViewModel();
+    bool isAddedCommittee = false;
+    string errorMessage;
 
-    private void HandleAddSubmit()
+    private async void HandleAddSubmit()
     {
-        // Logika obsługi po dodaniu komitetu
-        Console.WriteLine($"Dodano komitet: {committeeModel.Nazwa}");
+        isAddedCommittee = await PartyManagementService.AddParty(committeeModel);
+        errorMessage = isAddedCommittee ? "Adding committee successful!" : "Adding committee fails";
     }
 
-    public class CommitteeModel
-    {
-        [Required(ErrorMessage = "Numer listy jest wymagany.")]
-        public string NrListy { get; set; }
-
-        [Required(ErrorMessage = "Nazwa komitetu jest wymagana.")]
-        public string Nazwa { get; set; }
-
-        [Required(ErrorMessage = "Skrót jest wymagany.")]
-        public string Skrot { get; set; }
-
-        [Required(ErrorMessage = "Adres jest wymagany.")]
-        public string Adres { get; set; }
-
-        [Required(ErrorMessage = "Typ partii jest wymagany.")]
-        public string PartyType { get; set; }
-
-        [Required(ErrorMessage = "Koalicyjność partii jest wymagany.")]
-        public string isCoalition { get; set; }
-
-        [Required(ErrorMessage = "Adres strony WWW jest wymagany.")]
-        public string Website { get; set; }
-    }
 }
