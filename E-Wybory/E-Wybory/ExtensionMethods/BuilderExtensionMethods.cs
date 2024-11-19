@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.OpenApi.Models;
+using E_Wybory.Services.Interfaces;
+using E_Wybory.Services;
+using System;
 
 namespace E_Wybory.ExtensionMethods {
 
@@ -179,6 +182,23 @@ namespace E_Wybory.ExtensionMethods {
             }
             return builder;
         }
+
+        public static WebApplicationBuilder ConfigureEmailServiceSender(this WebApplicationBuilder builder)
+        {
+            if (builder.Environment.IsProduction())
+            {
+                var emailConnectionString = Environment.GetEnvironmentVariable("EMAIL_CONNECTION");
+                if (!string.IsNullOrEmpty(emailConnectionString))
+                {
+                    builder.Configuration["EmailSettings:ConnectionString"] = emailConnectionString;
+                }
+            }
+
+            builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
+            return builder;
+        }
+
     }
 }
 

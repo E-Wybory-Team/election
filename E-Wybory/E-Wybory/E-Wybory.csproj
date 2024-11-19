@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\E-Wybory.Infrastructure\E-Wybory.Infrastructure.csproj" />
     <ProjectReference Include="..\E-Wybory.Client\E-Wybory.Client.csproj" />
+    <PackageReference Include="Azure.Communication.Email" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">

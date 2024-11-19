@@ -14,3 +14,6 @@ dotnet user-secrets init   - (Might not be neccesery)
 dotnet user-secrets set "ConnectionStrings:ElectionDbConnection:DbPassword" "PutPasswordHere" - replace with real password
 
 
+-4-
+Add secret for ConnectionString for EmailSenderService
+dotnet user-secrets set "EmailSettings:ConnectionString" "endpoint={EndpointName};accesskey={YourAccessKey}"

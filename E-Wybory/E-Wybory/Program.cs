@@ -65,6 +65,7 @@ builder.Services.AddClientServices(builder.Configuration["Kestrel:Endpoints:Http
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.ConfigureSwagger();
+builder.ConfigureEmailServiceSender();
 builder.Services.AddSingleton<RSA>(rsaKey);
 builder.Services.AddSingleton<TokenValidationParameters>(validationParameters);
 builder.Services.AddSingleton<IJWTService,TokenService>();

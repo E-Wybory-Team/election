@@ -20,6 +20,13 @@ using Microsoft.EntityFrameworkCore;
 using E_Wybory.Application.DTOs;
 using E_Wybory.Application.Wrappers;
 using OtpNet;
+using Microsoft.AspNetCore.Identity.Data;
+using System.Net.Mail;
+//using MimeKit; ???
+using System.Collections.Generic;
+using Azure.Communication.Email;
+using System.Net;
+using E_Wybory.Services.Interfaces;
 
 
 namespace E_Wybory.Controllers
@@ -30,10 +37,12 @@ namespace E_Wybory.Controllers
     {
         private readonly ElectionDbContext _context;
         private readonly IJWTService _tokenService;
-        public AuthController(ElectionDbContext context, IJWTService tokenService)
+        private readonly IEmailSenderService _emailSenderService;
+        public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService)
         {
             this._context = context;
             this._tokenService = tokenService;
+            this._emailSenderService = emailSenderService; 
         }
 
 
@@ -283,27 +292,46 @@ namespace E_Wybory.Controllers
             }
         }
 
-        //private string ConvertToBase32(byte[] data)
-        //{
-        //    const string base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-        //    StringBuilder result = new StringBuilder((data.Length + 4) / 5 * 8);
+        [HttpPost]
+        [Route("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var user = await _context.ElectionUsers.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
 
-        //    for (int i = 0; i < data.Length; i += 5)
-        //    {
-        //        int buffer = data[i] << 24;
-        //        if (i + 1 < data.Length) buffer |= data[i + 1] << 16;
-        //        if (i + 2 < data.Length) buffer |= data[i + 2] << 8;
-        //        if (i + 3 < data.Length) buffer |= data[i + 3];
-        //        if (i + 4 < data.Length) buffer |= data[i + 4] >> 8;
+            if(user.UserSecret == null)
+            {
+                user.UserSecret = Base32Encoding.ToString(Guid.NewGuid().ToByteArray()).Substring(0, 16);
+                _context.ElectionUsers.Update(user);
+                await _context.SaveChangesAsync();
+            }
 
-        //        for (int bitOffset = 35; bitOffset >= 0; bitOffset -= 5)
-        //        {
-        //            result.Append(base32Chars[(buffer >> bitOffset) & 0x1F]);
-        //        }
-        //    }
+            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 60);
+            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez jedną minutę.";
 
-        //    return result.ToString();
-        //}
+            var emailOperationResult =  await _emailSenderService.SendEmailAsync(user.Email, "E-wybory: Reset hasła", emailMessage);
+
+            //do sth to validate emailOperationResult.Value
+
+            IActionResult result = emailOperationResult is not null ? Ok("Password reset code sent to your email.") : StatusCode(500, "Failed to send email");
+
+            return result;
+        }
+
+        private string GenerateTotpCode(string userSecret, int timeWindow)
+        {
+            var key = Base32Encoding.ToBytes(userSecret);
+            var totp = new Totp(key, step: timeWindow);
+            return totp.ComputeTotp(DateTime.UtcNow);
+        }
+
+        //Rather this
+       // https://learn.microsoft.com/en-us/azure/communication-services/quickstarts/email/send-email-smtp/send-email-smtp?pivots=smtp-method-smtpclient
+        
 
         private async Task<string> AuthenticateUser(string email, string password)
         {
