@@ -1,4 +1,4 @@
-﻿@page "/submitcancelvoter/{idVoter:int}/{idDistrict:int?}"
+﻿@page "/submitcancelvoter/{idVoter:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using E_Wybory.Client.ViewModels
 @inject NavigationManager NavManager
@@ -7,6 +7,7 @@
 @inject IElectionManagementService ElectionManagementService
 @inject IDistrictManagementService DistrictManagementService
 @inject IElectionVoterManagementService ElectionVoterManagementService
+@inject IAuthService AuthService
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -48,8 +49,8 @@
 
 @code {
     [Parameter] public int idVoter { get; set; }
-    [Parameter] public int? idDistrict { get; set; }
 
+    private int idDistrict = 0;
     private string errorMessage;
     private bool formSubmitted = false;
 
@@ -60,19 +61,32 @@
 
     protected override async Task OnInitializedAsync()
     {
+        activeElections = await ElectionManagementService.GetActiveElections();
+        if (activeElections.Count == 0)
+        {
+            errorMessage = "Aktualnie brak trwających wyborów!";
+            NavManager.NavigateTo("/cancelvoter");
+            return;
+        }
+
         try
         {
-            activeElections = await ElectionManagementService.GetActiveElections();
-            if (activeElections.Count == 0)
-            {
-                errorMessage = "No active elections found!";
-                NavManager.NavigateTo("/cancelvoter");
-                return;
-            }
+            idDistrict = await AuthService.GetCurrentUserIdDistrict();
+            districtViewModel = await DistrictManagementService.GetDistrictById(idDistrict);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+            NavManager.NavigateTo("/cancelvoter");
+            return;
+        }
+
+        try
+        {
             var voterExists = await VoterManagementService.VoterExists(idVoter);
             if (!voterExists)
             {
-                errorMessage = "Voter not found!";
+                errorMessage = "Nie znaleziono wyborcy!";
                 NavManager.NavigateTo("/cancelvoter");
                 return;
             }
@@ -81,15 +95,9 @@
                 voterModel = await VoterManagementService.GetVoterById(idVoter);
             }
 
-            personModel = await PersonManagementService.GetPersonIdByIdElectionUser(voterModel.IdElectionUser);
-
-            if(idDistrict != null && idDistrict == voterModel.IdDistrict)
+            if(idDistrict != voterModel.IdDistrict)
             {
-                districtViewModel = await DistrictManagementService.GetDistrictById(idDistrict.Value);
-            }
-            else
-            {
-                errorMessage = "Nie podano obwodu bądź niezwiązany z wyborcą!";
+                errorMessage = "Wyborca nie jest przypisany do tego obwodu!";
                 NavManager.NavigateTo("/cancelvoter");
                 return;
             }
@@ -100,6 +108,7 @@
             NavManager.NavigateTo("/cancelvoter");
         }
 
+        personModel = await PersonManagementService.GetPersonIdByIdElectionUser(voterModel.IdElectionUser);
     }
 
 
@@ -107,7 +116,7 @@
     {
         if (activeElections.Count == 0)
         {
-            errorMessage = "No active elections found!";
+            errorMessage = "Aktualnie brak trwających wyborów!";
             return;
         }
 
@@ -116,7 +125,7 @@
             var electionVoted = await ElectionVoterManagementService.ElectionVoterExists(idVoter, activeElection.IdElection);
             if (electionVoted)
             {
-                errorMessage = "Voter already voted in this election!";
+                errorMessage = "Wyborca już jest zablokowany w tych wyborach!";
                 return;
             }
 
@@ -128,7 +137,7 @@
             };
 
             formSubmitted = await ElectionVoterManagementService.AddElectionVoter(electionVoterViewModel);
-            errorMessage = formSubmitted ? "Voter canceled successfully!" : "Canceling the voter failed!";
+            errorMessage = formSubmitted ? "Zablokowano możliwość głosowania użytkownikowi!" : "Blokada głosowania użytkownikowi nie powiodła się!";
         }
     }
 }

@@ -1,6 +1,13 @@
 ﻿@page "/vote"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+@inject IVoterManagementService VoterManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IElectionVoterManagementService ElectionVoterManagementService
+@inject IAuthService AuthService
 
 <div class="vote-page">
     <h1>Oddawanie Głosu</h1>

@@ -464,55 +464,19 @@ namespace E_Wybory.Controllers
 
             return true;
         }
-    }
 
-    
-    [Route("api/auth")]
-    [ApiController]
-    public class AuthController : ControllerBase
-    {
-        private readonly ElectionDbContext context;
-        public AuthController(ElectionDbContext context)
+        [HttpGet("currentUserDistrict")]
+        public async Task<ActionResult<int>> GetCurrentUserDistrictId()
         {
-            this.context = context;
-        }
 
+            UserWrapper user = new(User);
+            var electionUser = await _context.ElectionUsers.FindAsync(user.Id);
+            if(electionUser == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
 
-        //For now for this endpoints use viewmodels, maybe the better options are DTO
-        [HttpPost]
-        [Route("login")]
-        [AllowAnonymous]
-        public IActionResult Login([FromBody] LoginViewModel request)
-        {
-            if (request.Username == String.Empty || request.Password == String.Empty)
-                return BadRequest("Not entered data to all required fields");
-
-            var authResult = AuthMethods.Authenticate(request.Username, request.Password, context);
-            if (authResult == null)
-                return Unauthorized();
-            else
-                return Ok(authResult);
-        }
-
-        [HttpPost]
-        [Route("register")]
-        public IActionResult Register([FromBody] RegisterViewModel request)
-        {
-            //if(ModelState.IsValid)
-            if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
-                || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
-                || request.PhoneNumber == String.Empty || request.Password == String.Empty
-                || request.SelectedDistrictId == 0)
-
-                return BadRequest("Not entered data to all required fields"); 
-
-            bool registerResult = AuthMethods.Register(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
-            request.PhoneNumber, request.Password, request.SelectedDistrictId, context);
-
-            if (registerResult)
-                return Ok();
-            else
-                return Conflict();
+            return electionUser.IdDistrict;
         }
     }
 }

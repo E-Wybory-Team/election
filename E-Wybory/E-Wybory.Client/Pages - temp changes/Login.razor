@@ -1,6 +1,7 @@
 ﻿@page "/testafterclean/login"
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.IdentityModel.Tokens
 @rendermode InteractiveWebAssembly
 @inject E_Wybory.Client.Services.IAuthService AuthService
 @inject AuthenticationStateProvider StateProvider
@@ -39,17 +40,9 @@
     {
         var token = await AuthService.Login(loginModel);
 
-        if (!string.IsNullOrEmpty(token))
+        if (token)
         {
-            var stateProvider = StateProvider as ElectionAuthStateProvider;
-            if (stateProvider != null)
-            {
-                await stateProvider.MarkUserAsAuthenticated(token);
-                errorMessage = "Login successful!";
-            }
-            else
-                errorMessage = "Login unsuccessful: JWT token obtain error";
-
+          errorMessage = "Logged in correctly!";
         }
         else
         {

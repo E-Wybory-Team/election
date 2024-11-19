@@ -1,6 +1,7 @@
 ﻿@page "/cancelvoter"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject NavigationManager NavManager
+@inject IAuthService AuthService
 @inject IElectionManagementService ElectionManagementService
 @inject IDistrictManagementService DistrictManagementService
 @inject IPersonManagementService PersonManagementService
@@ -14,16 +15,8 @@
 
     <form @onsubmit="GoToSubmitCancelVoter">
         <div class="form-group">
-            <label for="district">OBWÓD GŁOSOWANIA</label>
-            <InputSelect id="district" @bind-Value="idDistrict" class="form-control">
-                <option value="">Wybierz obwód</option>
-                @foreach (var district in districts)
-                {
-                    <option value="@district.IdDistrict">
-                        @district.DistrictName - @district.DistrictHeadquarters
-                    </option>
-                }
-            </InputSelect>
+            <label for="district">OBWÓD WYBORCY</label>
+            <input type="district" id="pesel" value="@district?.DistrictName - @district?.DistrictHeadquarters" class="form-control" placeholder="Obwód wyborcy" readonly />
         </div>
 
         <div class="form-group">
@@ -46,7 +39,7 @@
     private int idDistrict { get; set; } = 0;
 
     private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
-    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+    private DistrictViewModel district = new DistrictViewModel();
 
     private PersonViewModel personModel = new PersonViewModel();
     private ElectionUserViewModel userModel = new ElectionUserViewModel();
@@ -60,11 +53,18 @@
     {
 
         activeElections = await ElectionManagementService.GetActiveElections();
-        districts = await DistrictManagementService.Districts();
-
         if (activeElections.Count() == 0)
         {
             errorMessage = "Nie ma żadnych trwających wyborów";
+        }
+        try
+        {
+            idDistrict = await AuthService.GetCurrentUserIdDistrict();
+            district = await DistrictManagementService.GetDistrictById(idDistrict);
+        }
+        catch(Exception ex)
+        {
+            errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
         }
     }
 
@@ -94,7 +94,7 @@
                         }
                         else
                         {
-                            NavManager.NavigateTo($"/submitcancelvoter/{voterModel.IdVoter}/{idDistrict}");
+                            NavManager.NavigateTo($"/submitcancelvoter/{voterModel.IdVoter}");
                         }
 
                     }
