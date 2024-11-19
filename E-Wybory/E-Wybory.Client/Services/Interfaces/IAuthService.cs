@@ -26,5 +26,11 @@ namespace E_Wybory.Client.Services
 
         Task<bool> Reset2FAasync(int userId);
 
+        public Task<bool> ForgetPassword(ForgetPasswordViewModel forgetPassword);
+
+        public Task<bool> ResetPassword(ResetPasswordViewModel resetPassword);
+
+
+
     }
 }

@@ -145,5 +145,17 @@ namespace E_Wybory.Client.Services
 
             return await AssignTokenFromRespone(response);
         }
+
+        public async Task<bool> ForgetPassword(ForgetPasswordViewModel forgetPassword)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/forget-password", forgetPassword);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> ResetPassword(ResetPasswordViewModel resetPassword)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/reset-password", resetPassword);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
     }
 }

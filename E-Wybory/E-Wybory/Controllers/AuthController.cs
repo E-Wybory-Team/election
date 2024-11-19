@@ -293,11 +293,13 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost]
-        [Route("reset-password")]
+        [Route("forget-password")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        public async Task<IActionResult> ForgetPassword([FromBody]  ForgetPasswordViewModel forgetPassword)
         {
-            var user = await _context.ElectionUsers.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if(!ModelState.IsValid) return BadRequest("Invalid model state");
+
+            var user = await _context.ElectionUsers.FirstOrDefaultAsync(u => u.Email == forgetPassword.Email);
             if (user == null)
             {
                 return NotFound("User not found");
@@ -317,10 +319,55 @@ namespace E_Wybory.Controllers
 
             //do sth to validate emailOperationResult.Value
 
-            IActionResult result = emailOperationResult is not null ? Ok("Password reset code sent to your email.") : StatusCode(500, "Failed to send email");
+            IActionResult result = emailOperationResult is not null && emailOperationResult.HasCompleted ? 
+                Ok("Password reset code sent to your email.") : StatusCode(500, "Failed to send email");
 
             return result;
         }
+
+        [HttpPost]
+        [Route("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel request)
+        {
+            if (!ModelState.IsValid) return BadRequest("Invalid model state");
+
+            var user = await _context.ElectionUsers.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            if (user.UserSecret == null)
+            {
+                return BadRequest("User has not requested password reset code");
+            }
+
+            var isCodeValid = VerifyTotpCode(user.UserSecret, request.ResetCode, timeWindow: 60);
+            if (!isCodeValid)
+            {
+                return BadRequest("Invalid reset code");
+            }
+
+            string hashedNewPassword = HashPassword(request.NewPassword);
+
+            if (hashedNewPassword == user.Password)
+            {
+                return BadRequest("Password cannot be the same as previous one");
+            }
+
+            user.Password = hashedNewPassword;
+
+            // do we reset 2FA?
+            user.UserSecret = null;
+            user.Is2Faenabled = false;
+
+            _context.ElectionUsers.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Password reset successfully");
+        }
+
 
         private string GenerateTotpCode(string userSecret, int timeWindow)
         {
@@ -335,22 +382,13 @@ namespace E_Wybory.Controllers
 
         private async Task<string> AuthenticateUser(string email, string password)
         {
-            SHA256 sha = SHA256.Create();
-            UTF8Encoding objUtf8 = new UTF8Encoding();
-            byte[] hashedPassword = sha.ComputeHash(objUtf8.GetBytes(password));
-
-            //convert hashed password from byte[] to string to compare with db's passsword
-            StringBuilder hexString = new StringBuilder(hashedPassword.Length * 2);
-            foreach (byte b in hashedPassword)
-            {
-                hexString.AppendFormat("{0:x2}", b);
-            }
+            string hexString = HashPassword(password);
 
             if (await _context.ElectionUsers.AnyAsync(user => user.Email == email) &&
                 await _context.ElectionUsers
                 .Where(user => user.Email == email)
                 .Select(user => user.Password)
-                .FirstOrDefaultAsync() == hexString.ToString()
+                .FirstOrDefaultAsync() == hexString
                 )
             {
                 //CreateRSAPrivateKey();
@@ -361,8 +399,7 @@ namespace E_Wybory.Controllers
             return null;
         }
 
-        private async Task<bool> RegisterUser(string name, string surname, string PESEL, DateTime birthdate, string email,
-            string phoneNumber, string password, int idDistrict)
+        private string HashPassword(string password)
         {
             SHA256 sha = SHA256.Create();
             UTF8Encoding objUtf8 = new UTF8Encoding();
@@ -375,12 +412,20 @@ namespace E_Wybory.Controllers
                 hexString.AppendFormat("{0:x2}", b);
             }
 
+            return hexString.ToString();
+        }
+
+        private async Task<bool> RegisterUser(string name, string surname, string PESEL, DateTime birthdate, string email,
+            string phoneNumber, string password, int idDistrict)
+        {
+            
 
             if (await _context.People.AnyAsync(person => person.Pesel == PESEL)
                 || await _context.ElectionUsers.AnyAsync(user => user.Email == email))
             {
                 return false;
             }
+            string hashedPassword = HashPassword(password);
 
             //add new People's record
             var person = new Person();
@@ -399,7 +444,7 @@ namespace E_Wybory.Controllers
             var user = new ElectionUser();
             user.Email = email;
             user.PhoneNumber = phoneNumber;
-            user.Password = hexString.ToString();
+            user.Password = hashedPassword;
             user.IdPerson = newPersonId;
 
             //idDistrict = 1;
