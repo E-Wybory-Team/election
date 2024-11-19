@@ -1,0 +1,11 @@
+﻿<div class="status-message">
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <div class="alert alert-info">@Message</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Message { get; set; }
+}

@@ -1,0 +1,177 @@
+﻿@page "/account/enable-2fa"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using System.Text
+@using System.Text.Encodings.Web
+@using System.Security.Claims
+@using E_Wybory.Application.DTOs
+@using E_Wybory.Application.Wrappers
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UrlEncoder UrlEncoder
+@* @inject IdentityRedirectManager RedirectManager
+ *@
+ @inject ILogger<EnableAuthenticator> Logger
+
+<PageTitle>Skonfiguruj aplikację uwierzytelniającą</PageTitle>
+@if(is2faEnabled) @* (recoveryCodes is not null) *@
+{
+    @*     <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" /> *@
+    <button @onclick="OnReset2FAClick" class="btn btn-primary">Zresetuj konto na aplikacji 2FA</button>
+
+}
+else
+{
+    <h3>Skonfiguruj aplikację uwierzytelniającą</h3>
+    <div>
+        <p>Aby używać aplikacji uwierzytelniającej, wykonaj następujące kroki:</p>
+        <ol class="list">
+            <li>
+                <p>
+                    Pobierz aplikację uwierzytelniającą, taką jak Microsoft Authenticator dla
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> i
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> lub
+                    Google Authenticator dla
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> i
+                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                </p>
+            </li>
+            <li>
+                <p>Zeskanuj kod QR lub wprowadź ten klucz <kbd>@sharedKey</kbd> do swojej aplikacji uwierzytelniającej. Spacje i wielkość liter nie mają znaczenia.</p>
+                <div class="alert alert-info">Dowiedz się, jak <a href="https://go.microsoft.com/fwlink/?Linkid=852423">włączyć generowanie kodu QR</a>.</div>
+                @if (authenticatorUri is not null)
+                {
+                    <QrCode authenticatorUri="@authenticatorUri" />
+                }
+
+            </li>
+            <li>
+                <p>
+                    Po zeskanowaniu kodu QR lub wprowadzeniu powyższego klucza, Twoja aplikacja uwierzytelniająca wygeneruje unikalny kod. Wprowadź kod w poniższym polu potwierdzenia.
+                </p>
+                <div class="row">
+                    <div class="col-xl-6">
+                        <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                            <DataAnnotationsValidator />
+                            <div class="form-floating mb-3">
+                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Wprowadź kod" />
+                                <label for="Input.Code" class="control-label form-label">Kod weryfikacyjny</label>
+                                <ValidationMessage For="() => Input.Code" class="text-danger" />
+                            </div>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Zweryfikuj</button>
+                        </EditForm>
+                    </div>
+                </div>
+            </li>
+        </ol>
+    </div>
+}
+<StatusMessage Message="@message" />
+
+
+@code {
+    private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&algorithm=SHA1&digits=6&period=30";
+
+    private string? message;
+    private bool is2faEnabled = false;
+    private UserWrapper user = default!;
+    private string? sharedKey;
+    private string? authenticatorUri;
+    private IEnumerable<string>? recoveryCodes;
+
+    // [CascadingParameter]
+    //private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private TwoFactorAuthVerifyRequest Input { get; set; } = new();
+
+    private async Task OnReset2FAClick()
+    {
+        bool result = await AuthService.Reset2FAasync(user.Id);
+
+        if(result)
+            StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        user = new UserWrapper(result.User);
+
+        is2faEnabled = user.TwoFAenabled;
+        if(!is2faEnabled)
+            await LoadSharedKeyAndQrCodeUriAsync(user);
+    }
+
+
+    private async Task OnValidSubmitAsync()
+    {
+        // Usuń spacje i myślniki
+        Input.Code = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+        Input.UserId = user.Id;
+        var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsyncFirst(Input);
+
+        if (!is2faTokenValid)
+        {
+            message = "Błędny kod weryfikacyjny";
+            return;
+        }
+
+        //await AuthService.SetTwoFactorEnabledAsync(user.Id, true);
+        Logger.LogInformation("Użytkownik o ID '{UserId}' włączył 2FA za pomocą aplikacji uwierzytelniającej.", user.Id);
+
+        message = "Twoja aplikacja MFA została dodana";
+
+        // if (await AuthService.CountRecoveryCodesAsync(user.Id) == 0)
+        // {
+        //     recoveryCodes = await AuthService.GenerateNewTwoFactorRecoveryCodesAsync(user.Id)!;
+        // }
+        // else
+        // {
+        //     //RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
+        // }
+    }
+
+    private async ValueTask LoadSharedKeyAndQrCodeUriAsync(UserWrapper user)
+    {
+        var unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
+        // if (string.IsNullOrEmpty(unformattedKey))
+        // {
+        //     await AuthService.ResetAuthenticatorKeyAsync(user.Id);
+        //     unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
+        // }
+
+        sharedKey = FormatKey(unformattedKey!);
+
+        authenticatorUri = GenerateQrCodeUri(user, unformattedKey!);
+    }
+
+    private string FormatKey(string unformattedKey)
+    {
+        var result = new StringBuilder();
+        int currentPosition = 0;
+        while (currentPosition + 4 < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
+            currentPosition += 4;
+        }
+        if (currentPosition < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition));
+        }
+        return result.ToString().ToLowerInvariant();
+    }
+
+    private string GenerateQrCodeUri(UserWrapper user, string unformattedKey)
+    {
+        return string.Format(CultureInfo.InvariantCulture, AuthenticatorUriFormat,
+            UrlEncoder.Encode(user.Issuer!),
+            UrlEncoder.Encode(user.Username!),
+            unformattedKey);
+    }
+}

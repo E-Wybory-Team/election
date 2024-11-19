@@ -1,0 +1,8 @@
+﻿<PageScript Src="./Components/Pages/QrCode.razor.js" />
+<div id="qrCode"></div>
+<div id="qrCodeData" data-url="@authenticatorUri"></div>
+
+@code {
+    [Parameter]
+    public string? authenticatorUri { get; set;}
+}

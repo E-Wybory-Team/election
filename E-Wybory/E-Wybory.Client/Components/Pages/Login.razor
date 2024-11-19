@@ -5,7 +5,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveWebAssembly
 @inject E_Wybory.Client.Services.IAuthService AuthService
-@inject AuthenticationStateProvider StateProvider
 
 
 <div class="login-form">
@@ -55,28 +54,13 @@
     private async Task HandleLogin()
     {
         //Console.WriteLine($"Logowanie dla: {loginModel.Username}");
-        var token = await AuthService.Login(loginModel);
+        var success = await AuthService.Login(loginModel);
 
-        if (!string.IsNullOrEmpty(token))
-        {
-            var stateProvider = StateProvider as ElectionAuthStateProvider;
-
-            if (stateProvider != null)
-            {
-                await stateProvider.MarkUserAsAuthenticated(token);
-                loginInfoMessage = "Successfuly logged in!";
-            }
-            else
-                loginInfoMessage = "State provider error";
-
-
-
-        }
+        if (success)
+            loginInfoMessage = "Successfuly logged in!";
         else
-            loginInfoMessage = "Invalid username or password!";    
+            loginInfoMessage = "Invalid username or password!";
 
-
-    
     }
 
     public class LoginModel

@@ -28,7 +28,21 @@ namespace E_Wybory.Client.Services
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
-            return await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
+
+            if (response.Headers.TryGetValues("Authorization", out var authHeaders))
+            {
+                var authHeaderValue = authHeaders.FirstOrDefault();
+                if (authHeaderValue != null && authHeaderValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    var newToken = authHeaderValue.Substring("Bearer ".Length).Trim();
+
+                    if(token != newToken)
+                        await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", TokenKey, newToken);
+                }
+            }
+
+            return response;
         }
     }
 }

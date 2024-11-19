@@ -9,6 +9,10 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.OpenApi.Models;
+using E_Wybory.Services.Interfaces;
+using E_Wybory.Services;
+using System;
 
 namespace E_Wybory.ExtensionMethods {
 
@@ -93,7 +97,7 @@ namespace E_Wybory.ExtensionMethods {
             return builder;
         }
 
-        public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder, TokenValidationParameters validationParameters)
         {
             var rsaKey = RSA.Create();
             rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
@@ -105,12 +109,10 @@ namespace E_Wybory.ExtensionMethods {
             })
             .AddJwtBearer(options =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    RoleClaimType = "Roles"
-                };
+                options.TokenValidationParameters = validationParameters.Clone();
+                options.TokenValidationParameters.IssuerSigningKey = new RsaSecurityKey(rsaKey);
+
+
 
                 options.Events = new JwtBearerEvents
                 {
@@ -132,8 +134,71 @@ namespace E_Wybory.ExtensionMethods {
                 options.MapInboundClaims = false;
             });
 
+            builder.Services.AddAuthorization(options => 
+            {
+                options.AddPolicy("2FAenabled", policy =>
+                policy.RequireClaim("2FAenabled"));
+
+                options.AddPolicy("2FAdisabled", policy =>
+                policy.RequireClaim("2FAdisabled"));
+            });
+
             return builder;
         }
+
+        public static WebApplicationBuilder ConfigureSwagger(this WebApplicationBuilder builder)
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.Services.AddSwaggerGen(c =>
+                {
+                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Election Web API", Version = "v1" });
+
+                    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                    {
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "bearer",
+                        BearerFormat = "JWT",
+                        In = ParameterLocation.Header,
+                        Description = "Enter JWT token..."
+                    });
+
+                    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+                });
+            }
+            return builder;
+        }
+
+        public static WebApplicationBuilder ConfigureEmailServiceSender(this WebApplicationBuilder builder)
+        {
+            if (builder.Environment.IsProduction())
+            {
+                var emailConnectionString = Environment.GetEnvironmentVariable("EMAIL_CONNECTION");
+                if (!string.IsNullOrEmpty(emailConnectionString))
+                {
+                    builder.Configuration["EmailSettings:ConnectionString"] = emailConnectionString;
+                }
+            }
+
+            builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddTransient<IEmailSenderService, EmailSenderService>();
+            return builder;
+        }
+
     }
 }
 
