@@ -4,6 +4,7 @@
 @using E_Wybory.Client.ViewModels
 @inject IPartyManagementService PartyManagementService
 @inject NavigationManager NavigationManager
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -41,7 +42,10 @@
             <InputText @bind-Value="committeeModel.Website" id="website" readonly class="form-input" placeholder="Wprowadź stronę internetową" />
         </div>
 
-        <button type="submit" class="submit-button">USUŃ</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">USUŃ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {

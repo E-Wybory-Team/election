@@ -1,4 +1,6 @@
 ﻿@page "/submitcancelvoter"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -30,7 +32,11 @@
             <input type="text" id="birthDate" value="@voterData.BirthDate" readonly />
         </div>
 
-        <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </form>
 </div>
 
@@ -49,5 +55,10 @@
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string BirthDate { get; set; }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/cancelvoter");
     }
 }

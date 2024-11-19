@@ -58,7 +58,10 @@
             <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
         </div>
 
-        <button type="submit" class="submit-button">MODYFIKUJ WYBORY</button>
+         <div class="form-row">
+            <button type="submit" class="submit-button">MODYFIKUJ WYBORY</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -93,6 +96,11 @@
                 NavigationManager.NavigateTo("/configure-election");
             }
         }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/configure-election");
     }
 
 }

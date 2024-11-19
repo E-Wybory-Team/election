@@ -1,5 +1,7 @@
 ﻿@page "/cancelvoter"
-@inject NavigationManager NavManager
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -16,7 +18,10 @@
             <input type="text" id="pesel" @bind="pesel" placeholder="Nr Pesel wyborcy" />
         </div>
 
-        <a href="/submitcancelvoter" class="submit-button">DALEJ</a>
+        <div class="form-row">
+            <button type="submit" class="submit-button" @onclick="GoToSubmitCancelVoter">DALEJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </form>
 </div>
 
@@ -28,11 +33,16 @@
     {
         if (!string.IsNullOrWhiteSpace(pesel))
         {
-            NavManager.NavigateTo("/submitcancelvoter");
+            NavigationManager.NavigateTo("/submitcancelvoter");
         }
         else
         {
             Console.WriteLine("Brak pesel.");
         }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/cohome");
     }
 }

@@ -1,18 +1,19 @@
-﻿@page "/candidateInfo"
+﻿@page "/detailed-statistics"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
-
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @using E_Wybory.Client.Services;
 @inject IPartyManagementService PartyManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
-@using FilterData;
+@inject NavigationManager NavigationManager
+<link href="tables.css" rel="stylesheet" />
 
-<link href="tables.css" rel="stylesheet"/>
-
-<h2 class="title">SPIS KANDYDATÓW</h2>
+<div class="header-container">
+    <h2 class="title">SZCZEGÓŁOWE WYNIKI DLA OBWODU</h2>    @* url bedzie detailed-statistics/{districtId:int}    trzeba kandydatów co mają ten districtID,  liczba wyborców uprawdnionych do głosowania tak jak na poprzedzającej stronie, liczba głosów nieważnych i liczba głosów ważnych oraz liczba głosów na poszczególnych kandydatów*@
+</div>
 
 <div class="filters">
     <div class="filter-group">
@@ -28,48 +29,20 @@
         </select>
     </div>
     <div class="filter-group">
-        <label>Województwo</label>
-        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
-            <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
-            {
-                <option value="@voivodeship.idVoivodeship">
-                    @voivodeship.voivodeshipName
-                </option>
-            }
-        </select>
+        <label>Liczba uprawnionych wyborców:</label>
+        <p>150</p>                                      @* nigdzie indziej nie używamy <p> , styl zmieniony w app.css *@
     </div>
     <div class="filter-group">
-        <label>Powiat</label>
-        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
-            <option value="">Wybierz powiat</option>
-            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
-            {
-                @if (county.IdVoivodeship == SelectedVoivodeshipId)
-                {
-                    <option value="@county.IdCounty">
-                        @county.CountyName
-                </option>
-                }
-            }
-        </select>
+        <label>Liczba głosów nieważnych:</label>
+        <p>10</p>
     </div>
     <div class="filter-group">
-        <label>Gmina</label>
-        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
-            <option value="">Wybierz gminę</option>
-            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
-            {
-                @if (province.IdCounty == SelectedCountyId)
-                {
-                    <option value="@province.IdProvince">
-                        @province.ProvinceName
-                    </option>
-                }
-            }
-        </select>
+        <label>Liczba głosów ważnych:</label>
+        <p>100</p>
+
     </div>
-    <div class="filter-group">
+   
+    @* <div class="filter-group">
         <label>Numer obwodu</label>
         <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
             <option value="">Wybierz numer obwodu</option>
@@ -83,20 +56,16 @@
                 }
             }
         </select>
-    </div>
+    </div>  *@
 </div>
 
 <table class="candidate-table">
     <thead>
         <tr>
-            <th>Numer na karcie do głosowania</th>
             <th>Nazwisko i imiona</th>
-            <th>Zawód</th>
-            <th>Miejsce (zakład) pracy</th>
-            <th>Miejscowość zamieszkania</th>
-            <th>Wykształcenie</th>
-            <th>Wiek</th>
             <th>Przynależność do partii politycznej</th>
+            <th>Numer na liście </th>
+            <th>Liczba głosów oddanych na kandydata</th>
         </tr>
     </thead>
     <tbody>
@@ -109,16 +78,12 @@
                 partyName = PartyManagementService.GetPartyNameById(candidate.candidateViewModel.IdParty.GetValueOrDefault(), parties);
 
             <tr>
-                <td>@candidate.candidateViewModel.PositionNumber</td>
-                <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td>
-                <td>@candidate.candidateViewModel.JobType</td>
-                <td>@candidate.candidateViewModel.Workplace</td>
-                <td>@candidate.candidateViewModel.PlaceOfResidence</td>
-                <td>@candidate.candidateViewModel.EducationStatus</td>
-                <td>@age</td>
-                <td>@partyName</td
+
+                <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td
+                <td>@partyName</td>
+                <td>@candidate.candidateViewModel.PositionNumber</td
             </tr>
-            
+
         }
     </tbody>
 </table>
@@ -162,7 +127,7 @@
 
     private async Task OnVoivodeshipChanged()
     {
-        SelectedCountyId = null;      
+        SelectedCountyId = null;
         SelectedProvinceId = null;
         SelectedDistrictId = null;
 
@@ -171,28 +136,21 @@
 
     private async Task OnCountyChanged()
     {
-        SelectedProvinceId = null;   
+        SelectedProvinceId = null;
         SelectedDistrictId = null;
 
-        await FilterCandidate();  
+        await FilterCandidate();
     }
 
     private async Task OnProvinceChanged()
     {
-        SelectedDistrictId = null;   
+        SelectedDistrictId = null;
 
-        await FilterCandidate(); 
+        await FilterCandidate();
     }
 
     private async Task OnDistrictChanged()
     {
-        await FilterCandidate(); 
+        await FilterCandidate();
     }
-
-
-
-
-
-
-
 }

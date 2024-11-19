@@ -1,4 +1,8 @@
 ﻿@page "/checkstatusresult"
+@rendermode InteractiveWebAssembly
+
+@inject NavigationManager NavigationManager
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -29,10 +33,16 @@
                 <span class="status-text">WYBORCA ODDAŁ JUŻ SWÓJ GŁOS</span>
             </div>
         }
+        <button type="button" class="cancel-button" @onclick="Cancel">COFNIJ</button>
     </form>
 </div>
 
 @code {
     // Mockowane dane 
     private bool hasVoted = false; 
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/checkvotestatus");
+    }
 }

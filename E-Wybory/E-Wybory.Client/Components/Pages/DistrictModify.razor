@@ -119,7 +119,10 @@
             <ValidationMessage For="@(() => districtModel.IdConstituency)" />
         </div>
 
-        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -191,4 +194,8 @@
         await FilterRegions();
     }
 
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/districtlist");
+    }
 }

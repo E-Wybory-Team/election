@@ -4,6 +4,7 @@
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IDistrictManagementService DistrictManagementService
@@ -101,7 +102,10 @@
             <ValidationMessage For="@(() => districtModel.IdConstituency)" />
         </div>
 
-        <button type="submit" class="submit-button">DODAJ</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -158,6 +162,11 @@
     private async Task OnProvinceChanged()
     {
         await FilterRegions();
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/districtlist");
     }
 
 }

@@ -7,6 +7,7 @@
 @using System.Globalization
 @inject IElectionManagementService ElectionManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
+@inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -45,7 +46,10 @@
             <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
         </div>
 
-        <button type="submit" class="submit-button">DODAJ WYBORY</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -69,6 +73,11 @@
     {
         isAddedElection = await ElectionManagementService.AddElection(electionModel);
         errorMessage = isAddedElection ? "Adding election successful!" : "Adding election fails";
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/configure-election");
     }
 
 }

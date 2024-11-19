@@ -114,8 +114,10 @@
                 </InputSelect>
             </div>
         </div>
-
-        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
 
     @if (!string.IsNullOrEmpty(errorMessage))

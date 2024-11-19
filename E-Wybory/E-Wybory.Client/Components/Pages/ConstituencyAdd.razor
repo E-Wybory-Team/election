@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using E_Wybory.Client.ViewModels
+@inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
 
 <link href="forms.css" rel="stylesheet" />
@@ -19,7 +20,11 @@
             <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
         </div>
 
-        <button type="submit" class="submit-button">DODAJ</button>
+
+        <div class="form-row">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -39,5 +44,9 @@
         errorMessage = isAddedConstituency ? "Adding constituency successful!" : "Adding constituency fails";
     }
 
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/constituencylist");
+    }
 
 }

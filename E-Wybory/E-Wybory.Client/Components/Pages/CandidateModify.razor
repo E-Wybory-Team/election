@@ -11,6 +11,7 @@
 @inject IPersonManagementService PersonManagementService
 @inject IElectionManagementService ElectionManagementService
 
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -123,8 +124,10 @@
                 <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdDistrict)" />
             </div>
         </div>
-
-        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -171,6 +174,9 @@
             formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
             errorMessage = formSubmitted ? "Candidate modified successful!" : "Candidate modification fails";
     }
-
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/candidatelist");
+    }
 
 }

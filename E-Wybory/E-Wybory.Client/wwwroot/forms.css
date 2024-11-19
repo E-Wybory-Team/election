@@ -191,9 +191,9 @@ input, select {
         color: #ffffff;
     }
 
-}
 
-form .checkbox-group {
+
+.checkbox-group {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -230,3 +230,21 @@ form .checkbox-group {
         transform: scale(0.98);
         color: white;
     }
+.stats {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+.statistics-container .statistic-item stats {
+    display: inline-block; /* Ustawia span jako blokowy dla stylu prostokąta */
+    background-color: white; /* Białe tło */
+    border: 1px solid #ccc; /* Szare obramowanie */
+    border-radius: 5px; /* Lekko zaokrąglone rogi */
+    padding: 5px 10px; /* Wewnętrzne odstępy */
+    font-weight: bold; /* Pogrubiona czcionka */
+    color: #333; /* Ciemnoszary tekst */
+    text-align: center; /* Wyśrodkowanie tekstu */
+    min-width: 50px; /* Minimalna szerokość dla estetyki */
+}
+

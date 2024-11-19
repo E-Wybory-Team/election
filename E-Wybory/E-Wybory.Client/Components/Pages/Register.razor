@@ -35,8 +35,11 @@
             </div>
             <div class="input-group">
                 <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
-                <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" placeholder="DATA URODZENIA" />
-                <ValidationMessage For="@(() => registrationModel.DateOfBirthString)" />
+                <div class="input-content">
+                    <label for="birthdate" class="form-label">DATA URODZENIA</label>
+                    <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" id="birthdate" placeholder="DATA URODZENIA" />
+                    <ValidationMessage For="@(() => registrationModel.DateOfBirthString)" />
+                </div>
             </div>
         </div>
 

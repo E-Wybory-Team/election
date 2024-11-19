@@ -1,8 +1,10 @@
 ﻿@page "/addcommittee"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
 @inject IPartyManagementService PartyManagementService
+@inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -49,7 +51,10 @@
             <InputText @bind-Value="committeeModel.Website" id="website" class="form-input" placeholder="Wprowadź stronę internetową" />
         </div>
 
-        <button type="submit" class="submit-button">DODAJ</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">MODYFIKUJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -68,4 +73,8 @@
         errorMessage = isAddedCommittee ? "Adding committee successful!" : "Adding committee fails";
     }
 
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/commissionerslist");
+    }
 }

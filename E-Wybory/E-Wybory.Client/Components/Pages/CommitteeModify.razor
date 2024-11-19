@@ -49,7 +49,10 @@
             <InputText @bind-Value="committeeModel.Website" id="website" class="form-input" placeholder="Wprowadź stronę internetową" />
         </div>
 
-        <button type="submit" class="submit-button">MODYFIKUJ</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">MODYFIKUJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
