@@ -2,9 +2,17 @@
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAuthService AuthService
 @inject IDistrictManagementService DistrictManagementService
+
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Administratorzy" Context="authContext">
+                <Authorized>
+
+
 
 <div class="registration-form">
     <div class="icon">
@@ -83,6 +91,13 @@
     }
 </div>
 
+                </Authorized>
+            <NotAuthorized>
+                <p>You are not authorized to view this page.</p>
+            </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
 @code {
     private RegisterViewModel registrationModel = new RegisterViewModel();
     private List<DistrictViewModel> districts = new List<DistrictViewModel>();
@@ -110,9 +125,4 @@
         errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
         //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
     }
-
-    
-                                               
-
-    
 }
