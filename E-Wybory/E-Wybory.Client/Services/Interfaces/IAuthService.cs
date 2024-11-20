@@ -4,7 +4,7 @@ namespace E_Wybory.Client.Services
 {
     public interface IAuthService
     {
-        Task<bool> Login(LoginViewModel login);
+        Task<string> Login(LoginViewModel login);
 
         Task<bool> Register(RegisterViewModel register);
 
@@ -30,6 +30,7 @@ namespace E_Wybory.Client.Services
 
         public Task<bool> ResetPassword(ResetPasswordViewModel resetPassword);
         Task<int> GetCurrentUserIdDistrict();
+
 
 
     }

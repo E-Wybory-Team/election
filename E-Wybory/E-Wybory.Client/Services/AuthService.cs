@@ -14,12 +14,29 @@ namespace E_Wybory.Client.Services
         private HttpClient _httpClient = clientFactory.CreateClient("ElectionHttpClient");
         private ElectionAuthStateProvider _stateProvider = authenticationStateProvider as ElectionAuthStateProvider;
 
-        public async Task<bool> Login(LoginViewModel login)
+        public async Task<string> Login(LoginViewModel login)
         {
-            var response =  await _httpClient.PostAsJsonAsync("/api/auth/login", login);
+            var response = await _httpClient.PostAsJsonAsync("/api/auth/login", login);
 
-           return await AssignTokenFromRespone(response);
+            if (response.IsSuccessStatusCode)
+            {
+                // Pobierz token z odpowiedzi logowania
+                var token = await response.Content.ReadAsStringAsync();
+
+                // Zapisz token w AuthenticationStateProvider lub w localStorage, jeśli potrzeba
+                if (_stateProvider is not null && !string.IsNullOrEmpty(token))
+                {
+                    await _stateProvider.MarkUserAsAuthenticated(token);
+                }
+
+                return token;
+            }
+
+            return string.Empty; // Zwróć pusty string, jeśli logowanie się nie powiodło
         }
+
+
+
 
         public async Task<bool> Register(RegisterViewModel register)
         { 

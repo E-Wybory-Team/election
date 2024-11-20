@@ -5,6 +5,10 @@
 @using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveWebAssembly
 @inject E_Wybory.Client.Services.IAuthService AuthService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+
 
 
 <div class="login-form">
@@ -53,14 +57,63 @@
 
     private async Task HandleLogin()
     {
-        //Console.WriteLine($"Logowanie dla: {loginModel.Username}");
-        var success = await AuthService.Login(loginModel);
+        // Pobierz token z logowania
+        var token = await AuthService.Login(loginModel);
 
-        if (success)
-            loginInfoMessage = "Successfuly logged in!";
+        if (!string.IsNullOrEmpty(token))
+        {
+            // Zapis tokena w localStorage
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
+
+            // Dekodowanie tokena i przekierowanie na podstawie roli
+            var roles = DecodeJwtRoles(token);
+
+            if (roles.Contains("Administratorzy") || roles.Contains("Pracownicy PKW"))
+            {
+                NavigationManager.NavigateTo("/PKWHome");
+            }
+            else if (roles.Contains("Urzędnicy wyborczy"))
+            {
+                NavigationManager.NavigateTo("/UWHome");
+            }
+            else if (roles.Contains("Komisja wyborcza"))
+            {
+                NavigationManager.NavigateTo("/COHome");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/Home");
+            }
+
+            loginInfoMessage = "Successfully logged in!";
+        }
         else
+        {
             loginInfoMessage = "Invalid username or password!";
+        }
+    }
 
+    private List<string> DecodeJwtRoles(string token)
+    {
+        // Rozdzielenie tokena JWT na części
+        var parts = token.Split('.');
+        if (parts.Length != 3)
+        {
+            throw new ArgumentException("Invalid JWT token format.");
+        }
+
+        var payload = parts[1];
+        var jsonBytes = Convert.FromBase64String(payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '='));
+        var json = System.Text.Json.JsonDocument.Parse(jsonBytes);
+
+        // Wyciąganie ról z pola "Roles"
+        if (json.RootElement.TryGetProperty("Roles", out var rolesElement))
+        {
+            var rolesString = rolesElement.GetString();
+            return rolesString?.Split(',').Select(r => r.Trim()).ToList() ?? new List<string>();
+        }
+
+        return new List<string>();
     }
 
     public class LoginModel
