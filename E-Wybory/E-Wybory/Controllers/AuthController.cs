@@ -464,9 +464,19 @@ namespace E_Wybory.Controllers
 
             return true;
         }
-       
 
-        
-        
+        [HttpGet("currentUserDistrict")]
+        public async Task<ActionResult<int>> GetCurrentUserDistrictId()
+        {
+
+            UserWrapper user = new(User);
+            var electionUser = await _context.ElectionUsers.FindAsync(user.Id);
+            if(electionUser == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
+
+            return electionUser.IdDistrict;
+        }
     }
 }

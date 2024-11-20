@@ -15,6 +15,7 @@ using E_Wybory.Client.BuilderClientExtensionMethods;
 using E_Wybory.Services;
 using Microsoft.OpenApi.Models;
 using E_Wybory.Middleware;
+using System.Text.Json.Serialization;
 
 
 var rsaKey = RSA.Create();

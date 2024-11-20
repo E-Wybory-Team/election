@@ -13,5 +13,8 @@ namespace E_Wybory.Client.FilterData
 
         [Required]
         public List<ProvinceViewModel> ProvinceFilter { get; set; } = new List<ProvinceViewModel>();
+
+        [Required]
+        public List<DistrictViewModel> DistrictFilter { get; set; } = new List<DistrictViewModel>();
     }
 }

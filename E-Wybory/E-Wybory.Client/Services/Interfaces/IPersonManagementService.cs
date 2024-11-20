@@ -7,7 +7,10 @@ namespace E_Wybory.Client.Services
         Task<List<PersonViewModel>> People();
         Task<int> GetPersonIdByPeselAsync(string pesel);
         Task<bool> AddPerson(PersonViewModel person);
-        PersonViewModel? GetPersonById(int id, List<PersonViewModel> people);
+        Task<bool> PutPerson(PersonViewModel person);
+        Task<PersonViewModel> GetPersonById(int id);
+        Task<String> GetPersonNameSurnameById(int id);
         int CountPersonAge(DateTime birthDate);
+        Task<PersonViewModel> GetPersonIdByIdElectionUser(int electionUserId);
     }
 }

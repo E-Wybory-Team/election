@@ -1,0 +1,162 @@
+﻿@page "/districtlist"
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IDistrictManagementService DistrictManagementService
+@inject IConstituencyManagementService ConstituencyManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject NavigationManager NavigationManager
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">KONFIGURACJA OBWODÓW WYBORCZYCH</h2>
+    <button class="add-button" @onclick="AddDistrict">Dodaj Obwód</button>
+</div>
+
+<div class="filters">
+    <div class="filter-group-4columns">
+        <label>Okręg</label>
+        <select @bind="@SelectedConstituencyId" @bind:after="OnConstituencyChanged">
+            <option value="">Wybierz okręg</option>
+            @foreach (var constituency in wrapper.ConstituencyFilter)
+            {
+                <option value="@constituency.idConstituency">@constituency.constituencyName</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Województwo</label>
+        <select @bind="@SelectedVoivodeshipId" @bind:after="OnVoivodeshipChanged">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
+            {
+                <option value="@voivodeship.idVoivodeship">@voivodeship.voivodeshipName</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Powiat</label>
+        <select @bind="@SelectedCountyId" @bind:after="OnCountyChanged">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
+            {
+                <option value="@county.IdCounty">@county.CountyName</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Gmina</label>
+        <select @bind="@SelectedProvinceId" @bind:after="OnProvinceChanged">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
+            {
+                <option value="@province.IdProvince">@province.ProvinceName</option>
+            }
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Nazwa obwodu</th>
+            <th>Siedziba</th>
+            <th><img src="images/Accessibility.png" alt="Accessibility" class="icon-accessibility" /></th>
+            <th>Nazwa okręgu</th>
+            <th>Skład komisji</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var district in filteredDistricts)
+        {
+            var constituencyName = String.Empty;
+            var forDisabled = String.Empty;
+            if (district.DisabledFacilities)
+            {
+                forDisabled = "Tak";
+            }
+            else
+            {
+                forDisabled = "Nie";
+            }
+
+            if (district.IdConstituency != 0 && district.IdConstituency != null)
+                constituencyName = ConstituencyManagementService.GetConstituencyNameById(district.IdConstituency.GetValueOrDefault(), constituences);
+
+            <tr>
+                <td>@district.DistrictName</td>
+                <td>@district.DistrictHeadquarters</td>
+                <td>@forDisabled</td>
+                <td>@constituencyName</td>
+                <td><img src="images/CommitteeMembers.png" alt="Committee" class="icon" title="Skład komisji" /></td> @* tutaj jeszcze przekierowanie do składu wybranej komisji *@
+                <td>
+                    <a href="/modifydistrict/@district.IdDistrict">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/deletedistrict/@district.IdDistrict">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private int? SelectedConstituencyId { get; set; } = null;
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
+
+    private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
+    private List<ConstituencyViewModel> constituences = new List<ConstituencyViewModel>();
+    private FilterListWrapperDistrict wrapper = new FilterListWrapperDistrict();
+
+    private async Task FilterTable()
+    {
+        wrapper = await FilterWrapperService.GetFilteredListsDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId);
+        filteredDistricts = await FilterWrapperService.GetFilteredDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+    }
+
+    private void AddDistrict()
+    {
+        NavigationManager.NavigateTo("/adddistrict");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        filteredDistricts = await FilterWrapperService.GetFilteredDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        wrapper.ConstituencyFilter = await ConstituencyManagementService.Constituences();
+        constituences = await ConstituencyManagementService.Constituences();
+    }
+
+    private async Task OnConstituencyChanged()
+    {
+        SelectedVoivodeshipId = null;
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnVoivodeshipChanged()
+    {
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnCountyChanged()
+    {
+        SelectedProvinceId = null;
+        await FilterTable();
+    }
+
+    private async Task OnProvinceChanged()
+    {
+        await FilterTable();
+    }
+}

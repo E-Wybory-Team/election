@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
+using E_Wybory.Client.ViewModels;
+using static E_Wybory.Client.Components.Pages.ConstituencyList;
 
 namespace E_Wybory.Controllers
 {
@@ -44,41 +46,61 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Districts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDistrict(int id, District district)
+        public async Task<IActionResult> PutDistrict(int id, [FromBody] DistrictViewModel districtModel)
         {
-            if (id != district.IdDistrict)
+            if (!EnteredRequiredData(districtModel))
             {
-                return Conflict();
+                return BadRequest("Not entered data to all required fields");
             }
 
-            _context.Entry(district).State = EntityState.Modified;
+            if (id != districtModel.IdDistrict || !DistrictExists(id))
+            {
+                return Conflict("Incorrect district's id");
+            }
+
+            var district = await _context.Districts.FindAsync(id);
+
+            if (district == null)
+            {
+                return NotFound();
+            }
+
+            district.DistrictName = districtModel.DistrictName;
+            district.DisabledFacilities = districtModel.DisabledFacilities;
+            district.DistrictHeadquarters = districtModel.DistrictHeadquarters;
+            district.IdConstituency = districtModel.IdConstituency;
+            district.IdProvince = districtModel.IdProvince;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!DistrictExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest("Impossible to execute that in database");
             }
-
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Districts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<District>> PostDistrict(District district)
+        public async Task<ActionResult<District>> PostDistrict([FromBody] DistrictViewModel districtModel)
         {
+            if (!EnteredRequiredData(districtModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            var district = new District();
+
+            district.DistrictName = districtModel.DistrictName;
+            district.DisabledFacilities = districtModel.DisabledFacilities;
+            district.DistrictHeadquarters = districtModel.DistrictHeadquarters;
+            district.IdConstituency = districtModel.IdConstituency;
+            district.IdProvince = districtModel.IdProvince;
+
             _context.Districts.Add(district);
             await _context.SaveChangesAsync();
 
@@ -95,8 +117,20 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
 
+            var relatedElectionUsers = await _context.ElectionUsers
+                .Where(user => user.IdDistrict == id)
+                .ToListAsync();
+
+            if (relatedElectionUsers.Count > 0)
+            {
+                return Conflict("There are election users set to this district!");
+            }
+
             _context.Districts.Remove(district);
             await _context.SaveChangesAsync();
+
+            //_context.Districts.Remove(district);
+            //await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -104,6 +138,31 @@ namespace E_Wybory.Controllers
         private bool DistrictExists(int id)
         {
             return _context.Districts.Any(e => e.IdDistrict == id);
+        }
+
+        // GET: api/District/exist/5
+        [HttpGet("exist/{id}")]
+        public async Task<IActionResult> IfDistrictExists(int id)
+        {
+            if (DistrictExists(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+
+        private bool EnteredRequiredData(DistrictViewModel districtModel)
+        {
+            if (districtModel.DistrictName == String.Empty || districtModel.DistrictHeadquarters == String.Empty )
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

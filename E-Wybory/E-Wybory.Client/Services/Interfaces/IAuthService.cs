@@ -29,7 +29,7 @@ namespace E_Wybory.Client.Services
         public Task<bool> ForgetPassword(ForgetPasswordViewModel forgetPassword);
 
         public Task<bool> ResetPassword(ResetPasswordViewModel resetPassword);
-
+        Task<int> GetCurrentUserIdDistrict();
 
 
     }

@@ -1,0 +1,84 @@
+﻿@page "/deleteconstituency/{constituencyId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.ViewModels
+@inject NavigationManager NavigationManager
+@inject ICountyManagementService CountyManagementService
+@inject IConstituencyManagementService ConstituencyManagementService
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>USUWANIE OKRĘGU WYBORCZEGO</h1>
+    <EditForm Model="@constituencyModel" OnValidSubmit="HandleDeleteSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group-smaller">
+            <label for="name">NAZWA OKRĘGU</label>
+            <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" readonly />
+        </div>
+        <div>
+            <div class="filter-group">
+                <label>ZASIĘG (POWIATY)</label>
+                <div>
+                    @foreach (var county in relatedCounties)
+                    {
+                        <div>
+                            <span>@county.CountyName</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ</button>
+            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int constituencyId { get; set; }
+
+    bool isDeletedConstituency = false;
+    string errorMessage;
+
+    private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();
+    private List<CountyViewModel> relatedCounties = new List<CountyViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await ConstituencyManagementService.ConstituencyExists(constituencyId))
+        {
+            errorMessage = "Constituency not found";
+            Cancel();
+        }
+        else
+        {
+            constituencyModel = await ConstituencyManagementService.GetConstituencyById(constituencyId);
+            relatedCounties = await ConstituencyManagementService.GetCountiesOfConstituency(constituencyId);
+        }
+    }
+
+    private async void HandleDeleteSubmit()
+    {
+        isDeletedConstituency = await ConstituencyManagementService.DeleteConstituency(constituencyId);
+        errorMessage = isDeletedConstituency ? "Constituency deleted successful!" : "Constituency deleted fails";
+        if (isDeletedConstituency)
+        {
+            Cancel();
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/constituencylist");
+    }
+
+}

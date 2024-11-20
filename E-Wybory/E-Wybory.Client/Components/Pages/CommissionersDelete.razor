@@ -1,0 +1,107 @@
+﻿@page "/commissionersdelete/{commissionerId:int}"
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager NavigationManager
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>USUWANIE CZŁONKÓW KOMISJI Z OBWODU</h1>
+    <EditForm Model="@commissionerModel">
+        <div class="form-group-smaller">
+            <label for="pesel">PESEL CZŁONKA KOMISJI</label>
+            <InputText @bind-Value="commissionerModel.PESEL" id="pesel" class="form-input" readonly />
+        </div>
+        <div class="form-group-smaller">
+            <label for="wojewodztwo">WOJEWÓDZTWO</label>
+            <InputText @bind-Value="commissionerModel.Wojewodztwo" id="wojewodztwo" class="form-input" readonly />
+        </div>
+        <div class="form-group-smaller">
+            <label for="powiat">POWIAT</label>
+            <InputText @bind-Value="commissionerModel.Powiat" id="powiat" class="form-input" readonly />
+        </div>
+        <div class="form-group-smaller">
+            <label for="gmina">GMINA</label>
+            <InputText @bind-Value="commissionerModel.Gmina" id="gmina" class="form-input" readonly />
+        </div>
+        <div class="form-group-smaller">
+            <label for="numer-obwodu">NUMER OBWODU</label>
+            <InputText @bind-Value="commissionerModel.NumerObwodu" id="numer-obwodu" class="form-input" readonly />
+        </div>
+        <div class="form-group-smaller">
+            <label for="stopien">STOPIEŃ</label>
+            <InputText @bind-Value="commissionerModel.Stopien" id="stopien" class="form-input" readonly />
+        </div>
+        <div class="form-row">
+            <button type="button" class="red-submit-button" @onclick="DeleteCommissioner">USUŃ</button>
+            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int commissionerId { get; set; }
+
+    private CommissionerModel commissionerModel = new CommissionerModel();
+
+    protected override void OnInitialized()
+    {
+        var commissioner = GetCommissionerById(commissionerId);
+        if (commissioner != null)
+        {
+            commissionerModel = new CommissionerModel
+                {
+                    PESEL = commissioner.Person.PESEL.ToString(),
+                    Wojewodztwo = "Mazowieckie",
+                    Powiat = "Powiat 1",
+                    Gmina = "Gmina 1",
+                    NumerObwodu = "Obwód 1",
+                    Stopien = commissioner.Rank
+                };
+        }
+    }
+
+    private Commissioner? GetCommissionerById(int id)
+    {
+        // Mockowanie danych komisarza
+        var commissioners = new List<Commissioner>
+        {
+            new Commissioner { IdCommissioner = 1, Rank = "Przewodniczący", Person = new Person { PESEL = 85293128490 }},
+            new Commissioner { IdCommissioner = 2, Rank = "Członek", Person = new Person { PESEL = 92731028594 }}
+        };
+        return commissioners.FirstOrDefault(c => c.IdCommissioner == id);
+    }
+
+    private void DeleteCommissioner()
+    {
+        // Logika usuwania komisarza
+        Console.WriteLine($"Usunięto komisarza o numerze PESEL: {commissionerModel.PESEL}");
+        NavigationManager.NavigateTo("/commissionerslist");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/commissionerslist");
+    }
+
+    public class CommissionerModel
+    {
+        public string PESEL { get; set; }
+        public string Wojewodztwo { get; set; }
+        public string Powiat { get; set; }
+        public string Gmina { get; set; }
+        public string NumerObwodu { get; set; }
+        public string Stopien { get; set; }
+    }
+
+    public class Commissioner
+    {
+        public int IdCommissioner { get; set; }
+        public string Rank { get; set; }
+        public Person Person { get; set; }
+    }
+
+    public class Person
+    {
+        public long PESEL { get; set; }
+    }
+}

@@ -17,6 +17,30 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<ElectionViewModel> GetElectionById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ElectionViewModel>($"/api/Election/{id}");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<bool> AddElection(ElectionViewModel election)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/Election", election);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> PutElection(ElectionViewModel election)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/Election/{election.IdElection}", election);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> DeleteElection(int electionId)
+        {
+            var response = await _httpClient.DeleteAsync($"/api/Election/{electionId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
         public int? GetElectionTypeIdFromElection(int electionId, List<ElectionViewModel> elections)
         {
             var electionTypeId = elections
@@ -25,6 +49,20 @@ namespace E_Wybory.Client.Services
                 .FirstOrDefault();
 
             return electionTypeId;
+        }
+
+        public async Task<List<ElectionViewModel>> GetActiveElections()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<List<ElectionViewModel>>("/api/Election/active");
+                return response ?? new List<ElectionViewModel>();
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No active elections found. Returning an empty list.");
+                return new List<ElectionViewModel>();
+            }
         }
 
     }

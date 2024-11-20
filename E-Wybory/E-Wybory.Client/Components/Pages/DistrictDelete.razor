@@ -1,0 +1,99 @@
+﻿@page "/deletedistrict/{districtId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject NavigationManager NavigationManager
+@inject IDistrictManagementService DistrictManagementService
+@inject IProvinceManagementService ProvinceManagementService
+@inject ICountyManagementService CountyManagementService
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+@using E_Wybory.Client.ViewModels
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>USUWANIE OBWODU WYBORCZEGO</h1>
+    <EditForm Model="@districtModel" OnValidSubmit="HandleDeleteSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group-smaller">
+            <label>NAZWA OBWODU</label>
+            <InputText @bind-Value="districtModel.DistrictName" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>SIEDZIBA</label>
+            <InputText @bind-Value="districtModel.DistrictHeadquarters" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>WOJEWÓDZTWO</label>
+            <InputText @bind-Value="voivodeshipViewModel.voivodeshipName" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>POWIAT</label>
+            <InputText @bind-Value="countyViewModel.CountyName" readonly class="form-input" />
+        </div>
+
+        <div class="form-group-smaller">
+            <label>GMINA</label>
+            <InputText @bind-Value="provinceViewModel.ProvinceName" readonly class="form-input" />
+        </div>
+
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ</button>
+            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int districtId { get; set; }
+
+    bool isDeletedDistrict = false;
+    string errorMessage;
+
+    private DistrictViewModel districtModel = new DistrictViewModel();
+    private ProvinceViewModel provinceViewModel = new ProvinceViewModel();
+    private CountyViewModel countyViewModel = new CountyViewModel();
+    private VoivodeshipViewModel voivodeshipViewModel = new VoivodeshipViewModel();
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (!await DistrictManagementService.DistrictExists(districtId))
+        {
+            errorMessage = "Constituency not found";
+            Cancel();
+        }
+        else
+        {
+            districtModel = await DistrictManagementService.GetDistrictById(districtId);
+            if (districtModel.IdProvince != null)
+            {
+                provinceViewModel = await ProvinceManagementService.GetProvinceById(districtModel.IdProvince.Value);
+                countyViewModel = await CountyManagementService.GetCountyById(provinceViewModel.IdCounty);
+                voivodeshipViewModel = await VoivodeshipManagementService.GetVoivodeshipById(countyViewModel.IdVoivodeship);
+            }
+        }
+    }
+
+    private async void HandleDeleteSubmit()
+    {
+        isDeletedDistrict = await DistrictManagementService.DeleteDistrict(districtId);
+        errorMessage = isDeletedDistrict ? "District deleted successful!" : "Nie można usunąć obwodu gdyż jest powiązany z użytkownikiem/użytkownikami";
+        if (isDeletedDistrict)
+        {
+            Cancel();
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/districtlist");
+    }
+
+}

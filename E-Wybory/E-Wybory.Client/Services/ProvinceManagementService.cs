@@ -18,6 +18,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<ProvinceViewModel> GetProvinceById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ProvinceViewModel>($"/api/Province/{id}");
+            return await Task.FromResult(response);
+        }
+
         public int? GetCountyIdFromProvince(int provinceId, List<ProvinceViewModel> provinces)
         {
             var countyId = provinces

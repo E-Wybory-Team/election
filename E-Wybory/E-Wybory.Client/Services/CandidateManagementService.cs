@@ -18,6 +18,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<CandidateViewModel> GetCandidateById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<CandidateViewModel>($"/api/Candidate/{id}");
+            return await Task.FromResult(response);
+        }
+
         public async Task<bool> AddCandidate(CandidateViewModel candidate)
         {
             var response = await _httpClient.PostAsJsonAsync("/api/Candidate", candidate);
@@ -25,5 +31,23 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
+        public async Task<bool> PutCandidate(CandidateViewModel candidate)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/Candidate/{candidate.IdCandidate}", candidate);
+
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> CandidateExists(int candidateId)
+        {
+            var response = await _httpClient.GetAsync($"/api/Candidate/exist/{candidateId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> DeleteCandidate(int candidateId)
+        {
+            var response = await _httpClient.DeleteAsync($"/api/Candidate/{candidateId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
     }
 }

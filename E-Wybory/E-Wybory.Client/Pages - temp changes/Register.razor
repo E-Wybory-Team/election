@@ -1,0 +1,142 @@
+﻿@page "/testafterclean/register"
+@using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.Services;
+@using E_Wybory.Client.ViewModels;
+@* @rendermode InteractiveWebAssembly
+ *@
+
+ @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IAuthService AuthService
+@inject IDistrictManagementService DistrictManagementService
+
+
+<h3>Registration</h3>
+
+@if (formSubmitted)
+{
+    <div class="alert alert-success">
+        Registration successful! Welcome, @registrationModel.FirstName.
+    </div>
+}
+else
+{
+    <EditForm FormName="Reg" Model="registrationModel" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <InputText id="name" @bind-Value="registrationModel.FirstName" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.FirstName)" />
+        </div>
+
+        <div class="form-group">
+            <label for="surname">Surname</label>
+            <InputText id="surname" @bind-Value="registrationModel.LastName" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.LastName)" />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL</label>
+            <InputText id="pesel" @bind-Value="registrationModel.PESEL" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.PESEL)" />
+        </div>
+
+        <div class="form-group">
+            <label for="birthdate">Birthdate</label>
+            <InputDate id="birthdate" @bind-Value="registrationModel.DateOfBirth" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.DateOfBirth)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="registrationModel.Email" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Email)" />
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <InputText id="phone" @bind-Value="registrationModel.PhoneNumber" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.PhoneNumber)" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <InputText id="password" @bind-Value="registrationModel.Password" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.Password)" />
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <InputText id="confirmPassword" @bind-Value="registrationModel.ConfirmPassword" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registrationModel.ConfirmPassword)" />
+        </div>
+
+        <div class="form-group">
+            <label for="districtId">District</label>
+            @if (districts == null)
+            {
+                <p>Loading districts...</p>
+            }
+            else
+            {
+                <InputSelect id="districtId" @bind-Value="registrationModel.SelectedDistrictId">
+                    <option value="">-- Select a District --</option>
+                    @foreach (var district in districts)
+                    {
+                        <option value="@district.IdDistrict">@district.DistrictName</option>
+                    }
+                </InputSelect>
+            }
+            <ValidationMessage For="@(() => registrationModel.SelectedDistrictId)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3">@errorMessage</div>
+        }
+    </EditForm>
+}
+
+@code {
+
+    private List<DistrictViewModel> districts;
+    private int districtId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+            districts = await DistrictManagementService.Districts();
+    }
+
+    private RegisterViewModel registrationModel = new RegisterViewModel();
+    private bool formSubmitted = false;
+    private string errorMessage = "";
+
+    private async Task HandleSubmit()
+    {
+        formSubmitted = false;
+        errorMessage = "";
+
+        if (registrationModel.Password != registrationModel.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+
+        formSubmitted = await AuthService.Register(registrationModel);
+
+        if (!formSubmitted)
+        {
+            errorMessage = "Registration failes";
+            return;
+
+        }
+
+        // Reset form (optional)
+        registrationModel = new RegisterViewModel();
+    }
+}

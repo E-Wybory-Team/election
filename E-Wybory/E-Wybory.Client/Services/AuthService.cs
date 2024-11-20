@@ -157,5 +157,11 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.PostAsJsonAsync("/api/auth/reset-password", resetPassword);
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
+
+        public async Task<int> GetCurrentUserIdDistrict()
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>("/api/auth/currentUserDistrict");
+            return await Task.FromResult(response);
+        }
     }
 }

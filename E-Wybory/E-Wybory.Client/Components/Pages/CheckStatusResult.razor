@@ -1,0 +1,144 @@
+﻿@page "/checkstatusresult"
+@using E_Wybory.Client.ViewModels
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IElectionUserManagementService ElectionUserManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IElectionVoterManagementService ElectionVoterManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IVoterManagementService VoterManagementService
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
+
+    <form @onsubmit="CheckStatus">
+        <div class="form-group">
+            <label for="district">OBWÓD GŁOSOWANIA</label>
+            <InputSelect id="district" @bind-Value="idDistrict" class="form-control">
+                <option value="">Wybierz obwód</option>
+                @foreach (var district in districts)
+                {
+                    <option value="@district.IdDistrict">
+                        @district.DistrictName - @district.DistrictHeadquarters
+                    </option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <input type="text" id="pesel" @bind="pesel" />
+        </div>
+        <button type="submit" class="btn btn-primary submit-button">SPRAWDŹ</button>
+
+        @if (hasVoted != null && hasVoted == true)
+        {
+            <div class="status-alert status-alert-red">
+                <img src="images/AlertIcon.png" alt="Alert" class="status-icon" />
+                <span class="status-text">WYBORCA ODDAŁ JUŻ SWÓJ GŁOS</span>
+            </div>
+        }
+        else if (hasVoted != null && hasVoted == false)
+        {
+            <div class="status-alert status-alert-blue">
+                <img src="images/TickIcon.png" alt="Tick" class="status-icon" />
+                <span class="status-text">WYBORCA NIE ODDAŁ JESZCZE GŁOSU</span>
+            </div>
+        }
+    </form>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    private bool? hasVoted = null; 
+    private string pesel { get; set; }
+    private int idDistrict { get; set; } = 0;
+    private string errorMessage = String.Empty;
+
+    private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
+
+    private PersonViewModel personModel = new PersonViewModel();
+    private ElectionUserViewModel userModel = new ElectionUserViewModel();
+    private VoterViewModel voterModel = new VoterViewModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        districts = await DistrictManagementService.Districts();
+        activeElections = await ElectionManagementService.GetActiveElections();
+
+        if (activeElections.Count() == 0)
+        {
+            errorMessage = "Nie ma żadnych trwających wyborów";
+        }
+    }
+
+    private async Task CheckStatus()
+    {
+        if (!string.IsNullOrWhiteSpace(pesel))
+        {
+            if (idDistrict != 0)
+            {
+                int index = await PersonManagementService.GetPersonIdByPeselAsync(pesel);
+
+                if (index != 0)
+                {
+                    try
+                    {
+                        personModel = await PersonManagementService.GetPersonById(index);
+                        userModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
+                        voterModel = await VoterManagementService.GetVoterByElectionUserId(userModel.IdElectionUser);
+                        if (voterModel.IdDistrict == null)
+                        {
+                            errorMessage = "Wyborca nie ma przypisanego obwodu!";
+                        }
+                        else if (idDistrict != voterModel.IdDistrict)
+                        {
+                            errorMessage = "Podany użytkownik nie jest przypisany do tego obwodu!";
+                        }
+                        else
+                        {
+                            if (hasVoted == null)
+                            {
+                                hasVoted = false;    
+                            }
+
+                            foreach(var actualElection in activeElections)
+                            {
+                                var electionVoterExists = await ElectionVoterManagementService.ElectionVoterExists(voterModel.IdVoter, actualElection.IdElection);
+                                if(electionVoterExists)
+                                {
+                                    hasVoted = true;
+                                    return;
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessage = "Nie ma takiego użytkownika w bazie";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Nie ma takiego człowieka w bazie!";
+                }
+            }
+            else
+            {
+                errorMessage = "Proszę podać obwód!";
+            }
+
+        }
+        else
+        {
+            errorMessage = "Proszę podać nr PESEL!";
+        }
+    }
+}

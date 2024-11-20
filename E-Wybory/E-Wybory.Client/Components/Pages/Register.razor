@@ -21,16 +21,17 @@
     
     <EditForm FormName="Register" Model="@registrationModel" OnValidSubmit="HandleRegistration">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <div class="form-row">
             <div class="input-group">
                 <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
                 <InputText  @bind-Value="registrationModel.FirstName" placeholder="IMIĘ" />
+                <ValidationMessage For="@(() => registrationModel.FirstName)" />
             </div>
             <div class="input-group">
                 <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
                 <InputText @bind-Value="registrationModel.LastName" placeholder="NAZWISKO" />
+                <ValidationMessage For="@(() => registrationModel.LastName)" />
             </div>
         </div>
          
@@ -38,10 +39,12 @@
             <div class="input-group">
                 <img src="images/cards.png" alt="Ikona identyfikacyjna" class="input-icon" />
                 <InputText @bind-Value="registrationModel.PESEL" placeholder="PESEL" />
+                <ValidationMessage For="@(() => registrationModel.PESEL)" />
             </div>
             <div class="input-group">
                 <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
                 <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" placeholder="DATA URODZENIA" />
+                <ValidationMessage For="@(() => registrationModel.DateOfBirthString)" />
             </div>
         </div>
 
@@ -49,10 +52,12 @@
             <div class="input-group">
                 <img src="images/envelope.png" alt="Ikona email" class="input-icon" />
                 <InputText @bind-Value="registrationModel.Email" type="email" placeholder="ADRES EMAIL" />
+                <ValidationMessage For="@(() => registrationModel.Email)" />
             </div>
             <div class="input-group">
                 <img src="images/phone.png" alt="Ikona telefonu" class="input-icon" />
                 <InputText @bind-Value="registrationModel.PhoneNumber" placeholder="NUMER TELEFONU" />
+                <ValidationMessage For="@(() => registrationModel.PhoneNumber)" />
             </div>
         </div>
 
@@ -60,10 +65,12 @@
             <div class="input-group">
                 <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
                 <InputText @bind-Value="registrationModel.Password" type="password" placeholder="HASŁO" />
+                <ValidationMessage For="@(() => registrationModel.Password)" />
             </div>
             <div class="input-group">
                 <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
                 <InputText @bind-Value="registrationModel.ConfirmPassword" type="password" placeholder="POTWIERDŹ HASŁO" />
+                <ValidationMessage For="@(() => registrationModel.ConfirmPassword)" />
             </div>
         </div>
 
@@ -79,6 +86,7 @@
                         </option>
                     }
                 </select>
+                <ValidationMessage For="@(() => registrationModel.SelectedDistrictId)" />
             </div>
         </div>
 

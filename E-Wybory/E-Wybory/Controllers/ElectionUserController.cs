@@ -113,6 +113,32 @@ namespace E_Wybory.Controllers
 
         
 
+        // GET: api/ElectionUsers/5
+        [HttpGet("person/{personId}")]
+        public async Task<ActionResult<ElectionUserViewModel>> GetElectionUserByPersonId(int personId)
+        {
+            var electionUser = await _context.ElectionUsers.Where(user => user.IdPerson == personId).FirstOrDefaultAsync();
+
+            if (electionUser == null)
+            {
+                return NotFound();
+            }
+
+            var electionUserViewModel = new ElectionUserViewModel()
+            {
+                IdElectionUser = electionUser.IdElectionUser,
+                Email = electionUser.Email,
+                PhoneNumber = electionUser.PhoneNumber,
+                Password = electionUser.Password,
+                IdPerson = electionUser.IdPerson,
+                IdDistrict = electionUser.IdDistrict,
+                UserSecret = electionUser.UserSecret
+            };
+
+            return electionUserViewModel;
+        }
+
+
         // PUT: api/ElectionUsers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -155,6 +181,8 @@ namespace E_Wybory.Controllers
             return CreatedAtAction("GetElectionUser", new { id = user.IdElectionUser }, user);
         }
 
+
+
         // DELETE: api/ElectionUsers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteElectionUser(int id)
@@ -171,9 +199,23 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
+        
         private bool ElectionUserExists(int id)
         {
             return _context.ElectionUsers.Any(e => e.IdElectionUser == id);
+        }
+
+        [HttpGet("exist/{id}")]
+        public async Task<IActionResult> IfUserExists(int id)
+        {
+            if (ElectionUserExists(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
     }
 }

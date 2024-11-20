@@ -29,4 +29,10 @@
     <ProjectReference Include="..\..\E-Wybory.Application\E-Wybory.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Components\Pages\CommitteeDelete.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
 </Project>

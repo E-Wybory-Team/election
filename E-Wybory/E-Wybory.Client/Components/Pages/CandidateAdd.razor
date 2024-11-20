@@ -1,4 +1,4 @@
-﻿@page "/add-candidate"
+﻿@page "/addcandidate"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
@@ -16,22 +16,25 @@
 <div class="form-container">
     <h1>DODAWANIE KANDYDATA W WYBORACH</h1>
 
-    <EditForm Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate">
+    <EditForm FormName="CandidateAdd" Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate">
         <DataAnnotationsValidator />
-        <ValidationSummary />
+        <ValidationSummary/>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="name">IMIONA</label>
                 <InputText id="name" @bind-Value="candidatePersonModel.personViewModel.Name" placeholder="Wprowadź imiona kandydata" />
+                <ValidationMessage For="@(() => candidatePersonModel.personViewModel.Name)" />
             </div>
             <div class="form-group">
                 <label for="lastName">NAZWISKO</label>
                 <InputText id="lastName" @bind-Value="candidatePersonModel.personViewModel.Surname" placeholder="Wprowadź nazwisko kandydata" />
+                <ValidationMessage For="@(() => candidatePersonModel.personViewModel.Surname)" />
             </div>
             <div class="form-group">
                 <label for="birthDate">DATA URODZENIA</label>
                 <InputText @bind-Value="candidatePersonModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź datę urodzenia kandydata" />
+                <ValidationMessage For="@(() => candidatePersonModel.personViewModel.DateOfBirthString)" />
             </div>
         </div>
 
@@ -39,10 +42,12 @@
             <div class="form-group">
                 <label for="pesel">PESEL</label>
                 <InputText id="pesel" @bind-Value="candidatePersonModel.personViewModel.PESEL" placeholder="Wprowadź nr PESEL kandydata" />
+                <ValidationMessage For="@(() => candidatePersonModel.personViewModel.PESEL)" />
             </div>
             <div class="form-group">
                 <label for="occupation">ZAWÓD</label>
                 <InputText id="occupation" @bind-Value="candidatePersonModel.candidateViewModel.JobType" placeholder="Wprowadź zawód kandydata" />
+                <ValidationMessage For="@(() => candidatePersonModel.candidateViewModel.JobType)" />
             </div>
         </div>
 
@@ -58,6 +63,7 @@
             <div class="form-group">
                 <label for="listNumber">NUMER NA LIŚCIE</label>
                 <InputNumber id="listNumber" @bind-Value="candidatePersonModel.candidateViewModel.PositionNumber" placeholder="Wprowadź numer na liście" />
+                <ValidationMessage For="@(() => candidatePersonModel.candidateViewModel.PositionNumber)" />
             </div>
         </div>
 
@@ -94,6 +100,7 @@
                         </option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => candidatePersonModel.candidateViewModel.IdElection)" />
             </div>
         </div>
 
@@ -101,6 +108,7 @@
             <div class="form-group">
                 <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
                 <InputText id="placeOfResidence" @bind-Value="candidatePersonModel.candidateViewModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
+                <ValidationMessage For="@(() => candidatePersonModel.candidateViewModel.PlaceOfResidence)" />
             </div>
             <div class="form-group">
                 <label for="districtNumber">OBWÓD WYBORCZY</label>
@@ -113,11 +121,16 @@
                         </option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => candidatePersonModel.candidateViewModel.IdDistrict)" />
             </div>
         </div>
 
         <button type="submit" class="submit-button">DODAJ</button>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
@@ -129,6 +142,7 @@
 
     bool isAddedPerson = false;
     bool isAddedCandidate = false;
+    string errorMessage;
 
 
     protected override async Task OnInitializedAsync()
@@ -139,7 +153,7 @@
     }
 
 
-    private async void HandleAddCandidate()
+    private async Task HandleAddCandidate()
     {
         int index = await PersonManagementService.GetPersonIdByPeselAsync(candidatePersonModel.personViewModel.PESEL); //check if person exists
         Console.WriteLine("Index of person: " + index);
@@ -152,5 +166,7 @@
         }
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);
+
+        errorMessage = isAddedCandidate ? "Candidate added successful!" : "Adding of candidate fails";
     }
 }

@@ -1,0 +1,110 @@
+﻿@page "/addcommissioner"
+@using System.ComponentModel.DataAnnotations
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>DODAWANIE CZŁONKÓW KOMISJI DO OBWODU</h1>
+    <EditForm Model="@commissionerModel" OnValidSubmit="HandleAddSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group-smaller">
+            <label for="pesel">PESEL CZŁONKA KOMISJI</label>
+            <InputText @bind-Value="commissionerModel.PESEL" id="pesel" class="form-input" placeholder="Nr Pesel członka komisji" />
+        </div>
+        <div class="form-group-smaller">
+            <label for="wojewodztwo">WOJEWÓDZTWO</label>
+            <select @bind="commissionerModel.Wojewodztwo" id="wojewodztwo" class="form-input">
+                <option value="">Wybierz województwo</option>
+                @foreach (var woj in voivodeships)
+                {
+                    <option value="@woj">@woj</option>
+                }
+            </select>
+        </div>
+        <div class="form-group-smaller">
+            <label for="powiat">POWIAT</label>
+            <select @bind="commissionerModel.Powiat" id="powiat" class="form-input">
+                <option value="">Wybierz powiat</option>
+                @foreach (var pow in counties)
+                {
+                    <option value="@pow">@pow</option>
+                }
+            </select>
+        </div>
+        <div class="form-group-smaller">
+            <label for="gmina">GMINA</label>
+            <select @bind="commissionerModel.Gmina" id="gmina" class="form-input">
+                <option value="">Wybierz gminę</option>
+                @foreach (var gmina in provinces)
+                {
+                    <option value="@gmina">@gmina</option>
+                }
+            </select>
+        </div>
+        <div class="form-group-smaller">
+            <label for="numer-obwodu">NUMER OBWODU</label>
+            <select @bind="commissionerModel.NumerObwodu" id="numer-obwodu" class="form-input">
+                <option value="">Wybierz numer obwodu</option>
+                @foreach (var obwod in districtNumbers)
+                {
+                    <option value="@obwod">@obwod</option>
+                }
+            </select>
+        </div>
+        <div class="form-group-smaller">
+            <label for="stopien">STOPIEŃ</label>
+            <select @bind="commissionerModel.Rank" id="stopien" class="form-input">
+                <option value="">Wybierz stopień członkostwa w komisji</option>
+                <option value="Przewodniczący">Przewodniczący</option>
+                <option value="Zastępca">Zastępca</option>
+                <option value="Członek">Członek</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private CommissionerModel commissionerModel = new CommissionerModel();
+
+    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
+
+    private void HandleAddSubmit()
+    {
+        Console.WriteLine($"Dodano członka komisji o numerze PESEL: {commissionerModel.PESEL}");
+    }
+
+    private void Cancel()
+    {
+        Console.WriteLine("Anulowano dodawanie członka komisji.");
+    }
+
+    public class CommissionerModel
+    {
+        [Required(ErrorMessage = "Numer PESEL jest wymagany.")]
+        public string PESEL { get; set; }
+
+        [Required(ErrorMessage = "Województwo jest wymagane.")]
+        public string Wojewodztwo { get; set; }
+
+        [Required(ErrorMessage = "Powiat jest wymagany.")]
+        public string Powiat { get; set; }
+
+        [Required(ErrorMessage = "Gmina jest wymagana.")]
+        public string Gmina { get; set; }
+
+        [Required(ErrorMessage = "Numer obwodu jest wymagany.")]
+        public string NumerObwodu { get; set; }
+
+        [Required(ErrorMessage = "Stopień członkostwa jest wymagany.")]
+        public string Rank { get; set; }
+    }
+}

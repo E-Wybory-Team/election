@@ -1,0 +1,62 @@
+﻿@page "/constituencylist"
+@using E_Wybory.Client.ViewModels
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IConstituencyManagementService ConstituencyManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject NavigationManager NavigationManager
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">KONFIGURACJA OKRĘGÓW WYBORCZYCH</h2>
+    <button class="add-button" @onclick="AddConstituency">Dodaj okręg</button>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Nazwa okręgu</th>
+            <th>Zasięg (powiaty)</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var constituency in constituencyModels)
+        {
+            <tr>
+                <td>@constituency.constituencyName</td>
+                <td>@string.Join(", ", relatedCounties[constituency.idConstituency].Select(county => county.CountyName))</td>
+                <td>
+                    <a href="/modifyconstituency/@constituency.idConstituency">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/deleteconstituency/@constituency.idConstituency">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    private List<ConstituencyViewModel> constituencyModels = new List<ConstituencyViewModel>();
+    private Dictionary<int, List<CountyViewModel>> relatedCounties = new Dictionary<int, List<CountyViewModel>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        constituencyModels = await ConstituencyManagementService.Constituences();
+
+        foreach(var constituencyModel in constituencyModels)
+        {
+            relatedCounties.Add(constituencyModel.idConstituency, await ConstituencyManagementService.GetCountiesOfConstituency(constituencyModel.idConstituency));
+        }
+    }
+
+    private void AddConstituency()
+    {
+        NavigationManager.NavigateTo("/addconstituency");
+    }
+
+}

@@ -50,7 +50,6 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
 
     public virtual DbSet<Voter> Voters { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Candidate>(entity =>

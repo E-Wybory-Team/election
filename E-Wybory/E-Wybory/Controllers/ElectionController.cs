@@ -42,43 +42,56 @@ namespace E_Wybory.Controllers
         // PUT: api/Election/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutElection(int id, Election election)
+        public async Task<IActionResult> PutElection(int id, ElectionViewModel electionModel)
         {
-            if (id != election.IdElection)
+            if (!EnteredRequiredData(electionModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
+            if (id != electionModel.IdElection || !ElectionExists(id))
             {
                 return Conflict();
             }
 
-            _context.Entry(election).State = EntityState.Modified;
+            var election = await _context.Elections.FindAsync(id);
+
+            if (election == null)
+            {
+                return NotFound();
+            }
+
+            election.ElectionStartDate = electionModel.ElectionStartDate;
+            election.ElectionEndDate = electionModel.ElectionEndDate;
+            election.ElectionTour = electionModel.ElectionTour;
+            election.IdElectionType = electionModel.IdElectionType;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!ElectionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest("Impossible to execute that in database");
             }
-
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Election
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Election>> PostElection(ElectionViewModel electionModel)
+        public async Task<ActionResult<Election>> PostElection([FromBody] ElectionViewModel electionModel)
         {
+            if (!EnteredRequiredData(electionModel))
+            {
+                return BadRequest("Not entered data to all required fields");
+            }
+
             var election = new Election();
             election.ElectionStartDate = electionModel.ElectionStartDate;
             election.ElectionEndDate = electionModel.ElectionEndDate;
             election.ElectionTour = electionModel.ElectionTour;
+            election.IdElectionType = electionModel.IdElectionType;
             
             _context.Elections.Add(election);
             await _context.SaveChangesAsync();
@@ -102,9 +115,48 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
+
+        // GET: api/Election/active
+        [HttpGet("active")]
+        public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
+        {
+            var currentDate = DateTime.UtcNow;
+
+            var activeElections = await _context.Elections
+                .Where(record => record.ElectionStartDate <= currentDate && record.ElectionEndDate >= currentDate)
+                .Select(record => new ElectionViewModel
+                {
+                    IdElection = record.IdElection,
+                    ElectionStartDate = record.ElectionStartDate,
+                    ElectionEndDate = record.ElectionEndDate,
+                    ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                    IdElectionType = record.IdElectionType
+                })
+                .ToListAsync();
+
+            if (activeElections == null || activeElections.Count() == 0)
+            {
+                return NotFound("No active elections found.");
+            }
+
+            return Ok(activeElections);
+        }
+
+
         private bool ElectionExists(int id)
         {
             return _context.Elections.Any(e => e.IdElection == id);
+        }
+
+        private bool EnteredRequiredData(ElectionViewModel electionModel)
+        {
+            if (electionModel.ElectionStartDate == DateTime.MinValue || electionModel.ElectionEndDate == DateTime.MinValue
+                || electionModel.IdElectionType == 0)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

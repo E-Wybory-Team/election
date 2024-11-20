@@ -1,0 +1,100 @@
+﻿@page "/committeelist"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.ViewModels
+@inject IElectionTypeManagementService ElectionTypeManagementService
+@inject IPartyManagementService PartyManagementService
+@inject NavigationManager NavigationManager
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">Konfiguracja komitetów wyborczych</h2>
+    <button class="add-button" @onclick="AddParty">Dodaj komitet</button>
+</div>
+
+<div class="filters">
+    <div class="filter-group">
+        <label>Rodzaj wyborów</label>
+        <select @bind="@SelectedElectionTypeId" @bind:after="@FilterTable">
+            <option value="">Wybierz rodzaj wyborów</option>
+            @foreach (var electionType in electionTypes)
+            {
+                <option value="@electionType.IdElectionType">@electionType.ElectionTypeName</option>
+            }
+        </select>
+        </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Nr listy</th>
+            <th>Nazwa</th>
+            <th>Skrót</th>
+            <th>Adres</th>
+            <th>Rodzaj partii</th>
+            <th>Partia koalicyjna</th>
+            <th>Strona WWW</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var party in filteredParties)
+        {
+            var isCoalition = String.Empty;
+            if (party.IsCoalition)
+            {
+                isCoalition = "Tak";
+            }
+            else
+            {
+                isCoalition = "Nie";
+            }
+
+            <tr>
+                <td>@party.ListCommiteeNumber</td>
+                <td>@party.PartyName</td>
+                <td>@party.Abbreviation</td>
+                <td>@party.PartyAddress</td>
+                <td>@party.PartyType</td>
+                <td>@isCoalition</td>
+                <td>@party.Website</td>
+                <td>
+                    <a href="/modifycommittee/@party.IdParty">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/deletecommittee/@party.IdParty">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private int? SelectedElectionTypeId { get; set; } = null;
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
+    private List<PartyViewModel> parties = new List<PartyViewModel>();
+    private List<PartyViewModel> filteredParties = new List<PartyViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
+        parties = await PartyManagementService.Parties();
+        filteredParties = parties;
+    }
+
+    private async Task FilterTable()
+    {
+        filteredParties = await PartyManagementService.GetFilteredParties(SelectedElectionTypeId);
+    }
+
+    private void AddParty()
+    {
+        NavigationManager.NavigateTo("/addcommittee");
+    }
+
+
+
+}

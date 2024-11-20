@@ -1,0 +1,133 @@
+﻿@page "/commissionerslist"
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<div class="header-container">
+    <h2 class="title">SPIS KOMISJI</h2>
+    <a href="/addcommissioner" class="add-button">Dodaj członka</a>
+</div>
+
+<div class="filters">
+    <div class="filter-group-4columns">
+        <label>Województwo</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz województwo</option>
+            @foreach (var voivodeship in voivodeships)
+            {
+                <option value="@voivodeship">@voivodeship</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Powiat</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz powiat</option>
+            @foreach (var county in counties)
+            {
+                <option value="@county">@county</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Gmina</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz gminę</option>
+            @foreach (var province in provinces)
+            {
+                <option value="@province">@province</option>
+            }
+        </select>
+    </div>
+    <div class="filter-group-4columns">
+        <label>Numer obwodu</label>
+        <select @onchange="(e) => FilterTable()">
+            <option value="">Wybierz numer obwodu</option>
+            @foreach (var districtNumber in districtNumbers)
+            {
+                <option value="@districtNumber">@districtNumber</option>
+            }
+        </select>
+    </div>
+</div>
+
+<table class="candidate-table">
+    <thead>
+        <tr>
+            <th>Lp.</th>
+            <th>Imię</th>
+            <th>Nazwisko</th>
+            <th>PESEL</th>
+            <th>Telefon</th>
+            <th>Adres email</th>
+            <th>Stopień</th>
+            <th>Opcje konfiguracji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int index = 1;
+        }
+        @foreach (var commissioner in filteredCommissioners)
+        {
+            <tr>
+                <td>@index</td>
+                <td>@commissioner.Person.Name</td>
+                <td>@commissioner.Person.Surname</td>
+                <td>@commissioner.Person.PESEL</td>
+                <td>@commissioner.PhoneNumber</td>
+                <td>@commissioner.Email</td>
+                <td>@commissioner.Rank</td>
+                <td>
+                    <a href="/commissionersmodify/@commissioner.IdCommissioner">
+                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                    </a>
+                    <a href="/commissionersdelete/@commissioner.IdCommissioner">
+                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                    </a>
+                </td>
+            </tr>
+            index++;
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
+    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
+    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
+    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
+
+    private List<Commissioner> commissioners = new()
+    {
+        new Commissioner { IdCommissioner = 1, Email = "jan.komisarz@gmail.com", PhoneNumber = "+48 9827319823", Rank = "Przewodniczący", Person = new Person { Name = "Jan", Surname = "Kowalski", PESEL = 98273198273 }},
+    };
+
+    private List<Commissioner> filteredCommissioners = new();
+
+    private void FilterTable()
+    {
+        // Mockowana logika filtrowania
+        filteredCommissioners = commissioners;
+    }
+
+    protected override void OnInitialized()
+    {
+        filteredCommissioners = commissioners;
+    }
+
+    public class Commissioner
+    {
+        public int IdCommissioner { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Rank { get; set; }
+        public Person Person { get; set; }
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public long PESEL { get; set; }
+    }
+}

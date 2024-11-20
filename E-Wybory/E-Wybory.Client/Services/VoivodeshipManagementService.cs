@@ -15,6 +15,12 @@ namespace E_Wybory.Client.Services
                 var response = await _httpClient.GetFromJsonAsync<List<VoivodeshipViewModel>>("/api/Voivodeship");
 
                 return await Task.FromResult(response);
-        }
+            }
+
+            public async Task<VoivodeshipViewModel> GetVoivodeshipById(int id)
+            {
+                var response = await _httpClient.GetFromJsonAsync<VoivodeshipViewModel>($"/api/Voivodeship/{id}");
+                return await Task.FromResult(response);
+            }
     }
 }

@@ -1,0 +1,122 @@
+﻿@page "/cancelvoter"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject NavigationManager NavManager
+@inject IAuthService AuthService
+@inject IElectionManagementService ElectionManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
+@inject IVoterManagementService VoterManagementService
+@using E_Wybory.Client.ViewModels
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>WYPISYWANIE WYBORCY</h1>
+
+    <form @onsubmit="GoToSubmitCancelVoter">
+        <div class="form-group">
+            <label for="district">OBWÓD WYBORCY</label>
+            <input type="district" id="pesel" value="@district?.DistrictName - @district?.DistrictHeadquarters" class="form-control" placeholder="Obwód wyborcy" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <input type="text" id="pesel" @bind="pesel" class="form-control" placeholder="Nr Pesel wyborcy" />
+        </div>
+
+        <button type="submit" class="btn btn-primary submit-button">DALEJ</button>
+    </form>
+
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    private string pesel { get; set; }
+    private int idDistrict { get; set; } = 0;
+
+    private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
+    private DistrictViewModel district = new DistrictViewModel();
+
+    private PersonViewModel personModel = new PersonViewModel();
+    private ElectionUserViewModel userModel = new ElectionUserViewModel();
+    private VoterViewModel voterModel = new VoterViewModel();
+
+    string errorMessage;
+    bool formSubmitted = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        activeElections = await ElectionManagementService.GetActiveElections();
+        if (activeElections.Count() == 0)
+        {
+            errorMessage = "Nie ma żadnych trwających wyborów";
+        }
+        try
+        {
+            idDistrict = await AuthService.GetCurrentUserIdDistrict();
+            district = await DistrictManagementService.GetDistrictById(idDistrict);
+        }
+        catch(Exception ex)
+        {
+            errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+        }
+    }
+
+    // tutaj metoda do przekierowania razem z peselem musi być zaimplementowana
+    private async Task GoToSubmitCancelVoter()
+    {
+        if (!string.IsNullOrWhiteSpace(pesel))
+        {
+            if (idDistrict != 0)
+            {
+                int index = await PersonManagementService.GetPersonIdByPeselAsync(pesel);
+
+                if (index != 0)
+                {
+                    try
+                    {
+                        personModel = await PersonManagementService.GetPersonById(index);
+                        userModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
+                        voterModel = await VoterManagementService.GetVoterByElectionUserId(userModel.IdElectionUser);
+                        if(voterModel.IdDistrict == null)
+                        {
+                            errorMessage = "Wyborca nie ma przypisanego obwodu!";
+                        }
+                        else if (idDistrict != voterModel.IdDistrict)
+                        {
+                            errorMessage = "Podany użytkownik nie jest przypisany do tego obwodu!";
+                        }
+                        else
+                        {
+                            NavManager.NavigateTo($"/submitcancelvoter/{voterModel.IdVoter}");
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessage = "Nie ma takiego użytkownika w bazie";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Nie ma takiego człowieka w bazie!";
+                }
+            }
+            else
+            {
+                errorMessage = "Proszę podać obwód!";
+            }
+
+        }
+        else
+        {
+            errorMessage = "Proszę podać nr PESEL!";
+        }
+    }
+}

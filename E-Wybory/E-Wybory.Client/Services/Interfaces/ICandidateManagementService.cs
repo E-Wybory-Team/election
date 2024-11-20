@@ -6,5 +6,9 @@ namespace E_Wybory.Client.Services
     {
         Task<List<CandidateViewModel>> Candidates();
         Task<bool> AddCandidate(CandidateViewModel candidate);
+        Task<bool> PutCandidate(CandidateViewModel candidate);
+        Task<bool> CandidateExists(int candidateId);
+        Task<CandidateViewModel> GetCandidateById(int id);
+        Task<bool> DeleteCandidate(int candidateId);
     }
 }

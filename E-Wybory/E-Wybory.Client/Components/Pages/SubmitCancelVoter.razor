@@ -1,0 +1,143 @@
+﻿@page "/submitcancelvoter/{idVoter:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.ViewModels
+@inject NavigationManager NavManager
+@inject IVoterManagementService VoterManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IElectionVoterManagementService ElectionVoterManagementService
+@inject IAuthService AuthService
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>WYPISYWANIE WYBORCY</h1>
+
+    <form @onsubmit="HandleSubmit">
+        <div class="form-group">
+            <label for="district">OBWÓD GŁOSOWANIA</label>
+            <input type="text" id="district" value="@districtViewModel?.DistrictName - @districtViewModel?.DistrictHeadquarters" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="pesel">PESEL WYBORCY</label>
+            <input type="text" id="pesel" value="@personModel.PESEL" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="firstName">IMIĘ</label>
+            <input type="text" id="firstName" value="@personModel.Name" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">NAZWISKO</label>
+            <input type="text" id="lastName" value="@personModel.Surname" readonly />
+        </div>
+
+        <div class="form-group">
+            <label for="birthDate">DATA URODZENIA</label>
+            <input type="text" id="birthDate" value="@personModel.DateOfBirthString" readonly />
+        </div>
+
+        <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+    </form>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    [Parameter] public int idVoter { get; set; }
+
+    private int idDistrict = 0;
+    private string errorMessage;
+    private bool formSubmitted = false;
+
+    private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
+    private PersonViewModel personModel = new PersonViewModel();
+    private VoterViewModel voterModel = new VoterViewModel();
+    private DistrictViewModel? districtViewModel = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        activeElections = await ElectionManagementService.GetActiveElections();
+        if (activeElections.Count == 0)
+        {
+            errorMessage = "Aktualnie brak trwających wyborów!";
+            NavManager.NavigateTo("/cancelvoter");
+            return;
+        }
+
+        try
+        {
+            idDistrict = await AuthService.GetCurrentUserIdDistrict();
+            districtViewModel = await DistrictManagementService.GetDistrictById(idDistrict);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+            NavManager.NavigateTo("/cancelvoter");
+            return;
+        }
+
+        try
+        {
+            var voterExists = await VoterManagementService.VoterExists(idVoter);
+            if (!voterExists)
+            {
+                errorMessage = "Nie znaleziono wyborcy!";
+                NavManager.NavigateTo("/cancelvoter");
+                return;
+            }
+            else
+            {
+                voterModel = await VoterManagementService.GetVoterById(idVoter);
+            }
+
+            if(idDistrict != voterModel.IdDistrict)
+            {
+                errorMessage = "Wyborca nie jest przypisany do tego obwodu!";
+                NavManager.NavigateTo("/cancelvoter");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Wyborca o podanym ID nie istnieje!";
+            NavManager.NavigateTo("/cancelvoter");
+        }
+
+        personModel = await PersonManagementService.GetPersonIdByIdElectionUser(voterModel.IdElectionUser);
+    }
+
+
+    private async Task HandleSubmit()
+    {
+        if (activeElections.Count == 0)
+        {
+            errorMessage = "Aktualnie brak trwających wyborów!";
+            return;
+        }
+
+        foreach (var activeElection in activeElections)
+        {
+            var electionVoted = await ElectionVoterManagementService.ElectionVoterExists(idVoter, activeElection.IdElection);
+            if (electionVoted)
+            {
+                errorMessage = "Wyborca już jest zablokowany w tych wyborach!";
+                return;
+            }
+
+            var electionVoterViewModel = new ElectionVoterViewModel
+            {
+                IdElection = activeElection.IdElection,
+                IdVoter = idVoter,
+                VoteTime = DateTime.Now
+            };
+
+            formSubmitted = await ElectionVoterManagementService.AddElectionVoter(electionVoterViewModel);
+            errorMessage = formSubmitted ? "Zablokowano możliwość głosowania użytkownikowi!" : "Blokada głosowania użytkownikowi nie powiodła się!";
+        }
+    }
+}

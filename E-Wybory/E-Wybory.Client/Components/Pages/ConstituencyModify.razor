@@ -1,0 +1,68 @@
+﻿@page "/modifyconstituency/{constituencyId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
+@inject NavigationManager NavigationManager
+@inject IConstituencyManagementService ConstituencyManagementService
+<link href="forms.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h1>MODYFIKOWANIE OKRĘGU WYBORCZEGO</h1>
+    <EditForm Model="@constituencyModel" OnValidSubmit="HandleModifySubmit">
+        <DataAnnotationsValidator />
+
+        <div class="form-group-smaller">
+            <label for="name">NAZWA OKRĘGU</label>
+            <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" />
+            <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
+        </div>
+
+        <div class="form-row">
+            <button type="submit" class="submit-button">ZAPISZ ZMIANY</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int constituencyId { get; set; }
+
+    bool isModifiedConstituency = false;
+    string errorMessage;
+
+    private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (! await ConstituencyManagementService.ConstituencyExists(constituencyId))
+        {
+            errorMessage = "Constituency not found";
+            Cancel();
+        }
+        else
+        {
+            constituencyModel = await ConstituencyManagementService.GetConstituencyById(constituencyId);
+        }
+    }
+
+    private async void HandleModifySubmit()
+    {
+        isModifiedConstituency = await ConstituencyManagementService.PutConstituency(constituencyModel);
+        errorMessage = isModifiedConstituency ? "Constituency modified successful!" : "Constituency modified fails";
+        if (isModifiedConstituency)
+        {
+            NavigationManager.NavigateTo("/constituencylist");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/constituencylist");
+    }
+
+}
