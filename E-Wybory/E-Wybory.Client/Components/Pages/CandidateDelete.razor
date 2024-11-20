@@ -4,6 +4,8 @@
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject IPartyManagementService PartyManagementService
 @inject IDistrictManagementService DistrictManagementService
@@ -13,116 +15,131 @@
 
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>USUWANIE KANDYDATA W WYBORACH</h1>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-    <EditForm FormName="CandidateDelete" Model="@candidateModel" OnValidSubmit="HandleDeleteCandidate">
-        <DataAnnotationsValidator />
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="firstName">IMIĘ</label>
-                <InputText id="firstName" @bind-Value="candidateModel.personViewModel.Name" readonly placeholder="Wprowadź imię kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="lastName">NAZWISKO</label>
-                <InputText id="lastName" @bind-Value="candidateModel.personViewModel.Surname" readonly placeholder="Wprowadź nazwisko kandydata" />
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="pesel">PESEL</label>
-                <InputText id="pesel" @bind-Value="candidateModel.personViewModel.PESEL" readonly placeholder="Wprowadź nr PESEL kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="dateBirth">DATA URODZENIA</label>
-                <InputText id="dateBirth" @bind-Value="candidateModel.personViewModel.DateOfBirthString" type="date" readonly placeholder="Wprowadź zawód kandydata" />
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="occupation">ZAWÓD</label>
-                <InputText id="occupation" @bind-Value="candidateModel.candidateViewModel.JobType" readonly placeholder="Wprowadź zawód kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="workplace">MIEJSCE PRACY</label>
-                <InputText id="workplace" @bind-Value="candidateModel.candidateViewModel.Workplace" readonly placeholder="Wprowadź miejsce pracy kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="campaign">OPIS KAMPANII</label>
-                <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" readonlyplaceholder="Wprowadź opis kampanii wyborczej kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="listNumber">NUMER NA LIŚCIE</label>
-                <InputNumber id="listNumber" @bind-Value="candidateModel.candidateViewModel.PositionNumber" readonly placeholder="Wprowadź numer na liście" />
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="education">WYKSZTAŁCENIE</label>
-                <InputSelect id="education" @bind-Value="candidateModel.candidateViewModel.EducationStatus" disabled>
-                    <option value="">Wybierz wykształcenie</option>
-                    <option value="Podstawowe">Podstawowe</option>
-                    <option value="Średnie">Średnie</option>
-                    <option value="Wyższe">Wyższe</option>
-                </InputSelect>
-            </div>
-            <div class="form-group">
-                <label for="partyAffiliation">PRZYNALEŻNOŚĆ DO PARTII</label>
-                <InputSelect id="partyAffiliation" @bind-Value="candidateModel.candidateViewModel.IdParty" disabled>
-                    <option value="">Wybierz partię</option>
-                    @foreach (var party in parties)
+                <div class="form-container">
+                    <h1>USUWANIE KANDYDATA W WYBORACH</h1>
+                
+                    <EditForm FormName="CandidateDelete" Model="@candidateModel" OnValidSubmit="HandleDeleteCandidate">
+                        <DataAnnotationsValidator />
+                
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">IMIĘ</label>
+                                <InputText id="firstName" @bind-Value="candidateModel.personViewModel.Name" readonly placeholder="Wprowadź imię kandydata" />
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">NAZWISKO</label>
+                                <InputText id="lastName" @bind-Value="candidateModel.personViewModel.Surname" readonly placeholder="Wprowadź nazwisko kandydata" />
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pesel">PESEL</label>
+                                <InputText id="pesel" @bind-Value="candidateModel.personViewModel.PESEL" readonly placeholder="Wprowadź nr PESEL kandydata" />
+                            </div>
+                            <div class="form-group">
+                                <label for="dateBirth">DATA URODZENIA</label>
+                                <InputText id="dateBirth" @bind-Value="candidateModel.personViewModel.DateOfBirthString" type="date" readonly placeholder="Wprowadź zawód kandydata" />
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="occupation">ZAWÓD</label>
+                                <InputText id="occupation" @bind-Value="candidateModel.candidateViewModel.JobType" readonly placeholder="Wprowadź zawód kandydata" />
+                            </div>
+                            <div class="form-group">
+                                <label for="workplace">MIEJSCE PRACY</label>
+                                <InputText id="workplace" @bind-Value="candidateModel.candidateViewModel.Workplace" readonly placeholder="Wprowadź miejsce pracy kandydata" />
+                            </div>
+                            <div class="form-group">
+                                <label for="campaign">OPIS KAMPANII</label>
+                                <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" readonlyplaceholder="Wprowadź opis kampanii wyborczej kandydata" />
+                            </div>
+                            <div class="form-group">
+                                <label for="listNumber">NUMER NA LIŚCIE</label>
+                                <InputNumber id="listNumber" @bind-Value="candidateModel.candidateViewModel.PositionNumber" readonly placeholder="Wprowadź numer na liście" />
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="education">WYKSZTAŁCENIE</label>
+                                <InputSelect id="education" @bind-Value="candidateModel.candidateViewModel.EducationStatus" disabled>
+                                    <option value="">Wybierz wykształcenie</option>
+                                    <option value="Podstawowe">Podstawowe</option>
+                                    <option value="Średnie">Średnie</option>
+                                    <option value="Wyższe">Wyższe</option>
+                                </InputSelect>
+                            </div>
+                            <div class="form-group">
+                                <label for="partyAffiliation">PRZYNALEŻNOŚĆ DO PARTII</label>
+                                <InputSelect id="partyAffiliation" @bind-Value="candidateModel.candidateViewModel.IdParty" disabled>
+                                    <option value="">Wybierz partię</option>
+                                    @foreach (var party in parties)
+                                    {
+                                        <option value="@party.IdParty">
+                                            @party.PartyName
+                                        </option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="form-group">
+                                <label for="election">WYBORY</label>
+                                <InputSelect id="election" @bind-Value="candidateModel.candidateViewModel.IdElection" disabled>
+                                    <option value="">Wybierz instancję wyborów</option>
+                                    @foreach (var election in elections)
+                                    {
+                                        <option value="@election.IdElection">
+                                            Od: @election.ElectionStartDate do: @election.ElectionEndDate
+                                        </option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
+                                <InputText id="placeOfResidence" @bind-Value="candidateModel.candidateViewModel.PlaceOfResidence" readonly placeholder="Wprowadź miejscowość zamieszkania" />
+                            </div>
+                            <div class="form-group">
+                                <label for="districtNumber">OBWÓD WYBORCZY</label>
+                                <InputSelect id="districtNumber" @bind-Value="candidateModel.candidateViewModel.IdDistrict" disabled>
+                                    <option value="">Wybierz obwód wyborczy</option>
+                                    @foreach (var district in districts)
+                                    {
+                                        <option value="@district.IdDistrict">
+                                            @district.DistrictName - @district.DistrictHeadquarters
+                                        </option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+                
+                        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+                    </EditForm>
+                
+                    @if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        <option value="@party.IdParty">
-                            @party.PartyName
-                        </option>
+                        <div class="alert alert-danger mt-3">@errorMessage</div>
                     }
-                </InputSelect>
+                </div>
+                
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
             </div>
-            <div class="form-group">
-                <label for="election">WYBORY</label>
-                <InputSelect id="election" @bind-Value="candidateModel.candidateViewModel.IdElection" disabled>
-                    <option value="">Wybierz instancję wyborów</option>
-                    @foreach (var election in elections)
-                    {
-                        <option value="@election.IdElection">
-                            Od: @election.ElectionStartDate do: @election.ElectionEndDate
-                        </option>
-                    }
-                </InputSelect>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
-                <InputText id="placeOfResidence" @bind-Value="candidateModel.candidateViewModel.PlaceOfResidence" readonly placeholder="Wprowadź miejscowość zamieszkania" />
-            </div>
-            <div class="form-group">
-                <label for="districtNumber">OBWÓD WYBORCZY</label>
-                <InputSelect id="districtNumber" @bind-Value="candidateModel.candidateViewModel.IdDistrict" disabled>
-                    <option value="">Wybierz obwód wyborczy</option>
-                    @foreach (var district in districts)
-                    {
-                        <option value="@district.IdDistrict">
-                            @district.DistrictName - @district.DistrictHeadquarters
-                        </option>
-                    }
-                </InputSelect>
-            </div>
-        </div>
-
-        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     [Parameter]

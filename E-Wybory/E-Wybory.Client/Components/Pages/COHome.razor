@@ -1,27 +1,47 @@
 ﻿@page "/cohome"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+<link href="forms.css" rel="stylesheet" />
 
-<div class="page-content">
-    <a href="/info" class="button-informator">
-        <div class="informator-wyborczy">Informator Wyborczy</div>
-    </a>
 
-    <a href="/candidateinfo" class="button-kandydaci">
-        <div class="text-wrapper">Kandydaci</div>
-    </a>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
+            <div class="page-content">
+                <a href="/info" class="button-informator">
+                    <div class="informator-wyborczy">Informator Wyborczy</div>
+                </a>
+            
+                <a href="/candidateinfo" class="button-kandydaci">
+                    <div class="text-wrapper">Kandydaci</div>
+                </a>
+            
+                <a href="/statistics" class="button-statystyki">
+                    <div class="div">Statystyki</div>
+                </a>
+            
+                <a href="/cancelvoter" class="button-voters-list">
+                    <div class="text-wrapper-2">Wypis wyborców</div>
+                </a>
+            
+                <a href="/checkvotestatus" class="button-check-status">
+                    <div class="text-wrapper-2">Sprawdź status głosowania</div>
+                </a>
+            
+                <a href="/districtstats" class="button-district-stats">
+                    <div class="text-wrapper-2">Statystyki dla obwodu</div>
+                </a>
+            </div>
 
-    <a href="/statistics" class="button-statystyki">
-        <div class="div">Statystyki</div>
-    </a>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
-    <a href="/cancelvoter" class="button-voters-list">
-        <div class="text-wrapper-2">Wypis wyborców</div>
-    </a>
-
-    <a href="/checkvotestatus" class="button-check-status">
-        <div class="text-wrapper-2">Sprawdź status głosowania</div>
-    </a>
-
-    <a href="/districtstats" class="button-district-stats">
-        <div class="text-wrapper-2">Statystyki dla obwodu</div>
-    </a>
-</div>

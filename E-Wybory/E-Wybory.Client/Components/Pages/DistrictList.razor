@@ -1,6 +1,8 @@
 ﻿@page "/districtlist"
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject IDistrictManagementService DistrictManagementService
 @inject IConstituencyManagementService ConstituencyManagementService
@@ -9,53 +11,68 @@
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
-<div class="header-container">
-    <h2 class="title">KONFIGURACJA OBWODÓW WYBORCZYCH</h2>
-    <button class="add-button" @onclick="AddDistrict">Dodaj Obwód</button>
-</div>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-<div class="filters">
-    <div class="filter-group-4columns">
-        <label>Okręg</label>
-        <select @bind="@SelectedConstituencyId" @bind:after="OnConstituencyChanged">
-            <option value="">Wybierz okręg</option>
-            @foreach (var constituency in wrapper.ConstituencyFilter)
-            {
-                <option value="@constituency.idConstituency">@constituency.constituencyName</option>
-            }
-        </select>
-    </div>
-    <div class="filter-group-4columns">
-        <label>Województwo</label>
-        <select @bind="@SelectedVoivodeshipId" @bind:after="OnVoivodeshipChanged">
-            <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
-            {
-                <option value="@voivodeship.idVoivodeship">@voivodeship.voivodeshipName</option>
-            }
-        </select>
-    </div>
-    <div class="filter-group-4columns">
-        <label>Powiat</label>
-        <select @bind="@SelectedCountyId" @bind:after="OnCountyChanged">
-            <option value="">Wybierz powiat</option>
-            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
-            {
-                <option value="@county.IdCounty">@county.CountyName</option>
-            }
-        </select>
-    </div>
-    <div class="filter-group-4columns">
-        <label>Gmina</label>
-        <select @bind="@SelectedProvinceId" @bind:after="OnProvinceChanged">
-            <option value="">Wybierz gminę</option>
-            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
-            {
-                <option value="@province.IdProvince">@province.ProvinceName</option>
-            }
-        </select>
-    </div>
-</div>
+            <div class="header-container">
+                <h2 class="title">KONFIGURACJA OBWODÓW WYBORCZYCH</h2>
+                <button class="add-button" @onclick="AddDistrict">Dodaj Obwód</button>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group-4columns">
+                    <label>Okręg</label>
+                    <select @bind="@SelectedConstituencyId" @bind:after="OnConstituencyChanged">
+                        <option value="">Wybierz okręg</option>
+                        @foreach (var constituency in wrapper.ConstituencyFilter)
+                        {
+                            <option value="@constituency.idConstituency">@constituency.constituencyName</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group-4columns">
+                    <label>Województwo</label>
+                    <select @bind="@SelectedVoivodeshipId" @bind:after="OnVoivodeshipChanged">
+                        <option value="">Wybierz województwo</option>
+                        @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
+                        {
+                            <option value="@voivodeship.idVoivodeship">@voivodeship.voivodeshipName</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group-4columns">
+                    <label>Powiat</label>
+                    <select @bind="@SelectedCountyId" @bind:after="OnCountyChanged">
+                        <option value="">Wybierz powiat</option>
+                        @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
+                        {
+                            <option value="@county.IdCounty">@county.CountyName</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group-4columns">
+                    <label>Gmina</label>
+                    <select @bind="@SelectedProvinceId" @bind:after="OnProvinceChanged">
+                        <option value="">Wybierz gminę</option>
+                        @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
+                        {
+                            <option value="@province.IdProvince">@province.ProvinceName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 <table class="candidate-table">
     <thead>

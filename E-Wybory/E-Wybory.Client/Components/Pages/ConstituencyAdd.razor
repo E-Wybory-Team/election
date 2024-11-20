@@ -3,29 +3,46 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IConstituencyManagementService ConstituencyManagementService
 
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>DODAWANIE OKRĘGU WYBORCZEGO</h1>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-    <EditForm FormName="ConstituencyAdd" Model="constituencyModel" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
+            <div class="form-container">
+                <h1>DODAWANIE OKRĘGU WYBORCZEGO</h1>
+            
+                <EditForm FormName="ConstituencyAdd" Model="constituencyModel" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+            
+                    <div class="form-group">
+                        <label for="constituencyName">NAZWA OKRĘGU</label>
+                        <InputText id="constituencyName" @bind-Value="constituencyModel.constituencyName" placeholder="Nazwa okręgu wyborczego" />
+                        <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
+                    </div>
+            
+                    <button type="submit" class="submit-button">DODAJ</button>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+            </div>
 
-        <div class="form-group">
-            <label for="constituencyName">NAZWA OKRĘGU</label>
-            <InputText id="constituencyName" @bind-Value="constituencyModel.constituencyName" placeholder="Nazwa okręgu wyborczego" />
-            <ValidationMessage For="@(() => constituencyModel.constituencyName)" />
-        </div>
-
-        <button type="submit" class="submit-button">DODAJ</button>
-    </EditForm>
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();

@@ -1,5 +1,7 @@
 ﻿@page "/checkstatusresult"
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IDistrictManagementService DistrictManagementService
@@ -9,50 +11,64 @@
 @inject IVoterManagementService VoterManagementService
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
-
-    <form @onsubmit="CheckStatus">
-        <div class="form-group">
-            <label for="district">OBWÓD GŁOSOWANIA</label>
-            <InputSelect id="district" @bind-Value="idDistrict" class="form-control">
-                <option value="">Wybierz obwód</option>
-                @foreach (var district in districts)
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
+            <div class="form-container">
+                <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
+            
+                <form @onsubmit="CheckStatus">
+                    <div class="form-group">
+                        <label for="district">OBWÓD GŁOSOWANIA</label>
+                        <InputSelect id="district" @bind-Value="idDistrict" class="form-control">
+                            <option value="">Wybierz obwód</option>
+                            @foreach (var district in districts)
+                            {
+                                <option value="@district.IdDistrict">
+                                    @district.DistrictName - @district.DistrictHeadquarters
+                                </option>
+                            }
+                        </InputSelect>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="pesel">PESEL WYBORCY</label>
+                        <input type="text" id="pesel" @bind="pesel" />
+                    </div>
+                    <button type="submit" class="btn btn-primary submit-button">SPRAWDŹ</button>
+            
+                    @if (hasVoted != null && hasVoted == true)
+                    {
+                        <div class="status-alert status-alert-red">
+                            <img src="images/AlertIcon.png" alt="Alert" class="status-icon" />
+                            <span class="status-text">WYBORCA ODDAŁ JUŻ SWÓJ GŁOS</span>
+                        </div>
+                    }
+                    else if (hasVoted != null && hasVoted == false)
+                    {
+                        <div class="status-alert status-alert-blue">
+                            <img src="images/TickIcon.png" alt="Tick" class="status-icon" />
+                            <span class="status-text">WYBORCA NIE ODDAŁ JESZCZE GŁOSU</span>
+                        </div>
+                    }
+                </form>
+            
+                @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <option value="@district.IdDistrict">
-                        @district.DistrictName - @district.DistrictHeadquarters
-                    </option>
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
                 }
-            </InputSelect>
-        </div>
-
-        <div class="form-group">
-            <label for="pesel">PESEL WYBORCY</label>
-            <input type="text" id="pesel" @bind="pesel" />
-        </div>
-        <button type="submit" class="btn btn-primary submit-button">SPRAWDŹ</button>
-
-        @if (hasVoted != null && hasVoted == true)
-        {
-            <div class="status-alert status-alert-red">
-                <img src="images/AlertIcon.png" alt="Alert" class="status-icon" />
-                <span class="status-text">WYBORCA ODDAŁ JUŻ SWÓJ GŁOS</span>
             </div>
-        }
-        else if (hasVoted != null && hasVoted == false)
-        {
-            <div class="status-alert status-alert-blue">
-                <img src="images/TickIcon.png" alt="Tick" class="status-icon" />
-                <span class="status-text">WYBORCA NIE ODDAŁ JESZCZE GŁOSU</span>
-            </div>
-        }
-    </form>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private bool? hasVoted = null; 

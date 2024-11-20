@@ -5,53 +5,70 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using E_Wybory.Client.Services;
 @using System.Globalization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IElectionManagementService ElectionManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>REJESTROWANIE WYBORÓW</h1>
-    <EditForm FormName="ElectionAdd" Model="@electionModel" OnValidSubmit="HandleValidSubmit">
-        <DataAnnotationsValidator />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-        <div class="form-group">
-            <label for="rodzaj">RODZAJ</label>
-            <InputSelect @bind-Value="electionModel.IdElectionType">
-                <option value="">Wybierz rodzaj</option>
-                @foreach (var electionType in electionTypes)
+            <div class="form-container">
+                <h1>REJESTROWANIE WYBORÓW</h1>
+                <EditForm FormName="ElectionAdd" Model="@electionModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+            
+                    <div class="form-group">
+                        <label for="rodzaj">RODZAJ</label>
+                        <InputSelect @bind-Value="electionModel.IdElectionType">
+                            <option value="">Wybierz rodzaj</option>
+                            @foreach (var electionType in electionTypes)
+                            {
+                                <option value="@electionType.IdElectionType">
+                                    @electionType.ElectionTypeName
+                                </option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => electionModel.IdElectionType)" />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="dzien-wyborow">ROZPOCZĘCIE WYBORÓW</label>
+                        <InputText @bind-Value="electionModel.DateOfStartString" id="dzien-wyborow" type="datetime-local"  placeholder="Wprowadź datę rozpoczęcia wyborów" />
+                        <ValidationMessage For="@(() => electionModel.ElectionStartDate)" />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="dzien-wyborow-koniec">KONIEC WYBORÓW</label>
+                        <InputText @bind-Value="electionModel.DateOfEndString" id="dzien-wyborow-koniec" type="datetime-local"  placeholder="Wprowadź datę zakończenia wyborów" />
+                        <ValidationMessage For="@(() => electionModel.ElectionEndDate)" />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="tura">TURA WYBORÓW</label>
+                        <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
+                    </div>
+            
+                    <button type="submit" class="submit-button">DODAJ WYBORY</button>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <option value="@electionType.IdElectionType">
-                        @electionType.ElectionTypeName
-                    </option>
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
                 }
-            </InputSelect>
-            <ValidationMessage For="@(() => electionModel.IdElectionType)" />
-        </div>
+            </div>
 
-        <div class="form-group">
-            <label for="dzien-wyborow">ROZPOCZĘCIE WYBORÓW</label>
-            <InputText @bind-Value="electionModel.DateOfStartString" id="dzien-wyborow" type="datetime-local"  placeholder="Wprowadź datę rozpoczęcia wyborów" />
-            <ValidationMessage For="@(() => electionModel.ElectionStartDate)" />
-        </div>
-
-        <div class="form-group">
-            <label for="dzien-wyborow-koniec">KONIEC WYBORÓW</label>
-            <InputText @bind-Value="electionModel.DateOfEndString" id="dzien-wyborow-koniec" type="datetime-local"  placeholder="Wprowadź datę zakończenia wyborów" />
-            <ValidationMessage For="@(() => electionModel.ElectionEndDate)" />
-        </div>
-
-        <div class="form-group">
-            <label for="tura">TURA WYBORÓW</label>
-            <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
-        </div>
-
-        <button type="submit" class="submit-button">DODAJ WYBORY</button>
-    </EditForm>
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private ElectionViewModel electionModel = new ElectionViewModel();

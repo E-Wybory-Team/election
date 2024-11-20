@@ -4,136 +4,155 @@
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @using E_Wybory.Client.Services;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IPartyManagementService PartyManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject NavigationManager NavigationManager
 <link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
 
-<div class="header-container">
-    <h2 class="title">KONFIGURACJA KANDYDATÓW</h2>
-    <button class="add-button" @onclick="AddCandidate">DODAJ KANDYDATA</button>
-</div>
 
-<div class="filters">
-    <div class="filter-group">
-        <label>Rodzaj wyborów</label>
-        <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
-            <option value="">Wybierz rodzaj wyborów</option>
-            @foreach (var electionType in wrapper.ElectionFilter)
-            {
-                <option value="@electionType.IdElectionType">
-                    @electionType.ElectionTypeName
-                </option>
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Województwo</label>
-        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
-            <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
-            {
-                <option value="@voivodeship.idVoivodeship">
-                    @voivodeship.voivodeshipName
-                </option>
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Powiat</label>
-        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
-            <option value="">Wybierz powiat</option>
-            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
-            {
-                @if (county.IdVoivodeship == SelectedVoivodeshipId)
-                {
-                    <option value="@county.IdCounty">
-                        @county.CountyName
-                    </option>
-                }
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Gmina</label>
-        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
-            <option value="">Wybierz gminę</option>
-            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
-            {
-                @if (province.IdCounty == SelectedCountyId)
-                {
-                    <option value="@province.IdProvince">
-                        @province.ProvinceName
-                    </option>
-                }
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Numer obwodu</label>
-        <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
-            <option value="">Wybierz numer obwodu</option>
-            @foreach (var district in wrapper.FilterListWrapper.DistrictFilter)
-            {
-                @if (district.IdProvince == SelectedProvinceId)
-                {
-                    <option value="@district.IdDistrict">
-                        @district.DistrictName - @district.DistrictHeadquarters
-                    </option>
-                }
-            }
-        </select>
-    </div>
-</div>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-<table class="candidate-table">
-    <thead>
-        <tr>
-            <th>Nazwisko i imiona</th>
-            <th>Zawód</th>
-            <th>Miejsce (zakład) pracy</th>
-            <th>Miejscowość zamieszkania</th>
-            <th>Wykształcenie</th>
-            <th>Wiek</th>
-            <th>Przynależność do partii politycznej</th>
-            <th>Numer na liście </th>
-            <th>Operacje konfiguracji</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var candidate in filteredCandidates)
-        {
-            var partyName = String.Empty;
-            var age = PersonManagementService.CountPersonAge(candidate.personViewModel.BirthDate);
+            <div class="header-container">
+                <h2 class="title">KONFIGURACJA KANDYDATÓW</h2>
+                <button class="add-button" @onclick="AddCandidate">DODAJ KANDYDATA</button>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Rodzaj wyborów</label>
+                    <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
+                        <option value="">Wybierz rodzaj wyborów</option>
+                        @foreach (var electionType in wrapper.ElectionFilter)
+                        {
+                            <option value="@electionType.IdElectionType">
+                                @electionType.ElectionTypeName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Województwo</label>
+                    <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+                        <option value="">Wybierz województwo</option>
+                        @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
+                        {
+                            <option value="@voivodeship.idVoivodeship">
+                                @voivodeship.voivodeshipName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Powiat</label>
+                    <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+                        <option value="">Wybierz powiat</option>
+                        @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
+                        {
+                            @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                            {
+                                <option value="@county.IdCounty">
+                                    @county.CountyName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Gmina</label>
+                    <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+                        <option value="">Wybierz gminę</option>
+                        @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
+                        {
+                            @if (province.IdCounty == SelectedCountyId)
+                            {
+                                <option value="@province.IdProvince">
+                                    @province.ProvinceName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Numer obwodu</label>
+                    <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+                        <option value="">Wybierz numer obwodu</option>
+                        @foreach (var district in wrapper.FilterListWrapper.DistrictFilter)
+                        {
+                            @if (district.IdProvince == SelectedProvinceId)
+                            {
+                                <option value="@district.IdDistrict">
+                                    @district.DistrictName - @district.DistrictHeadquarters
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            
+            <table class="candidate-table">
+                <thead>
+                    <tr>
+                        <th>Nazwisko i imiona</th>
+                        <th>Zawód</th>
+                        <th>Miejsce (zakład) pracy</th>
+                        <th>Miejscowość zamieszkania</th>
+                        <th>Wykształcenie</th>
+                        <th>Wiek</th>
+                        <th>Przynależność do partii politycznej</th>
+                        <th>Numer na liście </th>
+                        <th>Operacje konfiguracji</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var candidate in filteredCandidates)
+                    {
+                        var partyName = String.Empty;
+                        var age = PersonManagementService.CountPersonAge(candidate.personViewModel.BirthDate);
+            
+                        if (candidate.candidateViewModel.IdParty != 0 && candidate.candidateViewModel.IdParty != null)
+                            partyName = PartyManagementService.GetPartyNameById(candidate.candidateViewModel.IdParty.GetValueOrDefault(), parties);
+            
+                        <tr>
+                     
+                            <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td>
+                            <td>@candidate.candidateViewModel.JobType</td>
+                            <td>@candidate.candidateViewModel.Workplace</td>
+                            <td>@candidate.candidateViewModel.PlaceOfResidence</td>
+                            <td>@candidate.candidateViewModel.EducationStatus</td>
+                            <td>@age</td>
+                            <td>@partyName</td>
+                            <td>@candidate.candidateViewModel.PositionNumber</td>
+                            <td>
+                                <a href="/modifycandidate/@candidate.candidateViewModel.IdCandidate">
+                                    <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                                </a>
+                                <a href="/deletecandidate/@candidate.candidateViewModel.IdCandidate">
+                                    <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                                </a>
+                            </td>
+                        </tr>
+            
+                    }
+                </tbody>
+            </table>
 
-            if (candidate.candidateViewModel.IdParty != 0 && candidate.candidateViewModel.IdParty != null)
-                partyName = PartyManagementService.GetPartyNameById(candidate.candidateViewModel.IdParty.GetValueOrDefault(), parties);
-
-            <tr>
-         
-                <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td>
-                <td>@candidate.candidateViewModel.JobType</td>
-                <td>@candidate.candidateViewModel.Workplace</td>
-                <td>@candidate.candidateViewModel.PlaceOfResidence</td>
-                <td>@candidate.candidateViewModel.EducationStatus</td>
-                <td>@age</td>
-                <td>@partyName</td>
-                <td>@candidate.candidateViewModel.PositionNumber</td>
-                <td>
-                    <a href="/modifycandidate/@candidate.candidateViewModel.IdCandidate">
-                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
-                    </a>
-                    <a href="/deletecandidate/@candidate.candidateViewModel.IdCandidate">
-                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
-                    </a>
-                </td>
-            </tr>
-
-        }
-    </tbody>
-</table>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
 

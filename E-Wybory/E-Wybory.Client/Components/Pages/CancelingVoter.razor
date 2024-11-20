@@ -8,31 +8,51 @@
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IVoterManagementService VoterManagementService
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>WYPISYWANIE WYBORCY</h1>
-
-    <form @onsubmit="GoToSubmitCancelVoter">
-        <div class="form-group">
-            <label for="district">OBWÓD WYBORCY</label>
-            <input type="district" id="pesel" value="@district?.DistrictName - @district?.DistrictHeadquarters" class="form-control" placeholder="Obwód wyborcy" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="pesel">PESEL WYBORCY</label>
-            <input type="text" id="pesel" @bind="pesel" class="form-control" placeholder="Nr Pesel wyborcy" />
-        </div>
-
-        <button type="submit" class="btn btn-primary submit-button">DALEJ</button>
-    </form>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+        <Authorized>
 
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+            <div class="form-container">
+                <h1>WYPISYWANIE WYBORCY</h1>
+            
+                <form @onsubmit="GoToSubmitCancelVoter">
+                    <div class="form-group">
+                        <label for="district">OBWÓD WYBORCY</label>
+                        <input type="district" id="pesel" value="@district?.DistrictName - @district?.DistrictHeadquarters" class="form-control" placeholder="Obwód wyborcy" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="pesel">PESEL WYBORCY</label>
+                        <input type="text" id="pesel" @bind="pesel" class="form-control" placeholder="Nr Pesel wyborcy" />
+                    </div>
+            
+                    <button type="submit" class="btn btn-primary submit-button">DALEJ</button>
+                </form>
+            
+            
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+            </div>
+
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
 
 @code {
     private string pesel { get; set; }

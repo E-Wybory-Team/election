@@ -3,6 +3,8 @@
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
@@ -10,84 +12,99 @@
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>DODAWANIE WYBORCY DO OBWODU</h1>
-    <EditForm Model="@voterModel" OnValidSubmit="HandleAddSubmit">
-        <DataAnnotationsValidator />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
+         <Authorized>
 
-        <div class="form-group-smaller">
-            <label for="pesel">PESEL WYBORCY</label>
-            <InputText @bind-Value="@EnteredPesel" id="pesel" class="form-input" placeholder="Nr Pesel wyborcy" />
-            <ValidationMessage For="@(() => personModel.PESEL)" />
-        </div>
-        <div class="form-group-smaller">
-            <label for="wojewodztwo">WOJEWÓDZTWO</label>
-            <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
-                    <option value="">Wybierz województwo</option>
-                    @foreach (var voivodeship in wrapper.VoivodeshipFilter)
-                    {
-                        <option value="@voivodeship.idVoivodeship">
-                            @voivodeship.voivodeshipName
-                        </option>
-                    }
-           </select>
-        </div>
-        <div class="form-group-smaller">
-            <label for="powiat">POWIAT</label>
-            <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
-                <option value="">Wybierz powiat</option>
-                @foreach (var county in wrapper.CountyFilter)
+            <div class="form-container">
+                <h1>DODAWANIE WYBORCY DO OBWODU</h1>
+                <EditForm Model="@voterModel" OnValidSubmit="HandleAddSubmit">
+                    <DataAnnotationsValidator />
+            
+                    <div class="form-group-smaller">
+                        <label for="pesel">PESEL WYBORCY</label>
+                        <InputText @bind-Value="@EnteredPesel" id="pesel" class="form-input" placeholder="Nr Pesel wyborcy" />
+                        <ValidationMessage For="@(() => personModel.PESEL)" />
+                    </div>
+                    <div class="form-group-smaller">
+                        <label for="wojewodztwo">WOJEWÓDZTWO</label>
+                        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+                                <option value="">Wybierz województwo</option>
+                                @foreach (var voivodeship in wrapper.VoivodeshipFilter)
+                                {
+                                    <option value="@voivodeship.idVoivodeship">
+                                        @voivodeship.voivodeshipName
+                                    </option>
+                                }
+                       </select>
+                    </div>
+                    <div class="form-group-smaller">
+                        <label for="powiat">POWIAT</label>
+                        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+                            <option value="">Wybierz powiat</option>
+                            @foreach (var county in wrapper.CountyFilter)
+                            {
+                                @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                                {
+                                    <option value="@county.IdCounty">
+                                        @county.CountyName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group-smaller">
+                        <label for="gmina">GMINA</label>
+                        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+                            <option value="">Wybierz gminę</option>
+                            @foreach (var province in wrapper.ProvinceFilter)
+                            {
+                                @if (province.IdCounty == SelectedCountyId)
+                                {
+                                    <option value="@province.IdProvince">
+                                        @province.ProvinceName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group-smaller">
+                        <label for="numer-obwodu">NUMER OBWODU</label>
+                        <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+                            <option value="">Wybierz obwód wyborczy</option>
+                            @foreach (var district in wrapper.DistrictFilter)
+                            {
+                                @if (district.IdProvince == SelectedProvinceId)
+                                {
+                                    <option value="@district.IdDistrict">
+                                        @district.DistrictName - @district.DistrictHeadquarters
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+            
+                    <div class="form-row">
+                        <button type="submit" class="submit-button">DODAJ</button>
+                        <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+                    </div>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    @if (county.IdVoivodeship == SelectedVoivodeshipId)
-                    {
-                        <option value="@county.IdCounty">
-                            @county.CountyName
-                        </option>
-                    }
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
                 }
-            </select>
-        </div>
-        <div class="form-group-smaller">
-            <label for="gmina">GMINA</label>
-            <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
-                <option value="">Wybierz gminę</option>
-                @foreach (var province in wrapper.ProvinceFilter)
-                {
-                    @if (province.IdCounty == SelectedCountyId)
-                    {
-                        <option value="@province.IdProvince">
-                            @province.ProvinceName
-                        </option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="form-group-smaller">
-            <label for="numer-obwodu">NUMER OBWODU</label>
-            <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
-                <option value="">Wybierz obwód wyborczy</option>
-                @foreach (var district in wrapper.DistrictFilter)
-                {
-                    @if (district.IdProvince == SelectedProvinceId)
-                    {
-                        <option value="@district.IdDistrict">
-                            @district.DistrictName - @district.DistrictHeadquarters
-                        </option>
-                    }
-                }
-            </select>
-        </div>
+            </div>
 
-        <div class="form-row">
-            <button type="submit" class="submit-button">DODAJ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
-        </div>
-    </EditForm>
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private int? SelectedVoivodeshipId { get; set; } = null;

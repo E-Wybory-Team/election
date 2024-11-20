@@ -1,46 +1,63 @@
 ﻿@page "/deleteconstituency/{constituencyId:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject ICountyManagementService CountyManagementService
 @inject IConstituencyManagementService ConstituencyManagementService
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>USUWANIE OKRĘGU WYBORCZEGO</h1>
-    <EditForm Model="@constituencyModel" OnValidSubmit="HandleDeleteSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-        <div class="form-group-smaller">
-            <label for="name">NAZWA OKRĘGU</label>
-            <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" readonly />
-        </div>
-        <div>
-            <div class="filter-group">
-                <label>ZASIĘG (POWIATY)</label>
-                <div>
-                    @foreach (var county in relatedCounties)
-                    {
-                        <div>
-                            <span>@county.CountyName</span>
+            <div class="form-container">
+                <h1>USUWANIE OKRĘGU WYBORCZEGO</h1>
+                <EditForm Model="@constituencyModel" OnValidSubmit="HandleDeleteSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+            
+                    <div class="form-group-smaller">
+                        <label for="name">NAZWA OKRĘGU</label>
+                        <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" readonly />
+                    </div>
+                    <div>
+                        <div class="filter-group">
+                            <label>ZASIĘG (POWIATY)</label>
+                            <div>
+                                @foreach (var county in relatedCounties)
+                                {
+                                    <div>
+                                        <span>@county.CountyName</span>
+                                    </div>
+                                }
+                            </div>
                         </div>
-                    }
-                </div>
+                    </div>
+            
+            
+                    <div class="form-row">
+                        <button type="submit" class="red-submit-button">USUŃ</button>
+                        <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+                    </div>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
             </div>
-        </div>
 
-
-        <div class="form-row">
-            <button type="submit" class="red-submit-button">USUŃ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
-        </div>
-    </EditForm>
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     [Parameter]

@@ -1,6 +1,8 @@
 ﻿@page "/submitcancelvoter/{idVoter:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavManager
 @inject IVoterManagementService VoterManagementService
 @inject IPersonManagementService PersonManagementService
@@ -10,42 +12,56 @@
 @inject IAuthService AuthService
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>WYPISYWANIE WYBORCY</h1>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
+            <div class="form-container">
+                <h1>WYPISYWANIE WYBORCY</h1>
+            
+                <form @onsubmit="HandleSubmit">
+                    <div class="form-group">
+                        <label for="district">OBWÓD GŁOSOWANIA</label>
+                        <input type="text" id="district" value="@districtViewModel?.DistrictName - @districtViewModel?.DistrictHeadquarters" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="pesel">PESEL WYBORCY</label>
+                        <input type="text" id="pesel" value="@personModel.PESEL" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="firstName">IMIĘ</label>
+                        <input type="text" id="firstName" value="@personModel.Name" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="lastName">NAZWISKO</label>
+                        <input type="text" id="lastName" value="@personModel.Surname" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="birthDate">DATA URODZENIA</label>
+                        <input type="text" id="birthDate" value="@personModel.DateOfBirthString" readonly />
+                    </div>
+            
+                    <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+                </form>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
-    <form @onsubmit="HandleSubmit">
-        <div class="form-group">
-            <label for="district">OBWÓD GŁOSOWANIA</label>
-            <input type="text" id="district" value="@districtViewModel?.DistrictName - @districtViewModel?.DistrictHeadquarters" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="pesel">PESEL WYBORCY</label>
-            <input type="text" id="pesel" value="@personModel.PESEL" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="firstName">IMIĘ</label>
-            <input type="text" id="firstName" value="@personModel.Name" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="lastName">NAZWISKO</label>
-            <input type="text" id="lastName" value="@personModel.Surname" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="birthDate">DATA URODZENIA</label>
-            <input type="text" id="birthDate" value="@personModel.DateOfBirthString" readonly />
-        </div>
-
-        <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
-    </form>
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
 
 @code {
     [Parameter] public int idVoter { get; set; }

@@ -1,22 +1,41 @@
 ﻿@page "/checkvotestatus"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+<link href="forms.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
 
-    <form>
-        <div class="form-group">
-            <label for="district">OBWÓD GŁOSOWANIA</label>
-            <input type="text" id="district" value="OKW 1 Kędzierzyn Koźle" readonly />
-        </div>
+            <div class="form-container">
+                <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
+            
+                <form>
+                    <div class="form-group">
+                        <label for="district">OBWÓD GŁOSOWANIA</label>
+                        <input type="text" id="district" value="OKW 1 Kędzierzyn Koźle" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="pesel">PESEL WYBORCY</label>
+                        <input type="text" id="pesel" placeholder="Nr Pesel wyborcy" />
+                    </div>
+            
+                    <a href="/checkstatusresult">
+                        <button type="button" class="submit-button">SPRAWDŹ STATUS</button>
+                    </a>
+                </form>
+            </div>
 
-        <div class="form-group">
-            <label for="pesel">PESEL WYBORCY</label>
-            <input type="text" id="pesel" placeholder="Nr Pesel wyborcy" />
-        </div>
-
-        <a href="/checkstatusresult">
-            <button type="button" class="submit-button">SPRAWDŹ STATUS</button>
-        </a>
-    </form>
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>

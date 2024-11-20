@@ -1,5 +1,7 @@
 ﻿@page "/constituencylist"
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject IConstituencyManagementService ConstituencyManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
@@ -7,37 +9,52 @@
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
-<div class="header-container">
-    <h2 class="title">KONFIGURACJA OKRĘGÓW WYBORCZYCH</h2>
-    <button class="add-button" @onclick="AddConstituency">Dodaj okręg</button>
-</div>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-<table class="candidate-table">
-    <thead>
-        <tr>
-            <th>Nazwa okręgu</th>
-            <th>Zasięg (powiaty)</th>
-            <th>Opcje konfiguracji</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var constituency in constituencyModels)
-        {
-            <tr>
-                <td>@constituency.constituencyName</td>
-                <td>@string.Join(", ", relatedCounties[constituency.idConstituency].Select(county => county.CountyName))</td>
-                <td>
-                    <a href="/modifyconstituency/@constituency.idConstituency">
-                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
-                    </a>
-                    <a href="/deleteconstituency/@constituency.idConstituency">
-                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
-                    </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+            <div class="header-container">
+                <h2 class="title">KONFIGURACJA OKRĘGÓW WYBORCZYCH</h2>
+                <button class="add-button" @onclick="AddConstituency">Dodaj okręg</button>
+            </div>
+            
+            <table class="candidate-table">
+                <thead>
+                    <tr>
+                        <th>Nazwa okręgu</th>
+                        <th>Zasięg (powiaty)</th>
+                        <th>Opcje konfiguracji</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var constituency in constituencyModels)
+                    {
+                        <tr>
+                            <td>@constituency.constituencyName</td>
+                            <td>@string.Join(", ", relatedCounties[constituency.idConstituency].Select(county => county.CountyName))</td>
+                            <td>
+                                <a href="/modifyconstituency/@constituency.idConstituency">
+                                    <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                                </a>
+                                <a href="/deleteconstituency/@constituency.idConstituency">
+                                    <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
 

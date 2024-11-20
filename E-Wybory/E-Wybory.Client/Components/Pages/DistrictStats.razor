@@ -1,33 +1,50 @@
 ﻿@page "/districtstats"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>STATYSTYKI GŁOSOWANIA DLA OBWODU</h1>
 
-    <form>
-        <div class="form-group">
-            <label for="district">OBWÓD GŁOSOWANIA</label>
-            <input type="text" id="district" value="@districtName" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="eligibleCount">LICZBA UPRAWNIONYCH DO GŁOSOWANIA</label>
-            <input type="text" id="eligibleCount" value="@eligibleCount" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="noonTurnout">FREKWENCJA NA GODZINĘ 12:00</label>
-            <input type="text" id="noonTurnout" value="@noonTurnout" readonly />
-        </div>
-
-        <div class="form-group">
-            <label for="eveningTurnout">FREKWENCJA NA GODZINĘ 17:00</label>
-            <input type="text" id="eveningTurnout" value="@eveningTurnout" readonly />
-        </div>
-
-        <a href="/detailed-results" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
-    </form>
-</div>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
+            <div class="form-container">
+                <h1>STATYSTYKI GŁOSOWANIA DLA OBWODU</h1>
+            
+                <form>
+                    <div class="form-group">
+                        <label for="district">OBWÓD GŁOSOWANIA</label>
+                        <input type="text" id="district" value="@districtName" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="eligibleCount">LICZBA UPRAWNIONYCH DO GŁOSOWANIA</label>
+                        <input type="text" id="eligibleCount" value="@eligibleCount" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="noonTurnout">FREKWENCJA NA GODZINĘ 12:00</label>
+                        <input type="text" id="noonTurnout" value="@noonTurnout" readonly />
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="eveningTurnout">FREKWENCJA NA GODZINĘ 17:00</label>
+                        <input type="text" id="eveningTurnout" value="@eveningTurnout" readonly />
+                    </div>
+            
+                    <a href="/detailed-results" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
+                </form>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private string districtName = "OKW 1 Kędzierzyn Koźle";
