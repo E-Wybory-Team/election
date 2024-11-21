@@ -27,6 +27,27 @@
         font-weight: bold;
     }
 
+.candidate-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 90vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+    .candidate-form-container h1 {
+        text-align: center;
+        font-size: 40px;
+        font-variant-caps: titling-caps;
+        margin-bottom: 20px;
+        color: black;
+        font-weight: bold;
+    }
+
 
 form {
     display: flex;
@@ -40,6 +61,17 @@ form {
     /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
 }
 
+.candidate-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: auto;
+    /*background-color: #fff;*/
+    padding: 20px;
+    border-radius: 10px;
+    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
+}
 
 .form-group {
     width: 100%;
@@ -110,7 +142,8 @@ button:hover {
         background-color: #bbb;
     }
 
-.button-group {
+
+    -group {
     display: flex;
     gap: 20px;
     justify-content: center;
@@ -230,21 +263,3 @@ input, select {
         transform: scale(0.98);
         color: white;
     }
-.stats {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-}
-.statistics-container .statistic-item stats {
-    display: inline-block; /* Ustawia span jako blokowy dla stylu prostokąta */
-    background-color: white; /* Białe tło */
-    border: 1px solid #ccc; /* Szare obramowanie */
-    border-radius: 5px; /* Lekko zaokrąglone rogi */
-    padding: 5px 10px; /* Wewnętrzne odstępy */
-    font-weight: bold; /* Pogrubiona czcionka */
-    color: #333; /* Ciemnoszary tekst */
-    text-align: center; /* Wyśrodkowanie tekstu */
-    min-width: 50px; /* Minimalna szerokość dla estetyki */
-}
-

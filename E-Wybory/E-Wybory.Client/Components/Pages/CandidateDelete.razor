@@ -13,10 +13,10 @@
 
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
+<div class="candidate-form-container">
     <h1>USUWANIE KANDYDATA W WYBORACH</h1>
 
-    <EditForm FormName="CandidateDelete" Model="@candidateModel" OnValidSubmit="HandleDeleteCandidate">
+    <EditForm FormName="CandidateDelete" Model="@candidateModel" OnValidSubmit="HandleDeleteCandidate" class="candidate-form">
         <DataAnnotationsValidator />
 
         <div class="form-row">

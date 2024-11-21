@@ -14,10 +14,10 @@
 
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
+<div class="candidate-form-container">
     <h1>DODAWANIE KANDYDATA W WYBORACH</h1>
 
-    <EditForm FormName="CandidateAdd" Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate">
+    <EditForm FormName="CandidateAdd" Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate" class="candidate-form">
         <DataAnnotationsValidator />
         <ValidationSummary/>
 
