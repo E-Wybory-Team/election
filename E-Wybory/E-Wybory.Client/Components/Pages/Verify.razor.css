@@ -38,8 +38,8 @@
     }
 
         .page-content .auth-option img {
-            width: 50%;
-            height: 30vh;
+            width: fit-content;
+            height: fit-content;
             margin-bottom: 10px;
         }
 
@@ -49,14 +49,14 @@
             transform: translateY(-5px);
         }
 
-    
+
     .page-content h1 {
-        width: 100%;
         text-align: center;
-        font-family: "Open Sans-Bold", Helvetica;
-        font-size: 3rem;
-        margin-bottom: 40px;
-        color: #000;
+        font-size: 40px;
+        font-variant-caps: titling-caps;
+        margin-bottom: 20px;
+        color: black;
+        font-weight: bold;
     }
 
 .election-info{

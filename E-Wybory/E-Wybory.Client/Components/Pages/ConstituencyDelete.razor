@@ -16,17 +16,14 @@
             <label for="name">NAZWA OKRĘGU</label>
             <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" readonly />
         </div>
-        <div>
-            <div class="filter-group">
-                <label>ZASIĘG (POWIATY)</label>
-                <div>
-                    @foreach (var county in relatedCounties)
-                    {
-                        <div>
-                            <span>@county.CountyName</span>
-                        </div>
-                    }
-                </div>
+        
+        <div class="form-group-smaller">
+            <label>ZASIĘG (POWIATY)</label>
+            <div class="form-input valid">
+                @foreach (var county in relatedCounties)
+                {
+                        <span>@county.CountyName, </span>
+                }
             </div>
         </div>
 
