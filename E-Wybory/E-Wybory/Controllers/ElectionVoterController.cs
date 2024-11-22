@@ -98,5 +98,7 @@ namespace E_Wybory.Controllers
         {
             return ElectionVoterExists(idVoter, idElection);
         }
+
+
     }
 }

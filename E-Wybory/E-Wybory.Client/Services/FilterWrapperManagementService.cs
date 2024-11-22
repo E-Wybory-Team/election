@@ -131,5 +131,17 @@ namespace E_Wybory.Client.Services
             return response;
         }
 
+        public async Task<List<CandidateViewModel>> GetFilteredCandidatesFromParty(
+            int? partyId, int? electionId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/PartiesCandidates", new Dictionary<string, int?>
+            {
+                { "partyId", partyId },
+                { "electionIdId", electionId }
+            });
+
+            var response = await _httpClient.GetFromJsonAsync<List<CandidateViewModel>>(url);
+            return response;
+        }
     }
 }

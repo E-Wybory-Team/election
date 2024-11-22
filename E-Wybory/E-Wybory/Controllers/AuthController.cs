@@ -478,5 +478,48 @@ namespace E_Wybory.Controllers
 
             return electionUser.IdDistrict;
         }
+
+        [HttpGet("currentVoterDistrict")]
+        public async Task<ActionResult<int>> GetCurrentVoterDistrictId()
+        {
+
+            UserWrapper user = new(User);
+            var voter = await _context.Voters.Where(voter => voter.IdElectionUser == user.Id).FirstOrDefaultAsync();
+            if (voter == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
+
+            return voter.IdDistrict;
+        }
+
+
+        [HttpGet("currentUserVoterId")]
+        public async Task<ActionResult<int>> GetCurrentUserVoterId()
+        {
+
+            UserWrapper user = new(User);
+            var electionUser = await _context.Voters.Where(voter => voter.IdElectionUser == user.Id).FirstOrDefaultAsync();
+            if (electionUser == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
+
+            return electionUser.IdVoter;
+        }
+
+        [HttpGet("currentUser2fa")]
+        public async Task<ActionResult<bool>> GetCurrentUser2faStatus()
+        {
+            UserWrapper user = new(User);
+            var electionUser = await _context.ElectionUsers.FindAsync(user.Id);
+            if (electionUser == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
+
+            return electionUser.Is2Faenabled;
+
+        }
     }
 }

@@ -49,5 +49,11 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.DeleteAsync($"/api/Candidate/{candidateId}");
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
+
+        public async Task<List<CandidateViewModel>> GetCandidatesByElectionDistrictId(int electionId, int districtId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<CandidateViewModel>>($"/api/Candidate/ElectionDistrictCandidates/{electionId}/{districtId}");
+            return await Task.FromResult(response);
+        }
     }
 }

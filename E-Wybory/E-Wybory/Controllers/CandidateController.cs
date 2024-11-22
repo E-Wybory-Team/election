@@ -176,6 +176,36 @@ namespace E_Wybory.Controllers
             }
 
         }
+
+        [HttpGet("ElectionDistrictCandidates/{electionId}/{districtId}")]
+        public async Task<ActionResult<List<CandidateViewModel>>> GetCandidatesByElectionIdAndDistrict(int electionId, int districtId)
+        {
+            var Candidates = await _context.Candidates.Where(candidate => candidate.IdElection == electionId && (candidate.IdDistrict == districtId || candidate.IdDistrict == null)).ToListAsync<Candidate>();
+            var CandidatesViewModels = new List<CandidateViewModel>();
+
+            foreach (var Candidate in Candidates)
+            {
+                var CandidateModel = new CandidateViewModel()
+                {
+                    IdCandidate = Candidate.IdCandidate,
+                    CampaignDescription = Candidate.CampaignDescription,
+                    JobType = Candidate.JobType,
+                    PlaceOfResidence = Candidate.PlaceOfResidence,
+                    PositionNumber = Candidate.PositionNumber,
+                    EducationStatus = Candidate.EducationStatus,
+                    Workplace = Candidate.Workplace,
+                    IdPerson = Candidate.IdPerson,
+                    IdDistrict = Candidate.IdDistrict,
+                    IdParty = Candidate.IdParty,
+                    IdElection = Candidate.IdElection
+                };
+
+                CandidatesViewModels.Add(CandidateModel);
+
+            }
+
+            return CandidatesViewModels;
+        }
     }
 }
 

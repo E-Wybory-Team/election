@@ -463,5 +463,38 @@ namespace E_Wybory.Controllers
 
             return Ok(userPersonViewModels);
         }
+
+
+        // GET: api/FilterWrapper/PartiesCandidates
+        [HttpGet("PartiesCandidates")]
+        public async Task<ActionResult<List<CandidateViewModel>>> GetFilteredCandidatesFromParties(
+            [FromQuery] int? partyId,
+            [FromQuery] int? electionId)
+        {
+            var candidates = await _context.Candidates
+                .Where(candidate => candidate.IdParty == partyId && candidate.IdElection == electionId)
+                .ToListAsync();
+
+            var candidateViewModels = new List<CandidateViewModel>();
+
+            foreach (var candidate in candidates)
+            {
+                candidateViewModels.Add(new CandidateViewModel
+                {
+                    IdCandidate = candidate.IdCandidate,
+                    CampaignDescription = candidate.CampaignDescription,
+                    JobType = candidate.JobType,
+                    PlaceOfResidence = candidate.PlaceOfResidence,
+                    PositionNumber = candidate.PositionNumber,
+                    EducationStatus = candidate.EducationStatus,
+                    Workplace = candidate.Workplace,
+                    IdPerson = candidate.IdPerson,
+                    IdDistrict = candidate.IdDistrict,
+                    IdParty = candidate.IdParty,
+                    IdElection = candidate.IdElection
+                });
+            }
+            return candidateViewModels;
+        }
     }
 }

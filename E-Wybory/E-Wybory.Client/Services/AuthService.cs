@@ -163,5 +163,24 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<int>("/api/auth/currentUserDistrict");
             return await Task.FromResult(response);
         }
+        
+        public async Task<int> GetCurrentUserIdVoter()
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>("/api/auth/currentUserVoterId");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<int> GetCurrentVoterIdDistrict()
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>("/api/auth/currentVoterDistrict");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<bool> GetCurrentUser2faStatus()
+        {
+            var response = await _httpClient.GetFromJsonAsync<bool>("/api/auth/currentUser2fa");
+            return await Task.FromResult(response);
+        }
+
     }
 }

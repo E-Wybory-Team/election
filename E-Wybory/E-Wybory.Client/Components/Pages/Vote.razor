@@ -1,75 +1,217 @@
 ﻿@page "/vote"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
 @inject IVoterManagementService VoterManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionManagementService ElectionManagementService
 @inject IDistrictManagementService DistrictManagementService
 @inject IElectionVoterManagementService ElectionVoterManagementService
+@inject IPartyManagementService PartyManagementService
 @inject IAuthService AuthService
+@inject ICandidateManagementService CandidateManagementService
+@inject IVoteManagementService VoteManagementService
+@inject IFilterWrapperManagementService FilterWrapperManagementService
+@inject NavigationManager NavigationManager
 
 <div class="vote-page">
     <h1>Oddawanie Głosu</h1>
+    @if (activeElections != null && activeElections.Count() > 0)
+    {
+        @foreach (var election in activeElections)
+        {
+            var voteModel = votesInElections[election.IdElection];
+            
 
-    <EditForm Model="@voteModel" OnValidSubmit="HandleVoteSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+            <EditForm Model="@voteModel" OnValidSubmit="() => HandleVoteSubmit(election.IdElection)">
+                <DataAnnotationsValidator />
 
-        <div class="form-group">
-            <label for="komitet">Komitet Wyborczy</label>
-            <InputSelect @bind-Value="voteModel.Komitet" id="komitet" class="form-select">
-                <option value="" disabled>Wybierz komitet wyborczy</option>
-                <option value="Komitet 1">Komitet 1</option>
-                <option value="Komitet 2">Komitet 2</option>
-                
-            </InputSelect>
-        </div>
+                <div class="form-group">
+                    <label for="kandydat">Kandydat</label>
+                    <select @bind="@voteModel.IdCandidate" id="kandydat" class="form-select">
+                        <option value="">Wybierz kandydata</option>
+                        @if (electionCandidates.ContainsKey(election.IdElection))
+                        {
+                            @foreach (var candidate in electionCandidates[election.IdElection])
+                            {
+                                <option value="@candidate.IdCandidate">
+                                    @candidatesData[candidate.IdCandidate]
+                                </option>
+                            }
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => voteModel.IdCandidate)" />
+                </div>
 
-        <div class="form-group">
-            <label for="kandydat">Kandydat</label>
-            <InputSelect @bind-Value="voteModel.Kandydat" id="kandydat" class="form-select">
-                <option value="" disabled>Wybierz kandydata</option>
-                <option value="Kandydat 1">Kandydat 1</option>
-                <option value="Kandydat 2">Kandydat 2</option>
-                
-            </InputSelect>
-        </div>
+                <div class="checkbox-group">
+                    <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
+                    <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
+                </div>
 
-        <div class="checkbox-group">
-            <InputCheckbox class="checkbox" @bind-Value="voteModel.OtrzymacZaswiadczenie" id="zaswiadczenie" />
-            <label for="zaswiadczenie" class="checkbox-label">Chcę otrzymać zaświadczenie o głosowaniu</label>
-        </div>
-
-        <div class="checkbox-group">
-            <InputCheckbox class="checkbox" @bind-Value="voteModel.GlosaNiewazny" id="niewazny" />
-            <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
-        </div>
-
-
-        <button type="submit" class="submit-button">ZAGŁOSUJ</button>
-
-    </EditForm>
+                <button type="submit" class="submit-button">ZAGŁOSUJ</button>
+            </EditForm>
+        }
+    }
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
 @code {
-    private VoteModel voteModel = new VoteModel();
+    private VoteViewModel voteModel = new VoteViewModel();
+    private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
+    private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
+    private List<ElectionViewModel> filteredElections = new List<ElectionViewModel>();
+    private Dictionary<int, List<CandidateViewModel>> electionCandidates = new Dictionary<int, List<CandidateViewModel>>();
+    private Dictionary<int, string> candidatesData = new Dictionary<int, string>();
+    private Dictionary<int, VoteViewModel> votesInElections = new Dictionary<int, VoteViewModel>();
+    private string errorMessage = String.Empty;
+    private int IdDistrict = 0;
+    private int IdVoter = 0;
 
-    private void HandleVoteSubmit()
+    protected override async Task OnInitializedAsync()
     {
-       
-        Console.WriteLine($"Głosowanie: {voteModel.Komitet}, {voteModel.Kandydat}, Nieważny: {voteModel.GlosaNiewazny}");
+        try
+        {
+            try
+            {
+                activeElections = await ElectionManagementService.GetActiveElections();
+                if (activeElections == null || !activeElections.Any())
+                {
+                    errorMessage = "Nie ma żadnych trwających wyborów.";
+                    NavigationManager.NavigateTo("/");
+                }
+            }
+            catch(Exception ex)
+            {
+                errorMessage = "Nie znaleziono aktualnych wyborów!";
+                NavigationManager.NavigateTo("/");
+            }
+
+
+            try
+            {
+                IdVoter = await AuthService.GetCurrentUserIdVoter();
+                IdDistrict = await AuthService.GetCurrentVoterIdDistrict();
+            }
+            catch (Exception)
+            {
+                errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
+                NavigationManager.NavigateTo("/");
+            }
+
+            var is2faEnabled = await AuthService.GetCurrentUser2faStatus();
+            if(!is2faEnabled)
+            {
+                errorMessage = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
+                NavigationManager.NavigateTo("/");
+            }
+            var committees = await PartyManagementService.Parties();
+
+
+            foreach (var activeElection in activeElections)
+            {
+                var hasVoted = await ElectionVoterManagementService.ElectionVoterExists(IdVoter, activeElection.IdElection);
+                if (!hasVoted)
+                {
+                    filteredElections.Add(activeElection);
+                    votesInElections.Add(activeElection.IdElection, new VoteViewModel()
+                        {
+                            IdDistrict = IdDistrict,
+                            IdElection = activeElection.IdElection,
+                            IsValid = false,
+                            IdCandidate = 0
+                        });
+
+                    // Initialize the dictionary entry
+                    var candidates = await CandidateManagementService.GetCandidatesByElectionDistrictId(activeElection.IdElection, IdDistrict);
+                    if (candidates != null && candidates.Any())
+                    {
+
+                        electionCandidates[activeElection.IdElection] = candidates;
+
+                        foreach (var candidate in candidates)
+                        {
+                            if (!candidatesData.ContainsKey(candidate.IdCandidate))
+                            {
+
+                                var person = await PersonManagementService.GetPersonNameSurnameById(candidate.IdPerson);
+                                if (candidate.IdParty != null)
+                                {
+                                    var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
+                                    Console.WriteLine($"Party name: {partyName}");
+                                    person += " - partia: " + partyName;
+                                }
+                                if (!string.IsNullOrEmpty(person))
+                                {
+                                    candidatesData[candidate.IdCandidate] = person;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            activeElections = filteredElections;
+
+            if (!activeElections.Any())
+            {
+                errorMessage = "Nie ma dostępnych wyborów dla użytkownika.";
+                NavigationManager.NavigateTo("/");
+                return;
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Nieoczekiwany błąd: {ex.Message}";
+            NavigationManager.NavigateTo("/");
+        }
     }
 
-    public class VoteModel
+
+    private async Task HandleVoteSubmit(int idElection)
     {
-        [Required(ErrorMessage = "Wybór komitetu jest wymagany.")]
-        public string Komitet { get; set; }
+        voteModel = votesInElections[idElection];
+        var HasVoted = await ElectionVoterManagementService.ElectionVoterExists(IdVoter, voteModel.IdElection);
+        if (voteModel.IdCandidate != 0)
+        {
+            if (!HasVoted)
+            {
+                var electionVoter = new ElectionVoterViewModel()
+                    {
+                        IdElection = voteModel.IdElection,
+                        IdVoter = IdVoter,
+                        VoteTime = DateTime.Now
+                    };
+                var votingResult1 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
+                errorMessage = "Głosowanie się nie powiodło!";
+                if (votingResult1)
+                {
+                    var votingResult2 = await VoteManagementService.AddVote(voteModel);
+                    if (votingResult1 && votingResult2)
+                    {
+                        errorMessage = "Głosowanie się powiodło!";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Nie oddano głosu!";
+                }
+            }
+            else
+            {
+                errorMessage = "Użytkownik już głosował!";
+            }
+        }
+        else
+        {
+            errorMessage = "Użytkownik nie wskazał kandydata!";
+        }
 
-        [Required(ErrorMessage = "Wybór kandydata jest wymagany.")]
-        public string Kandydat { get; set; }
-
-        public bool OtrzymacZaswiadczenie { get; set; }
-        public bool GlosaNiewazny { get; set; }
     }
+
 }

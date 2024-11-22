@@ -30,7 +30,9 @@ namespace E_Wybory.Client.Services
 
         public Task<bool> ResetPassword(ResetPasswordViewModel resetPassword);
         Task<int> GetCurrentUserIdDistrict();
-
+        Task<int> GetCurrentUserIdVoter();
+        Task<bool> GetCurrentUser2faStatus();
+        Task<int> GetCurrentVoterIdDistrict();
 
     }
 }
