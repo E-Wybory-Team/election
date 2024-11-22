@@ -53,11 +53,13 @@ namespace E_Wybory.Client.Services
             }
 
             var claims = token.Claims.ToList();
+
             var roleClaims = token.Claims.Where(c => c.Type == "Roles").ToList();
             foreach (var roleClaim in roleClaims)
             {
                 claims.Add(new Claim(ClaimTypes.Role, roleClaim.Value));
             }
+
             return claims;
         }
     }

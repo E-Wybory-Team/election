@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using E_Wybory.Client.Policies;
+using System.ComponentModel.DataAnnotations;
 
 namespace E_Wybory.Client.ViewModels
 {
@@ -12,6 +13,7 @@ namespace E_Wybory.Client.ViewModels
     public class ResetPasswordViewModel
     {
         [Required(ErrorMessage = "Podaj hasło")]
+        [ElectionPasswordPolicy]
         public string NewPassword { get; set; } = String.Empty;
 
         [Required, Compare(nameof(NewPassword), ErrorMessage = "Hasła muszą się zgadzać")]

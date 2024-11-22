@@ -8,6 +8,12 @@
 @inject IAuthService AuthService
 @inject IDistrictManagementService DistrictManagementService
 
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Administratorzy" Context="authContext">
+                <Authorized>
+
+
+
 <div class="registration-form">
     <div class="icon">
         <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
@@ -124,9 +130,4 @@
         errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
         //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
     }
-
-    
-                                               
-
-    
 }
