@@ -198,26 +198,26 @@ namespace E_Wybory.Controllers
 
 
         //póki co zostawiam może się przydać
-        [HttpPost()]
-        [Route("enable-2fa")]
-        [Authorize]
-        public async Task<IActionResult> EnableTwoFactorAuth([FromBody] TwoFactorEnabledRequest enabledRequest)
-        {
-            UserWrapper user = new(User);
-            if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return NotFound("Wrong user identification compared claim to model!");
+        //[HttpPost()]
+        //[Route("enable-2fa")]
+        //[Authorize]
+        //public async Task<IActionResult> EnableTwoFactorAuth([FromBody] TwoFactorEnabledRequest enabledRequest)
+        //{
+        //    UserWrapper user = new(User);
+        //    if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return NotFound("Wrong user identification compared claim to model!");
 
-            var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
+        //    var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
 
-            if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
-
-
-            _context.ElectionUsers.Update(electionUser);
-            await _context.SaveChangesAsync();  
-
-            return  Ok();
+        //    if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
 
 
-        }
+        //    _context.ElectionUsers.Update(electionUser);
+        //    await _context.SaveChangesAsync();  
+
+        //    return  Ok();
+
+
+        //}
 
         private const int maxRecoveryCodes = 6;
 
