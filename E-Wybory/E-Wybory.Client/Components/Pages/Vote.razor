@@ -14,9 +14,10 @@
 @inject IVoteManagementService VoteManagementService
 @inject IFilterWrapperManagementService FilterWrapperManagementService
 @inject NavigationManager NavigationManager
+<link href="forms.css" rel="stylesheet" />
+<div class="form-container">
+    <h1>ODDAWANIE GŁOSU</h1>
 
-<div class="vote-page">
-    <h1>Oddawanie Głosu</h1>
     @if (activeElections != null && activeElections.Count() > 0)
     {
         @foreach (var election in activeElections)
@@ -211,6 +212,7 @@
         {
             errorMessage = "Użytkownik nie wskazał kandydata!";
         }
+
 
     }
 

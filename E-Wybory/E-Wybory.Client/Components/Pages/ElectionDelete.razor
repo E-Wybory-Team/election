@@ -8,7 +8,7 @@
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
-    <h1>USUWANIE WYBORÓW</h1>
+    <h1>POTWIERDŹ USUNIĘCIE WYBORÓW</h1>
     <EditForm Model="@electionModel" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
         
@@ -47,7 +47,10 @@
             <InputNumber @bind-Value="electionModel.ElectionTour" readonly id="tura" />
         </div>
 
-        <button type="submit" class="submit-button">USUŃ WYBORY</button>
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ WYBORY</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -94,6 +97,11 @@
             errorMessage = isDeletedElection ? "Deleted election successful!" : "Deleted election fails";
             NavigationManager.NavigateTo("/configure-election");
         }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/configure-election");
     }
 
 }

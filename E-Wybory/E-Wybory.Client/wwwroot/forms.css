@@ -27,6 +27,27 @@
         font-weight: bold;
     }
 
+.candidate-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 90vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+    .candidate-form-container h1 {
+        text-align: center;
+        font-size: 40px;
+        font-variant-caps: titling-caps;
+        margin-bottom: 20px;
+        color: black;
+        font-weight: bold;
+    }
+
 
 form {
     display: flex;
@@ -40,6 +61,17 @@ form {
     /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
 }
 
+.candidate-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: auto;
+    /*background-color: #fff;*/
+    padding: 20px;
+    border-radius: 10px;
+    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
+}
 
 .form-group {
     width: 100%;
@@ -53,7 +85,7 @@ form {
 
 .form-group-smaller {
     width: 100%;
-    margin-bottom: 0px;
+    margin-bottom: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -63,13 +95,18 @@ form {
     .form-group-smaller label {
         width: 100%;
         text-align: left;
-        margin-bottom: 5px;
+        margin-bottom: 0px;
         font-weight: normal;
     }
 
     .form-group-smaller .form-input {
         width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 3px solid #ccc;
+        font-size: 1rem;
         box-sizing: border-box;
+        background-color: white;
     }
 
 
@@ -102,15 +139,17 @@ button:hover {
 
 .cancel-button {
     background-color: #fff;
-    color: #e60000;
+    color: #555555;
     border: none;
 }
 
     .cancel-button:hover {
-        background-color: #bbb;
+        background-color: #555555;
+        color: #fff;
     }
 
-.button-group {
+
+    -group {
     display: flex;
     gap: 20px;
     justify-content: center;
@@ -191,13 +230,13 @@ input, select {
         color: #ffffff;
     }
 
-}
 
-form .checkbox-group {
+
+.checkbox-group {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     width: 100%;
 }
 

@@ -39,7 +39,11 @@
             <input type="text" id="birthDate" value="@personModel.DateOfBirthString" readonly />
         </div>
 
-        <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">WYPISZ WYBORCĘ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </form>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -139,5 +143,10 @@
             formSubmitted = await ElectionVoterManagementService.AddElectionVoter(electionVoterViewModel);
             errorMessage = formSubmitted ? "Zablokowano możliwość głosowania użytkownikowi!" : "Blokada głosowania użytkownikowi nie powiodła się!";
         }
+    }
+
+    private void Cancel()
+    {
+        NavManager.NavigateTo("/cancelvoter");
     }
 }

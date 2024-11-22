@@ -4,6 +4,7 @@
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IDistrictManagementService DistrictManagementService
@@ -17,35 +18,37 @@
     <EditForm Model="@districtModel" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
 
-        <div class="form-group">
+        <div class="form-group-smaller">
             <label for="districtName">NAZWA OBWODU</label>
             <InputText @bind-Value="districtModel.DistrictName" id="districtName" placeholder="Nazwa obwodu wyborczego" />
             <ValidationMessage For="@(() => districtModel.DistrictName)" />
         </div>
 
-        <div>
+        <div class="form-group-smaller">
             <label for="disabledFacilities">WYPOSAŻENIE DLA NIEPEŁNOSPRAWNYCH</label>
-            <input type="checkbox" id="disabledFacilities" @bind="districtModel.DisabledFacilities" />
-            @if (districtModel.DisabledFacilities)
-            {
-                <span>Tak</span>
-            }
-            else
-            {
-                <span>Nie</span>
-            }
+            <div class="checkbox-group">
+                <input type="checkbox" class="checkbox" id="disabledFacilities" @bind="districtModel.DisabledFacilities" />
+                @if (districtModel.DisabledFacilities)
+                {
+                    <span>Tak</span>
+                }
+                else
+                {
+                    <span>Nie</span>
+                }
+            </div>
         </div>
 
         
-        <div class="form-group">
+        <div class="form-group-smaller">
             <label for="districtHead">SIEDZIBA OBWODU</label>
             <InputText @bind-Value="districtModel.DistrictHeadquarters" id="districtHead" placeholder="Siedziba obwodu wyborczego" />
             <ValidationMessage For="@(() => districtModel.DistrictHeadquarters)" />
         </div>
 
-        <div>
-            <div class="filter-group">
-                <label>Województwo</label>
+        <div class="form-group-smaller">
+            <div class="form-group-smaller">
+                <label>WOJEWÓDZTWO</label>
                 <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
                     <option value="">Wybierz województwo</option>
                     @foreach (var voivodeship in wrapper.VoivodeshipFilter)
@@ -56,8 +59,8 @@
                     }
                 </select>
             </div>
-            <div class="filter-group">
-                <label>Powiat</label>
+            <div class="form-group-smaller">
+                <label>POWIAT</label>
                 <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
                     <option value="">Wybierz powiat</option>
                     @foreach (var county in wrapper.CountyFilter)
@@ -71,8 +74,8 @@
                     }
                 </select>
             </div>
-            <div class="filter-group">
-                <label>Gmina</label>
+            <div class="form-group-smaller">
+                <label>GMINA</label>
                 <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
                     <option value="">Wybierz gminę</option>
                     @foreach (var province in wrapper.ProvinceFilter)
@@ -86,9 +89,8 @@
                     }
                 </select>
             </div>
-        </div>
-        <div>
-            <label>Okręg</label>
+        <div class="form-group-smaller">
+            <label>OKRĘG</label>
             <select @bind="districtModel.IdConstituency">
                 <option value="">Wybierz okręg</option>
                 @foreach (var constituency in constituencies)
@@ -100,8 +102,11 @@
             </select>
             <ValidationMessage For="@(() => districtModel.IdConstituency)" />
         </div>
-
-        <button type="submit" class="submit-button">DODAJ</button>
+        </div>
+        <div class="form-row">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -158,6 +163,11 @@
     private async Task OnProvinceChanged()
     {
         await FilterRegions();
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/districtlist");
     }
 
 }

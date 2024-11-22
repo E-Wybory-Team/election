@@ -1,4 +1,6 @@
 ﻿@page "/commissionersmodify/{commissionerId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
@@ -65,7 +67,7 @@
 
         <div class="form-row">
             <button type="submit" class="submit-button">MODYFIKUJ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
 </div>

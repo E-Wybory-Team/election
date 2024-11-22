@@ -66,10 +66,22 @@ h1:focus {
 }
 
 input.checkbox { /* bigger checkbox */
-    margin: 0;   
+    margin: 0;
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
+    width: 10%;
     scale: 1.5;
 }
 
+p {
+    display: inline-block; 
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-weight: bold;
+    color: #333;
+    text-align: center; 
+    min-width: 50px;
+}

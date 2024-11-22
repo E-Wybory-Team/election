@@ -13,10 +13,10 @@
 
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>USUWANIE KANDYDATA W WYBORACH</h1>
+<div class="candidate-form-container">
+    <h1>POTWIERDŹ USUNIĘCIE KANDYDATA</h1>
 
-    <EditForm FormName="CandidateDelete" Model="@candidateModel" OnValidSubmit="HandleDeleteCandidate">
+    <EditForm FormName="CandidateDelete" Model="@candidateModel" OnValidSubmit="HandleDeleteCandidate" class="candidate-form">
         <DataAnnotationsValidator />
 
         <div class="form-row">
@@ -114,8 +114,10 @@
                 </InputSelect>
             </div>
         </div>
-
-        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+        <div class="form-row">
+            <button type="submit" class="red-submit-button">USUŃ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
 
     @if (!string.IsNullOrEmpty(errorMessage))

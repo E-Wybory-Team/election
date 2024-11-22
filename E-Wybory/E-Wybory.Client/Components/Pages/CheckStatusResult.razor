@@ -7,6 +7,7 @@
 @inject IElectionVoterManagementService ElectionVoterManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IVoterManagementService VoterManagementService
+@inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -46,6 +47,8 @@
                 <span class="status-text">WYBORCA NIE ODDAŁ JESZCZE GŁOSU</span>
             </div>
         }
+                <button type="button" class="cancel-button" @onclick="Cancel">COFNIJ</button>
+
     </form>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -141,4 +144,8 @@
             errorMessage = "Proszę podać nr PESEL!";
         }
     }
+    private void Cancel()
+{
+    NavigationManager.NavigateTo("/checkvotestatus");
+}
 }

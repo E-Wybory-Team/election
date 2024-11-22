@@ -104,3 +104,16 @@ html, body {
     margin: 0;
     padding: 0;
 }
+
+.input-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: flex-start;
+}
+
+.form-label {
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #797b7c;
+}

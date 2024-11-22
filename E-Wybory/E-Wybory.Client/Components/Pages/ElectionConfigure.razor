@@ -1,12 +1,30 @@
 ﻿@page "/configure-election"
-
+@inject NavigationManager NavigationManager
+@rendermode InteractiveWebAssembly
 <link href="buttonsMenu.css" rel="stylesheet" />
 
 <div class="page-content">
     <h1>KONFIGURACJA WYBORÓW</h1>
     <div class="button-container">
-        <a href="/add-election" class="config-button config-button-green">ZAREJESTRUJ WYBORY</a>
-        <a href="/modify-election" class="config-button config-button-blue">MODYFIKUJ WYBORY</a>
-        <a href="/delete-election" class="config-button config-button-red">USUŃ WYBORY</a>
+        <a class="config-button config-button-green" @onclick="Add">ZAREJESTRUJ WYBORY</a>
+        <a class="config-button config-button-blue" @onclick="Modify">MODYFIKUJ WYBORY</a>
+        <a class="config-button config-button-red" @onclick="Delete">USUŃ WYBORY</a>
     </div>
 </div>
+
+@code{
+    private void Add()
+    {
+        NavigationManager.NavigateTo("/add-election");
+    }
+
+    private void Modify()
+    {
+        NavigationManager.NavigateTo("/modify-election");
+    }
+
+    private void Delete()
+    {
+        NavigationManager.NavigateTo("/delete-election");
+    }
+}

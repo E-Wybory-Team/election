@@ -7,7 +7,7 @@
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
-    <h1>USUWANIE OKRĘGU WYBORCZEGO</h1>
+    <h1>POTWIERDŹ USUNIĘCIE OKRĘGU WYBORCZEGO</h1>
     <EditForm Model="@constituencyModel" OnValidSubmit="HandleDeleteSubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
@@ -16,24 +16,21 @@
             <label for="name">NAZWA OKRĘGU</label>
             <InputText @bind-Value="constituencyModel.constituencyName" id="name" class="form-input" readonly />
         </div>
-        <div>
-            <div class="filter-group">
-                <label>ZASIĘG (POWIATY)</label>
-                <div>
-                    @foreach (var county in relatedCounties)
-                    {
-                        <div>
-                            <span>@county.CountyName</span>
-                        </div>
-                    }
-                </div>
+        
+        <div class="form-group-smaller">
+            <label>ZASIĘG (POWIATY)</label>
+            <div class="form-input valid">
+                @foreach (var county in relatedCounties)
+                {
+                        <span>@county.CountyName, </span>
+                }
             </div>
         </div>
 
 
         <div class="form-row">
             <button type="submit" class="red-submit-button">USUŃ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))

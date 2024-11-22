@@ -10,13 +10,14 @@
 @inject IDistrictManagementService DistrictManagementService
 @inject IPartyManagementService PartyManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject NavigationManager NavigationManager
 
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
+<div class="candidate-form-container">
     <h1>DODAWANIE KANDYDATA W WYBORACH</h1>
 
-    <EditForm FormName="CandidateAdd" Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate">
+    <EditForm FormName="CandidateAdd" Model="@candidatePersonModel"  OnValidSubmit="HandleAddCandidate" class="candidate-form">
         <DataAnnotationsValidator />
         <ValidationSummary/>
 
@@ -124,8 +125,10 @@
                 <ValidationMessage For="@(() => candidatePersonModel.candidateViewModel.IdDistrict)" />
             </div>
         </div>
-
-        <button type="submit" class="submit-button">DODAJ</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </EditForm>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -166,7 +169,10 @@
         }
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);
-
         errorMessage = isAddedCandidate ? "Candidate added successful!" : "Adding of candidate fails";
+    }
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/candidatelist");
     }
 }

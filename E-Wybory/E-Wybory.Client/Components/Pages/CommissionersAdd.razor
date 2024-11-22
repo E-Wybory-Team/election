@@ -1,5 +1,9 @@
 ﻿@page "/addcommissioner"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
 @using System.ComponentModel.DataAnnotations
+@inject NavigationManager NavigationManager
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -64,7 +68,7 @@
 
         <div class="form-row">
             <button type="submit" class="submit-button">DODAJ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
 </div>
@@ -84,7 +88,7 @@
 
     private void Cancel()
     {
-        Console.WriteLine("Anulowano dodawanie członka komisji.");
+        NavigationManager.NavigateTo("/commissionerslist");
     }
 
     public class CommissionerModel

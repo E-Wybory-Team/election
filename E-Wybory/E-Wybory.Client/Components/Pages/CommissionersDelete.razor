@@ -1,10 +1,13 @@
 ﻿@page "/commissionersdelete/{commissionerId:int}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager NavigationManager
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
-    <h1>USUWANIE CZŁONKÓW KOMISJI Z OBWODU</h1>
+    <h1>POTWIERDŹ USUNIĘCIE CZŁONKA KOMISJI</h1>
     <EditForm Model="@commissionerModel">
         <div class="form-group-smaller">
             <label for="pesel">PESEL CZŁONKA KOMISJI</label>
@@ -32,8 +35,9 @@
         </div>
         <div class="form-row">
             <button type="button" class="red-submit-button" @onclick="DeleteCommissioner">USUŃ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
+        
     </EditForm>
 </div>
 

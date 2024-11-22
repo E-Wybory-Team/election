@@ -1,4 +1,8 @@
 ﻿@page "/checkvotestatus"
+@rendermode InteractiveWebAssembly
+
+@inject NavigationManager NavigationManager
+
 <link href="forms.css" rel="stylesheet" />
 
 <div class="form-container">
@@ -14,9 +18,20 @@
             <label for="pesel">PESEL WYBORCY</label>
             <input type="text" id="pesel" placeholder="Nr Pesel wyborcy" />
         </div>
-
-        <a href="/checkstatusresult">
-            <button type="button" class="submit-button">SPRAWDŹ STATUS</button>
-        </a>
+         <div class="form-row">
+            <button type="button" class="submit-button" @onclick="CheckStatus">SPRAWDŹ STATUS</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </form>
 </div>
+
+@code{
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/cohome");
+    }
+    private void CheckStatus()
+    {
+        NavigationManager.NavigateTo("/checkstatusresult");
+    }
+}

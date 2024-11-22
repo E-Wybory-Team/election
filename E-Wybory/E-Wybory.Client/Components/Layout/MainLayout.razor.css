@@ -9,25 +9,24 @@ main {
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-color:white;
 }
 
 .top-row {
     background-color: #1E5899;
-    border-bottom: 1px solid #d6d5d5;
     justify-content: space-between;
-    height: 3.7rem;
+    height: 3.65rem;
     display: flex;
     align-items: center;
     padding: 0 20px;
 }
 
 .left-text {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     color: white;
     font-style: revert;
     font-weight: normal;
-    margin-left: -30px;
+    margin-left: -20px;
     margin-top: 0px;
 }
 

@@ -1,5 +1,8 @@
 ﻿@page "/cancelvoter"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject NavigationManager NavManager
 @inject IAuthService AuthService
 @inject IElectionManagementService ElectionManagementService
@@ -24,7 +27,10 @@
             <input type="text" id="pesel" @bind="pesel" class="form-control" placeholder="Nr Pesel wyborcy" />
         </div>
 
-        <button type="submit" class="btn btn-primary submit-button">DALEJ</button>
+        <div class="form-row">
+            <button type="submit" class="submit-button" @onclick="GoToSubmitCancelVoter">DALEJ</button>
+            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+        </div>
     </form>
 
 
@@ -118,5 +124,10 @@
         {
             errorMessage = "Proszę podać nr PESEL!";
         }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/cohome");
     }
 }
