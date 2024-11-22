@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using Azure.Communication.Email;
 using System.Net;
 using E_Wybory.Services.Interfaces;
+using E_Wybory.Client.Policies;
 
 
 namespace E_Wybory.Controllers
@@ -38,11 +39,18 @@ namespace E_Wybory.Controllers
         private readonly ElectionDbContext _context;
         private readonly IJWTService _tokenService;
         private readonly IEmailSenderService _emailSenderService;
+        private static readonly ElectionPasswordPolicyAttribute _policyAttribute = new ElectionPasswordPolicyAttribute();
         public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService)
         {
             this._context = context;
             this._tokenService = tokenService;
             this._emailSenderService = emailSenderService; 
+        }
+
+
+        private bool CheckPasswordyPolicy(string password)
+        {
+            return _policyAttribute.IsValid(password);
         }
 
 
@@ -64,15 +72,16 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("register")]
+        //[ElectionPasswordPolicy(Password = request.Password)]
         public async Task<IActionResult> Register([FromBody] RegisterViewModel request)
         {
-            //if(ModelState.IsValid)
-            if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
-                || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
-                || request.PhoneNumber == String.Empty || request.Password == String.Empty
-                || request.SelectedDistrictId == 0)
+            if (!CheckPasswordyPolicy(request.Password)) return BadRequest("Password does not meet the policy requirements");
+            if (!ModelState.IsValid) return BadRequest("Not entered data to all required fields");
+            //if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
+            //    || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
+            //    || request.PhoneNumber == String.Empty || request.Password == String.Empty
+            //    || request.SelectedDistrictId == 0)
 
-                return BadRequest("Not entered data to all required fields");
 
             bool registerResult = await RegisterUser(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
             request.PhoneNumber, request.Password, request.SelectedDistrictId);
@@ -330,6 +339,7 @@ namespace E_Wybory.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel request)
         {
+            if (!CheckPasswordyPolicy(request.NewPassword)) return BadRequest("Password does not meet the policy requirements");
             if (!ModelState.IsValid) return BadRequest("Invalid model state");
 
             var user = await _context.ElectionUsers.FirstOrDefaultAsync(u => u.Email == request.Email);

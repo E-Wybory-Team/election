@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using E_Wybory.Client.Policies;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 namespace E_Wybory.Client.ViewModels
@@ -23,10 +24,11 @@ namespace E_Wybory.Client.ViewModels
         [Required(ErrorMessage = "Numer telefonu jest obowiązkowy!")]
         public string PhoneNumber { get; set; } = String.Empty;
 
+        [ElectionPasswordPolicy]
         [Required(ErrorMessage = "Hasło jest obowiązkowe!")]
         public string Password { get; set; } = String.Empty;
 
-        [Required(ErrorMessage = "Hasło(potwierdzenie) jest obowiązkowe!"), Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
+        [Required(ErrorMessage = "Hasło (potwierdzenie) jest obowiązkowe!"), Compare(nameof(Password), ErrorMessage = "Hasła muszą się zgadzać")]
         public string ConfirmPassword { get; set; } = String.Empty;
 
         [Required(ErrorMessage = "Obwód wyborczy jest obowiązkowy!")]

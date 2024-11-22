@@ -22,6 +22,8 @@ namespace E_Wybory.Middleware
         {
             string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
+            
+
             if (!string.IsNullOrEmpty(token))
             {
                 var handler = new JsonWebTokenHandler();
@@ -43,10 +45,16 @@ namespace E_Wybory.Middleware
                             if(newToken is not null)
                             // Add the renewed token to the response header
                             context.Response.Headers["Authorization"] = $"Bearer {newToken}";
+                        } 
+                        else
+                        {
+                            //context.Response.Redirect("/login"); //Does it work?
                         }
                     }
                 }
             }
+
+            
 
             // Call the next middleware in the pipeline
             await _next(context);
