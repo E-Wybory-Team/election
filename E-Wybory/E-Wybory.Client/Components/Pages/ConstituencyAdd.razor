@@ -52,11 +52,6 @@
     string errorMessage;
 
 
-    public async Task<HashSet<string>> GetSelections(ElementReference elementReference)
-    {
-        return (await JS.InvokeAsync<List<string>>("getSelectedValues", _selectReference)).ToHashSet();
-    }
-
     private async void HandleSubmit()
     {
         isAddedConstituency = await ConstituencyManagementService.AddConstituency(constituencyModel);

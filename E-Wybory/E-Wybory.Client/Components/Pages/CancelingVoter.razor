@@ -1,8 +1,6 @@
 ﻿@page "/cancelvoter"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
-@inject NavigationManager NavigationManager
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject NavigationManager NavManager
 @inject IAuthService AuthService
 @inject IElectionManagementService ElectionManagementService
@@ -141,6 +139,6 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/cohome");
+        NavManager.NavigateTo("/cohome");
     }
 }
