@@ -42,12 +42,18 @@ namespace E_Wybory.Application.Wrappers
             get => Convert.ToBoolean(_user?.FindFirst(c => c.Type.Equals("2FAenabled"))?.Value);
         }
 
+        public bool TwoFAveryfied
+        {
+            get => Convert.ToBoolean(_user?.IsInRole("2FAveryfiedUser"));
+        }
+
         public bool IsValid()
         {
             if (_user is null || _user.Claims is null || _user.Claims.Count() == 0) return false;
 
             bool validField = true;
 
+            
             foreach(Claim claim in _user.Claims)
             {
                 if(string.IsNullOrEmpty(claim.Value) || string.IsNullOrEmpty(claim.Type))
