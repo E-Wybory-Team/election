@@ -3,11 +3,15 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
 
 <link href="forms.css" rel="stylesheet" />
-
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 <div class="form-container">
     <h1>DODAWANIE OKRĘGU WYBORCZEGO</h1>
 
@@ -30,6 +34,17 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();

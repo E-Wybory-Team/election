@@ -1,7 +1,16 @@
 ﻿@page "/configure-election"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
 @inject NavigationManager NavigationManager
 @rendermode InteractiveWebAssembly
 <link href="buttonsMenu.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
 <div class="page-content">
     <h1>KONFIGURACJA WYBORÓW</h1>
@@ -11,7 +20,16 @@
         <a class="config-button config-button-red" @onclick="Delete">USUŃ WYBORY</a>
     </div>
 </div>
-
+                     </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 @code{
     private void Add()
     {

@@ -5,11 +5,15 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using E_Wybory.Client.Services;
 @using System.Globalization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IElectionManagementService ElectionManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
-
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 <div class="form-container">
     <h1>REJESTROWANIE WYBORÓW</h1>
     <EditForm FormName="ElectionAdd" Model="@electionModel" OnValidSubmit="HandleValidSubmit">
@@ -56,6 +60,17 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private ElectionViewModel electionModel = new ElectionViewModel();

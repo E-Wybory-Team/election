@@ -6,49 +6,66 @@
 @inject ICountyManagementService CountyManagementService
 @inject IVoivodeshipManagementService VoivodeshipManagementService
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 <link href="forms.css" rel="stylesheet" />
 
-<div class="form-container">
-    <h1>USUWANIE OBWODU WYBORCZEGO</h1>
-    <EditForm Model="@districtModel" OnValidSubmit="HandleDeleteSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
+         <Authorized>
 
-        <div class="form-group-smaller">
-            <label>NAZWA OBWODU</label>
-            <InputText @bind-Value="districtModel.DistrictName" readonly class="form-input" />
-        </div>
+            <div class="form-container">
+                <h1>USUWANIE OBWODU WYBORCZEGO</h1>
+                <EditForm Model="@districtModel" OnValidSubmit="HandleDeleteSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+            
+                    <div class="form-group-smaller">
+                        <label>NAZWA OBWODU</label>
+                        <InputText @bind-Value="districtModel.DistrictName" readonly class="form-input" />
+                    </div>
+            
+                    <div class="form-group-smaller">
+                        <label>SIEDZIBA</label>
+                        <InputText @bind-Value="districtModel.DistrictHeadquarters" readonly class="form-input" />
+                    </div>
+            
+                    <div class="form-group-smaller">
+                        <label>WOJEWÓDZTWO</label>
+                        <InputText @bind-Value="voivodeshipViewModel.voivodeshipName" readonly class="form-input" />
+                    </div>
+            
+                    <div class="form-group-smaller">
+                        <label>POWIAT</label>
+                        <InputText @bind-Value="countyViewModel.CountyName" readonly class="form-input" />
+                    </div>
+            
+                    <div class="form-group-smaller">
+                        <label>GMINA</label>
+                        <InputText @bind-Value="provinceViewModel.ProvinceName" readonly class="form-input" />
+                    </div>
+            
+                    <div class="form-row">
+                        <button type="submit" class="red-submit-button">USUŃ</button>
+                        <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
+                    </div>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+            </div>
 
-        <div class="form-group-smaller">
-            <label>SIEDZIBA</label>
-            <InputText @bind-Value="districtModel.DistrictHeadquarters" readonly class="form-input" />
-        </div>
-
-        <div class="form-group-smaller">
-            <label>WOJEWÓDZTWO</label>
-            <InputText @bind-Value="voivodeshipViewModel.voivodeshipName" readonly class="form-input" />
-        </div>
-
-        <div class="form-group-smaller">
-            <label>POWIAT</label>
-            <InputText @bind-Value="countyViewModel.CountyName" readonly class="form-input" />
-        </div>
-
-        <div class="form-group-smaller">
-            <label>GMINA</label>
-            <InputText @bind-Value="provinceViewModel.ProvinceName" readonly class="form-input" />
-        </div>
-
-        <div class="form-row">
-            <button type="submit" class="red-submit-button">USUŃ</button>
-            <button type="button" class="submit-button" @onclick="Cancel">ANULUJ</button>
-        </div>
-    </EditForm>
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     [Parameter]

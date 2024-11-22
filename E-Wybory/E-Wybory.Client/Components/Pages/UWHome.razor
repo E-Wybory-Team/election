@@ -1,27 +1,46 @@
 ﻿@page "/uwhome"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+<link href="forms.css" rel="stylesheet" />
 
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
+         <Authorized>
 
-<div class="page-content">
-    <a href="/info" class="button-informator">
-        <div class="informator-wyborczy">Informator Wyborczy</div>
-    </a>
+            <div class="page-content">
+                <a href="/info" class="button-informator">
+                    <div class="informator-wyborczy">Informator Wyborczy</div>
+                </a>
+            
+                <a href="/candidateinfo" class="button-kandydaci">
+                    <div class="text-wrapper">Kandydaci</div>
+                </a>
+            
+                <a href="/statistics" class="button-statystyki">
+                    <div class="div">Statystyki</div>
+                </a>
+                <a href="/voterslist" class="button-voters">
+                    <div class="text-wrapper-2">Konfiguruj wyborców</div>
+                </a>
+            
+                <a href="/commissionerslist" class="button-comitee">
+                    <div class="text-wrapper-2">Konfiguruj skład komisji</div>
+                </a>
+            
+                <a href="/vote" class="button-vote">
+                    <div class="text-wrapper-2">Głosuj</div>
+                </a>
+            </div>
 
-    <a href="/candidateinfo" class="button-kandydaci">
-        <div class="text-wrapper">Kandydaci</div>
-    </a>
-
-    <a href="/statistics" class="button-statystyki">
-        <div class="div">Statystyki</div>
-    </a>
-    <a href="/voterslist" class="button-voters">
-        <div class="text-wrapper-2">Konfiguruj wyborców</div>
-    </a>
-
-    <a href="/commissionerslist" class="button-comitee">
-        <div class="text-wrapper-2">Konfiguruj skład komisji</div>
-    </a>
-
-    <a href="/vote" class="button-vote">
-        <div class="text-wrapper-2">Głosuj</div>
-    </a>
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+            

@@ -3,12 +3,17 @@
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IVoterManagementService VoterManagementService
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
+         <Authorized>
 
 <div class="form-container">
     <h1>DODAWANIE WYBORCY DO OBWODU</h1>
@@ -88,6 +93,17 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private int? SelectedVoivodeshipId { get; set; } = null;

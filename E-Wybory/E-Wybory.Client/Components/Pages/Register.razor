@@ -2,6 +2,8 @@
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAuthService AuthService
 @inject IDistrictManagementService DistrictManagementService
@@ -93,6 +95,7 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
+
 
 @code {
     private RegisterViewModel registrationModel = new RegisterViewModel();

@@ -4,7 +4,7 @@ namespace E_Wybory.Client.Services
 {
     public interface IAuthService
     {
-        Task<bool> Login(LoginViewModel login);
+        Task<string> Login(LoginViewModel login);
 
         Task<bool> Register(RegisterViewModel register);
 
@@ -33,6 +33,7 @@ namespace E_Wybory.Client.Services
         Task<int> GetCurrentUserIdVoter();
         Task<bool> GetCurrentUser2faStatus();
         Task<int> GetCurrentVoterIdDistrict();
+
 
     }
 }

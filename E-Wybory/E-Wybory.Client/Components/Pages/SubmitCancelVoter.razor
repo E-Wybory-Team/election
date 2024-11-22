@@ -1,6 +1,8 @@
 ﻿@page "/submitcancelvoter/{idVoter:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavManager
 @inject IVoterManagementService VoterManagementService
 @inject IPersonManagementService PersonManagementService
@@ -9,6 +11,9 @@
 @inject IElectionVoterManagementService ElectionVoterManagementService
 @inject IAuthService AuthService
 <link href="forms.css" rel="stylesheet" />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
 
 <div class="form-container">
     <h1>WYPISYWANIE WYBORCY</h1>
@@ -50,7 +55,16 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
-
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 @code {
     [Parameter] public int idVoter { get; set; }
 

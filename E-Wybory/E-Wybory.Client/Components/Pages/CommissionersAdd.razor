@@ -1,11 +1,16 @@
 ﻿@page "/addcommissioner"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager NavigationManager
 
 <link href="forms.css" rel="stylesheet" />
-
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
+         <Authorized>
 <div class="form-container">
     <h1>DODAWANIE CZŁONKÓW KOMISJI DO OBWODU</h1>
     <EditForm Model="@commissionerModel" OnValidSubmit="HandleAddSubmit">
@@ -72,7 +77,16 @@
         </div>
     </EditForm>
 </div>
-
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 @code {
     private CommissionerModel commissionerModel = new CommissionerModel();
 

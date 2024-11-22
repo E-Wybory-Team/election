@@ -1,5 +1,7 @@
 ﻿@page "/checkstatusresult"
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IDistrictManagementService DistrictManagementService
@@ -9,6 +11,9 @@
 @inject IVoterManagementService VoterManagementService
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
+         <Authorized>
 
 <div class="form-container">
     <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
@@ -56,7 +61,16 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
-
+                     </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 @code {
     private bool? hasVoted = null; 
     private string pesel { get; set; }

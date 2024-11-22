@@ -3,6 +3,8 @@
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IVoterManagementService VoterManagementService
@@ -10,109 +12,124 @@
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
 
-<div class="header-container">
-    <h2 class="title">SPIS WYBORCÓW</h2>
-    <a href="/addvoter" class="add-button">Dodaj Wyborcę</a>
-</div>
 
-<div class="filters">
-    <div class="filter-group">
-        <label>Województwo</label>
-        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
-            <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in wrapper.VoivodeshipFilter)
-            {
-                <option value="@voivodeship.idVoivodeship">
-                    @voivodeship.voivodeshipName
-                </option>
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Powiat</label>
-        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
-            <option value="">Wybierz powiat</option>
-            @foreach (var county in wrapper.CountyFilter)
-            {
-                @if (county.IdVoivodeship == SelectedVoivodeshipId)
-                {
-                    <option value="@county.IdCounty">
-                        @county.CountyName
-                    </option>
-                }
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Gmina</label>
-        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
-            <option value="">Wybierz gminę</option>
-            @foreach (var province in wrapper.ProvinceFilter)
-            {
-                @if (province.IdCounty == SelectedCountyId)
-                {
-                    <option value="@province.IdProvince">
-                        @province.ProvinceName
-                    </option>
-                }
-            }
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Numer obwodu</label>
-        <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
-            <option value="">Wybierz numer obwodu</option>
-            @foreach (var district in wrapper.DistrictFilter)
-            {
-                @if (district.IdProvince == SelectedProvinceId)
-                {
-                    <option value="@district.IdDistrict">
-                        @district.DistrictName - @district.DistrictHeadquarters
-                    </option>
-                }
-            }
-        </select>
-    </div>
-</div>
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
+         <Authorized>
+            <div class="header-container">
+                <h2 class="title">SPIS WYBORCÓW</h2>
+                <a href="/addvoter" class="add-button">Dodaj Wyborcę</a>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Województwo</label>
+                    <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+                        <option value="">Wybierz województwo</option>
+                        @foreach (var voivodeship in wrapper.VoivodeshipFilter)
+                        {
+                            <option value="@voivodeship.idVoivodeship">
+                                @voivodeship.voivodeshipName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Powiat</label>
+                    <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+                        <option value="">Wybierz powiat</option>
+                        @foreach (var county in wrapper.CountyFilter)
+                        {
+                            @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                            {
+                                <option value="@county.IdCounty">
+                                    @county.CountyName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Gmina</label>
+                    <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+                        <option value="">Wybierz gminę</option>
+                        @foreach (var province in wrapper.ProvinceFilter)
+                        {
+                            @if (province.IdCounty == SelectedCountyId)
+                            {
+                                <option value="@province.IdProvince">
+                                    @province.ProvinceName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Numer obwodu</label>
+                    <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+                        <option value="">Wybierz numer obwodu</option>
+                        @foreach (var district in wrapper.DistrictFilter)
+                        {
+                            @if (district.IdProvince == SelectedProvinceId)
+                            {
+                                <option value="@district.IdDistrict">
+                                    @district.DistrictName - @district.DistrictHeadquarters
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            
+            <table class="candidate-table">
+                <thead>
+                    <tr>
+                        <th>Lp.</th>
+                        <th>Imię</th>
+                        <th>Nazwisko</th>
+                        <th>PESEL</th>
+                        <th>Telefon</th>
+                        <th>Adres email</th>
+                        <th>Opcje konfiguracji</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int index = 1;
+                    }
+                    @foreach (var voter in filteredUsers)
+                    {
+                        <tr>
+                            <td>@index</td>
+                            <td>@voter.personViewModel.Name</td>
+                            <td>@voter.personViewModel.Surname</td>
+                            <td>@voter.personViewModel.PESEL</td>
+                            <td>@voter.userViewModel.PhoneNumber</td>
+                            <td>@voter.userViewModel.Email</td>
+                            <td>
+                                <a href="/modifyvoter/@votersIds[voter.userViewModel.IdElectionUser]">
+                                    <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                                </a>
+                                <a href="/voterdelete/@votersIds[voter.userViewModel.IdElectionUser]">
+                                    <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                                </a>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
 
-<table class="candidate-table">
-    <thead>
-        <tr>
-            <th>Lp.</th>
-            <th>Imię</th>
-            <th>Nazwisko</th>
-            <th>PESEL</th>
-            <th>Telefon</th>
-            <th>Adres email</th>
-            <th>Opcje konfiguracji</th>
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            int index = 1;
-        }
-        @foreach (var voter in filteredUsers)
-        {
-            <tr>
-                <td>@index</td>
-                <td>@voter.personViewModel.Name</td>
-                <td>@voter.personViewModel.Surname</td>
-                <td>@voter.personViewModel.PESEL</td>
-                <td>@voter.userViewModel.PhoneNumber</td>
-                <td>@voter.userViewModel.Email</td>
-                <td>
-                    <a href="/modifyvoter/@votersIds[voter.userViewModel.IdElectionUser]">
-                        <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
-                    </a>
-                    <a href="/voterdelete/@votersIds[voter.userViewModel.IdElectionUser]">
-                        <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
-                    </a>
-                </td>
-            </tr>
-            index++;
-        }
-    </tbody>
-</table>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private int? SelectedVoivodeshipId { get; set; } = null;
