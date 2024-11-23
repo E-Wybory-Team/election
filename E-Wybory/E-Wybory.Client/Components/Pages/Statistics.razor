@@ -1,5 +1,15 @@
 ﻿@page "/statistics"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using System.ComponentModel.DataAnnotations
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+@using System.Text.RegularExpressions
+@inject IElectionTypeManagementService ElectionTypeManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IVoteManagementService VoteManagementService
+@inject IVoterManagementService VoterManagementService
+@inject IDistrictManagementService DistrictManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
 <link href="tables.css" rel="stylesheet" />
 
 <h2 class="title">STATYSTYKI WYBORCZE</h2>
@@ -7,48 +17,62 @@
 <div class="filters">
     <div class="filter-group">
         <label>Rodzaj wyborów</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
             <option value="">Wybierz rodzaj wyborów</option>
-            @foreach (var electionType in electionTypes)
+            @foreach (var electionType in wrapper.ElectionFilter)
             {
-                <option value="@electionType">@electionType</option>
+                <option value="@electionType.IdElectionType">
+                    @electionType.ElectionTypeName
+                </option>
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Województwo</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
             <option value="">Wybierz województwo</option>
-            @foreach (var voivodeship in voivodeships)
+            @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
             {
-                <option value="@voivodeship">@voivodeship</option>
+                <option value="@voivodeship.idVoivodeship">
+                    @voivodeship.voivodeshipName
+                </option>
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Powiat</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
             <option value="">Wybierz powiat</option>
-            @foreach (var county in counties)
+            @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
             {
-                <option value="@county">@county</option>
+                @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                {
+                    <option value="@county.IdCounty">
+                        @county.CountyName
+                    </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Gmina</label>
-        <select @onchange="(e) => FilterTable()">
+        <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
             <option value="">Wybierz gminę</option>
-            @foreach (var province in provinces)
+            @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
             {
-                <option value="@province">@province</option>
+                @if (province.IdCounty == SelectedCountyId)
+                {
+                    <option value="@province.IdProvince">
+                        @province.ProvinceName
+                    </option>
+                }
             }
         </select>
     </div>
     <div class="filter-group">
         <label>Frekwencja</label>
-        <select @onchange="(e) => FilterTable()">
-            <option value="">Wybierz rodzaj frekwencji</option>
+        <select @onchange="(e => OnFrequencyChanged(e))">
+            <option value="">Wybierz frekwencję</option>
             @foreach (var attendance in attendances)
             {
                 <option value="@attendance">@attendance</option>
@@ -57,61 +81,145 @@
     </div>
 </div>
 
-<table class="candidate-table">
-    <thead>
-        <tr>
-            <th>Numer komisji</th>
-            <th>Obwodowa komisja wyborcza</th>
-            <th>Liczba uprawnionych</th>
-            <th>Liczba głosów elektronicznych</th>
-            <th>Liczba głosów elektronicznych * 100 / liczba uprawnionych do głosowania</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var district in filteredDistricts)
-        {
+@foreach(var election in elections)
+{
+    <h2>Wybory z dnia @election.ElectionStartDate.ToString("dd.MM.yyyy")</h2>
+    <table class="candidate-table">
+        <thead>
             <tr>
-                <td>@district.IdDistrict</td>
-                <td>@district.DistrictHeadquarters</td>
-                <td>@GetVotersNumber(district)</td>
-                <td>@GetVotersThatVoted(district)</td>
-                <td>@GetAttendancePercentage(district) %</td>
+                <th>Numer komisji</th>
+                <th>Obwodowa komisja wyborcza</th>
+                <th>Liczba uprawnionych</th>
+                <th>Liczba głosów elektronicznych</th>
+                <th>Liczba głosów elektronicznych * 100 / liczba uprawnionych do głosowania</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var district in filteredDistricts)
+            {
+                <tr>
+                    <td>@district.IdDistrict</td>
+                    <td>@district.DistrictHeadquarters</td>
+                    <td>@districtVotersNumber[district.IdDistrict]</td>
+                    <td>@districtsVotesNumber[(district.IdDistrict, election.IdElection)]</td>
+                    <td>@districtsFrequencies[(district.IdDistrict, election.IdElection)] %</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
 
-    // tutaj poniżej musiałyby iść GET'y do bazy żeby pobierać to
+    private int? SelectedElectionTypeId { get; set; } = null;
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
 
-    private List<string> electionTypes = new() { "Wybory samorządowe", "Wybory prezydenckie", "Wybory parlamentarne" };
-    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> attendances = new() { "Do godziny 12:00", "Do godziny 17:00", "Całkowita" };
-    private List<District> districts = new()
+    private Dictionary<int, int> districtVotersNumber = new Dictionary<int, int>();
+    private Dictionary<(int, int), int> districtsVotesNumber = new Dictionary<(int, int), int>();
+    private Dictionary<(int, int), double> districtsFrequencies = new Dictionary<(int, int), double>();
+
+    private List<string> attendances = new() { "Do godziny 12:00", "Do godziny 18:00", "Całkowita" };
+    private FilterListWrapperFull wrapper = new FilterListWrapperFull();
+    private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
+    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+
+    private async Task FilterTable()
     {
-        new District { IdDistrict = 1, DistrictName = "Obwodowa komisja nr 1", DisabledFacilities = 1, DistrictHeadquarters = "Wrocław ul. Kościuszki 1", IdConstituency = 1, IdProvince = 1},
-        new District { IdDistrict = 2, DistrictName = "Obwodowa komisja nr 2", DisabledFacilities = 0, DistrictHeadquarters = "Wrocław ul. Plac Grunwaldzki 1", IdConstituency = 1, IdProvince = 1},
-    };
-
-
-    private List<District> filteredDistricts = new();
-
-
-    private void FilterTable()
-    {
-
-        filteredDistricts = districts; // To tylko mockowanie więc tu trzeba będzie zrobić jakąś logikę do filtrowania pewnie z jakąś metodą kontrolera, która będzie wykonywać jakiegoś SQL na bazie ( Count'a na liczbie userów którzy są powiązani itp)
+        wrapper.FilterListWrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        filteredDistricts = await FilterWrapperService.GetFilteredDistricts(null, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
+        filteredDistricts = await DistrictManagementService.Districts();
 
-        filteredDistricts = districts;
+        foreach(var district in filteredDistricts)
+        {
+            var votersNumber = await VoterManagementService.GetNumberVotersByDistrictId(district.IdDistrict);
+            districtVotersNumber.Add(district.IdDistrict, votersNumber);
+
+            var allElections = await ElectionManagementService.Elections();
+            foreach(var election in allElections)
+            {
+                districtsVotesNumber[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetVotesNumberByDistrictId(district.IdDistrict, election.IdElection);
+                districtsFrequencies[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, -1);
+            }
+        }
     }
 
+
+    private async Task OnElectionTypeChanged()
+    {
+        SelectedVoivodeshipId = null;
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        if (SelectedElectionTypeId != 0 && SelectedElectionTypeId != null)
+        {
+            elections = await ElectionManagementService.GetElectionsOfType(SelectedElectionTypeId.Value);
+        }
+        await FilterTable();
+    }
+
+    private async Task OnVoivodeshipChanged()
+    {
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnCountyChanged()
+    {
+        SelectedProvinceId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnProvinceChanged()
+    {
+        await FilterTable();
+    }
+
+    private async Task OnFrequencyChanged(ChangeEventArgs e)
+    {
+        var attendance = e.Value?.ToString();
+        var hourMax = ExtractHour(attendance);
+        Console.WriteLine($"Extracted hour: {hourMax}");
+
+        foreach (var district in filteredDistricts)
+        {
+            foreach (var election in elections)
+            {
+                districtsFrequencies[(district.IdDistrict, election.IdElection)] = 
+                    await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
+            }
+        }
+    }
+
+    private static int ExtractHour(string input)
+    {
+        var timePattern = @"\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b";
+        var regex = new Regex(timePattern);
+
+        var match = regex.Match(input);
+        if (match.Success)
+        {
+            var timeParts = match.Value.Split(':');
+            if (int.TryParse(timeParts[0], out int hour))
+            {
+                return hour;
+            }
+        }
+
+        return -1;
+    }
+
+
+    /*
     protected int GetVotersNumber(District district)
     {
         int VotersNumber = 100; // Tutaj znowu tak tylko hardtypowane bo też potrzeba jakiegoś sql który wyciągnie tą liczbę votersów w danym obwodzie
@@ -133,15 +241,6 @@
 
         return Percentage;
     }
+    */
 
-    public class District
-    {
-        public int IdDistrict { get; set; }
-        public string DistrictName { get; set; }
-        public int DisabledFacilities { get; set; }
-        public string DistrictHeadquarters { get; set; }
-        public int IdConstituency { get; set; }
-        public int IdProvince { get; set; }
-
-    }
 }

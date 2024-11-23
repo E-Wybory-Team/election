@@ -142,6 +142,31 @@ namespace E_Wybory.Controllers
             return Ok(activeElections);
         }
 
+        // GET: api/Election/type
+        [HttpGet("type/{electionTypeId}")]
+        public async Task<ActionResult<List<ElectionViewModel>>> GetElectionsOfType(int electionTypeId)
+        {
+
+            var typeElections = await _context.Elections
+                .Where(record => record.IdElectionType == electionTypeId)
+                .Select(record => new ElectionViewModel
+                {
+                    IdElection = record.IdElection,
+                    ElectionStartDate = record.ElectionStartDate,
+                    ElectionEndDate = record.ElectionEndDate,
+                    ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                    IdElectionType = electionTypeId
+                })
+                .ToListAsync();
+
+            if (typeElections == null || typeElections.Count() == 0)
+            {
+                return NotFound("No elections of this type found.");
+            }
+
+            return Ok(typeElections);
+        }
+
 
         private bool ElectionExists(int id)
         {

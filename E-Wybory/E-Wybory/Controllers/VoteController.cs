@@ -102,10 +102,10 @@ namespace E_Wybory.Controllers
         }
 
 
-        [HttpGet("VotesCandidate/{candidateId}")]
-        public async Task<ActionResult<List<VoteViewModel>>> GetVotesByCandidateId(int candidateId)
+        [HttpGet("VotesCandidate/{candidateId}/{electionId}")]
+        public async Task<ActionResult<List<VoteViewModel>>> GetVotesByCandidateId(int candidateId, int electionId)
         {
-            var Votes = await _context.Votes.Where(candidate => candidate.IdCandidate == candidateId).ToListAsync<Domain.Entities.Vote>();
+            var Votes = await _context.Votes.Where(candidate => candidate.IdCandidate == candidateId && candidate.IdElection == electionId).ToListAsync<Domain.Entities.Vote>();
             var VotesViewModels = new List<VoteViewModel>();
 
             foreach (var Vote in Votes)
@@ -127,10 +127,10 @@ namespace E_Wybory.Controllers
         }
 
 
-        [HttpGet("VotesDistrict/{districtId}")]
-        public async Task<ActionResult<List<VoteViewModel>>> GetVoteByDistrictId(int districtId)
+        [HttpGet("VotesDistrict/{districtId}/{electionId}")]
+        public async Task<ActionResult<List<VoteViewModel>>> GetVoteByDistrictId(int districtId, int electionId)
         {
-            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId).ToListAsync<Domain.Entities.Vote>();
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId).ToListAsync<Domain.Entities.Vote>();
             var VotesViewModels = new List<VoteViewModel>();
 
             foreach (var Vote in Votes)
@@ -149,6 +149,75 @@ namespace E_Wybory.Controllers
             }
 
             return VotesViewModels;
+        }
+
+
+        [HttpGet("VotesNumberDistrict/{districtId}/{electionId}")]
+        public async Task<ActionResult<int>> GetVotesNumberByDistrictId(int districtId, int electionId)
+        {
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId).ToListAsync<Domain.Entities.Vote>();
+
+            return Votes.Count();
+        }
+
+
+
+        [HttpGet("frequency/{districtId}/{electionId}/{hourMax}")]
+        public async Task<ActionResult<double>> GetFrequencyByDistrictIdToHour(int districtId, int electionId, int hourMax)
+        {
+            if (hourMax >= -1 && hourMax <= 24)
+            {
+                if (_context.Districts.Where(district => district.IdDistrict == districtId).Any() &&
+                    _context.Elections.Where(election => election.IdElection == electionId).Any())
+                {
+                    var voters = await _context.Voters.Where(voter => voter.IdDistrict == districtId).ToListAsync();
+
+                    if (voters.Count() == 0)
+                    {
+                        return 0.0;
+                    }
+
+                    var election = await _context.Elections.Where(election => election.IdElection == electionId).FirstOrDefaultAsync();
+                    var electionMaxDate = new DateTime();
+                    if (hourMax != -1)
+                    {
+                        var electionDate = election.ElectionStartDate;
+                        electionMaxDate = new DateTime(electionDate.Year, electionDate.Month, electionDate.Day, hourMax, 0, 0);
+                    }
+
+                    var electionAttendants = 0.0;
+
+                    foreach (var voterDistrict in voters)
+                    {
+                        var electionVoter = await _context.ElectionVoters.Where(voter => voterDistrict.IdVoter == voter.IdVoter && voter.IdElection == electionId).FirstOrDefaultAsync();
+                        if (electionVoter != null)
+                        {
+                            if (hourMax != -1)
+                            { 
+                                var electionVoterDate = electionVoter.VoteTime;
+                                if (electionVoter != null && electionVoterDate < electionMaxDate)
+                                {
+                                    electionAttendants++;
+                                }
+                            }
+                            else
+                            {
+                                electionAttendants++;
+                            }
+                        }
+                    }
+
+                    return (electionAttendants / (double)voters.Count()) * 100;
+                }
+                else
+                {
+                    return NotFound("Not found district or election");
+                }
+            }
+            else
+            {
+                return BadRequest("Entered incorrect hour");
+            }
         }
     }
 }

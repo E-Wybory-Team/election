@@ -196,5 +196,15 @@ namespace E_Wybory.Controllers
                 return NotFound("Not found that voter");
             }
         }
+
+
+        [HttpGet("votersDistrict/{districtId}")]
+        public async Task<ActionResult<int>> GetNumberVotersByDistrictId(int districtId)
+        {
+            var voters = await _context.Voters.Where(voter => voter.IdDistrict == districtId).ToListAsync();
+
+            return voters.Count();
+        }
+
     }
 }
