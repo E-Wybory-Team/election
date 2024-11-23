@@ -4,7 +4,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject IElectionUserManagementService ElectionUserManagementService
-@inject IDistrictManagementService DistrictManagementService
 @inject IElectionManagementService ElectionManagementService
 @inject IElectionVoterManagementService ElectionVoterManagementService
 @inject IPersonManagementService PersonManagementService
@@ -19,19 +18,6 @@
     <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
 
     <form @onsubmit="CheckStatus">
-        <div class="form-group">
-            <label for="district">OBWÓD GŁOSOWANIA</label>
-            <InputSelect id="district" @bind-Value="idDistrict" class="form-control">
-                <option value="">Wybierz obwód</option>
-                @foreach (var district in districts)
-                {
-                    <option value="@district.IdDistrict">
-                        @district.DistrictName - @district.DistrictHeadquarters
-                    </option>
-                }
-            </InputSelect>
-        </div>
-
         <div class="form-group">
             <label for="pesel">PESEL WYBORCY</label>
             <input type="text" id="pesel" @bind="pesel" />
@@ -61,7 +47,7 @@
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
-                     </Authorized>
+    </Authorized>
         <NotAuthorized>
             <div class="not-authorized-container">
                 <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
@@ -74,7 +60,6 @@
 @code {
     private bool? hasVoted = null; 
     private string pesel { get; set; }
-    private int idDistrict { get; set; } = 0;
     private string errorMessage = String.Empty;
 
     private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
@@ -86,7 +71,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        districts = await DistrictManagementService.Districts();
         activeElections = await ElectionManagementService.GetActiveElections();
 
         if (activeElections.Count() == 0)
@@ -97,9 +81,9 @@
 
     private async Task CheckStatus()
     {
-        if (!string.IsNullOrWhiteSpace(pesel))
+        if(activeElections.Count() > 0)
         {
-            if (idDistrict != 0)
+            if (!string.IsNullOrWhiteSpace(pesel))
             {
                 int index = await PersonManagementService.GetPersonIdByPeselAsync(pesel);
 
@@ -113,10 +97,6 @@
                         if (voterModel.IdDistrict == null)
                         {
                             errorMessage = "Wyborca nie ma przypisanego obwodu!";
-                        }
-                        else if (idDistrict != voterModel.IdDistrict)
-                        {
-                            errorMessage = "Podany użytkownik nie jest przypisany do tego obwodu!";
                         }
                         else
                         {
@@ -146,20 +126,16 @@
                 {
                     errorMessage = "Nie ma takiego człowieka w bazie!";
                 }
+
             }
             else
             {
-                errorMessage = "Proszę podać obwód!";
+                errorMessage = "Proszę podać nr PESEL!";
             }
-
-        }
-        else
-        {
-            errorMessage = "Proszę podać nr PESEL!";
         }
     }
     private void Cancel()
 {
-    NavigationManager.NavigateTo("/checkvotestatus");
+    NavigationManager.NavigateTo("/cohome");
 }
 }

@@ -6,6 +6,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAuthService AuthService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
 @inject IDistrictManagementService DistrictManagementService
 
 <div class="registration-form">
@@ -119,9 +121,29 @@
     private async Task HandleRegistration()
     {
         //Maybe it is the better plan to make it return HttpResponse with more verbose payload
-        formSubmitted = await AuthService.Register(registrationModel);
+        int index = await PersonManagementService.GetPersonIdByPeselAsync(registrationModel.PESEL);
 
-        errorMessage = formSubmitted ? "Registration successful!" : "Registration fails";
-        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+        if (index != 0) //if person with this PESEL found
+        {
+            var existingPerson = await PersonManagementService.GetPersonById(index);
+
+            //check if data in form of person are the same as in database
+            if (existingPerson.Name != registrationModel.FirstName
+            || existingPerson.Surname != registrationModel.LastName
+                || existingPerson.DateOfBirthString != registrationModel.DateOfBirthString)
+            {
+                errorMessage = "Podane dane dot. kandydata są niespójne z bazą danych(imię, nazwisko bądź data urodzenia). Należy je poprawić na prawidłowe!";
+            }
+
+            if(await ElectionUserManagementService.UserPersonIdExists(existingPerson.IdPerson))
+            {
+                errorMessage = "Użytkownik już istnieje!";
+                return;
+            }
+        }
+            formSubmitted = await AuthService.Register(registrationModel);
+            errorMessage = formSubmitted ? "Rejestracja udana!" : "Rejestracja nie doszła do skutku!";
+            //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+        
     }
 }

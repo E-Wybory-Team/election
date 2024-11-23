@@ -12,21 +12,27 @@
 @inject IAuthService AuthService
 @inject ICandidateManagementService CandidateManagementService
 @inject IVoteManagementService VoteManagementService
-@inject IFilterWrapperManagementService FilterWrapperManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 @inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 <div class="form-container">
     <h1>ODDAWANIE GŁOSU</h1>
 
+    @if (string.IsNullOrEmpty(errorMessageAtStart))
+    {
     @if (activeElections != null && activeElections.Count() > 0)
     {
         @foreach (var election in activeElections)
         {
+            var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
+
             var voteModel = votesInElections[election.IdElection];
             
 
             <EditForm Model="@voteModel" OnValidSubmit="() => HandleVoteSubmit(election.IdElection)">
                 <DataAnnotationsValidator />
+
+                <h2>Wybory @electionTypeName</h2>
 
                 <div class="form-group">
                     <label for="kandydat">Kandydat</label>
@@ -54,10 +60,17 @@
             </EditForm>
         }
     }
+    }
+    else
+    {
+        <div class="alert alert-danger mt-3">@errorMessageAtStart</div>
+    }
+
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
+
 </div>
 
 @code {
@@ -68,6 +81,8 @@
     private Dictionary<int, List<CandidateViewModel>> electionCandidates = new Dictionary<int, List<CandidateViewModel>>();
     private Dictionary<int, string> candidatesData = new Dictionary<int, string>();
     private Dictionary<int, VoteViewModel> votesInElections = new Dictionary<int, VoteViewModel>();
+    private List<ElectionTypeViewModel> electionTypes;
+    private string errorMessageAtStart = String.Empty;
     private string errorMessage = String.Empty;
     private int IdDistrict = 0;
     private int IdVoter = 0;
@@ -76,39 +91,45 @@
     {
         try
         {
-            try
+            activeElections = await ElectionManagementService.GetActiveElections();
+            if (activeElections == null || activeElections.Count() <= 0)
             {
-                activeElections = await ElectionManagementService.GetActiveElections();
-                if (activeElections == null || !activeElections.Any())
-                {
-                    errorMessage = "Nie ma żadnych trwających wyborów.";
-                    NavigationManager.NavigateTo("/");
-                }
+                errorMessageAtStart = "Nie ma żadnych trwających wyborów.";
+                //NavigationManager.NavigateTo("/");
             }
-            catch(Exception ex)
-            {
-                errorMessage = "Nie znaleziono aktualnych wyborów!";
-                NavigationManager.NavigateTo("/");
-            }
+        }
+        catch(Exception ex)
+        {
+            errorMessageAtStart = "Nie znaleziono aktualnych wyborów!";
+            //NavigationManager.NavigateTo("/");
+        }
 
 
-            try
-            {
-                IdVoter = await AuthService.GetCurrentUserIdVoter();
-                IdDistrict = await AuthService.GetCurrentVoterIdDistrict();
-            }
-            catch (Exception)
-            {
-                errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
-                NavigationManager.NavigateTo("/");
-            }
+        try
+        {
+            IdVoter = await AuthService.GetCurrentUserIdVoter();
+            IdDistrict = await AuthService.GetCurrentVoterIdDistrict();
+        }
+        catch (Exception)
+        {
+            errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
+            //NavigationManager.NavigateTo("/");
+        }
 
+        try
+        {
             var is2faEnabled = await AuthService.GetCurrentUser2faStatus();
-            if(!is2faEnabled)
+            if (!is2faEnabled)
             {
-                errorMessage = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
-                NavigationManager.NavigateTo("/");
+                errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
+                //NavigationManager.NavigateTo("/");
             }
+        }
+        catch(Exception)
+        {
+            errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
+        }
+
             var committees = await PartyManagementService.Parties();
 
 
@@ -159,18 +180,10 @@
 
             if (!activeElections.Any())
             {
-                errorMessage = "Nie ma dostępnych wyborów dla użytkownika.";
-                NavigationManager.NavigateTo("/");
-                return;
+                errorMessageAtStart = "Nie ma dostępnych wyborów dla użytkownika.";
+                //NavigationManager.NavigateTo("/");
             }
-
-
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Nieoczekiwany błąd: {ex.Message}";
-            NavigationManager.NavigateTo("/");
-        }
+            electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }
 
 

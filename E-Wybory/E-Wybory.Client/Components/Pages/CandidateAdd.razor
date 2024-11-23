@@ -174,13 +174,26 @@
     private async Task HandleAddCandidate()
     {
         int index = await PersonManagementService.GetPersonIdByPeselAsync(candidatePersonModel.personViewModel.PESEL); //check if person exists
-        Console.WriteLine("Index of person: " + index);
+        //Console.WriteLine("Index of person: " + index);
 
         if(index == 0) //if person with this PESEL not found
         {
             isAddedPerson = await PersonManagementService.AddPerson(candidatePersonModel.personViewModel);
             index = await PersonManagementService.GetPersonIdByPeselAsync(candidatePersonModel.personViewModel.PESEL);
 
+        }
+        else
+        {
+            var existingPerson = await PersonManagementService.GetPersonById(index);
+
+            //check if data in form of person are the same as in database
+            if(existingPerson.Name != candidatePersonModel.personViewModel.Name 
+                || existingPerson.Surname != candidatePersonModel.personViewModel.Surname 
+                || existingPerson.DateOfBirthString != candidatePersonModel.personViewModel.DateOfBirthString)
+            {
+                errorMessage = "Podane dane dot. kandydata są niespójne z bazą danych(imię, nazwisko bądź data urodzenia). Należy je poprawić na prawidłowe!";
+                return;
+            }
         }
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);

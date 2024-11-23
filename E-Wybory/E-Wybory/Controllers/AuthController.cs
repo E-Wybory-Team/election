@@ -430,25 +430,34 @@ namespace E_Wybory.Controllers
         {
             
 
-            if (await _context.People.AnyAsync(person => person.Pesel == PESEL)
-                || await _context.ElectionUsers.AnyAsync(user => user.Email == email))
+            if (await _context.ElectionUsers.AnyAsync(user => user.Email == email))
             {
                 return false;
             }
             string hashedPassword = HashPassword(password);
+            var newPersonId = 0;
 
-            //add new People's record
-            var person = new Person();
+            if (!await _context.People.AnyAsync(person => person.Pesel == PESEL))
+            {
 
-            person.Name = name;
-            person.Surname = surname;
-            person.Pesel = PESEL;
-            person.BirthDate = birthdate;
+                //add new People's record
+                var person = new Person();
 
-            //Console.Write(idDistrict);
-            await _context.People.AddAsync(person);
-            await _context.SaveChangesAsync();
-            var newPersonId = person.IdPerson; //save to use in user
+                person.Name = name;
+                person.Surname = surname;
+                person.Pesel = PESEL;
+                person.BirthDate = birthdate;
+
+                //Console.Write(idDistrict);
+                await _context.People.AddAsync(person);
+                await _context.SaveChangesAsync();
+                newPersonId = person.IdPerson; //save to use in user
+            }
+            else
+            {
+                var existingPerson = await _context.People.Where(person => person.Pesel == PESEL).FirstOrDefaultAsync();
+                newPersonId = existingPerson.IdPerson;
+            }
 
             //add new user
             var user = new ElectionUser();
@@ -531,5 +540,6 @@ namespace E_Wybory.Controllers
             return electionUser.Is2Faenabled;
 
         }
+
     }
 }

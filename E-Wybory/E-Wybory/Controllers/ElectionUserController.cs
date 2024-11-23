@@ -205,6 +205,12 @@ namespace E_Wybory.Controllers
             return _context.ElectionUsers.Any(e => e.IdElectionUser == id);
         }
 
+        private bool ElectionUserPersonExists(int personId)
+        {
+            return _context.ElectionUsers.Any(e => e.IdPerson == personId);
+        }
+
+
         [HttpGet("exist/{id}")]
         public async Task<IActionResult> IfUserExists(int id)
         {
@@ -217,5 +223,19 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
         }
+
+        [HttpGet("existPerson/{personId}")]
+        public async Task<IActionResult> IfUserPersonIdExists(int personId)
+        {
+            if (ElectionUserPersonExists(personId))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
     }
 }
