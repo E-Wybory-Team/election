@@ -8,6 +8,7 @@
 @inject IVoteManagementService VoteManagementService
 @inject IVoterManagementService VoterManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 @inject IDistrictManagementService DistrictManagementService
 <link href="forms.css" rel="stylesheet" />
 
@@ -35,6 +36,9 @@
 
                     @foreach (var election in newestElections)
                     {
+                            <label>Wybory @electionTypeNames[election.IdElection] 
+                                z dnia @election.ElectionStartDate.ToString("dd.MM.yyyy")</label>
+
                         <div class="form-group">
                             <label for="noonTurnout">FREKWENCJA NA GODZINĘ 12:00</label>
                             <input type="text" id="noonTurnout" value="@frequencyElections[(election.IdElection, 12)] %" readonly /> 
@@ -46,7 +50,7 @@
                         </div>
                     }
 
-                        <a href="/detailed-results" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
+                        <a href="/detailed-statistics" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
                     </form>
                 }
                 else
@@ -75,6 +79,7 @@
     private DistrictViewModel district = new DistrictViewModel();
     private List<int> frequencyHours = new List<int> { 12, 17 };
     private Dictionary<(int, int), double> frequencyElections = new Dictionary<(int, int), double>();
+    private Dictionary<int, string> electionTypeNames = new Dictionary<int, string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,6 +105,12 @@
             var secondFrequency = await VoteManagementService.GetFrequencyByDistrictIdToHour(IdDistrict, election.IdElection, frequencyHours[1]);
             frequencyElections.Add((election.IdElection, frequencyHours[0]), firstFrequency);
             frequencyElections.Add((election.IdElection, frequencyHours[1]), secondFrequency);
+        }
+
+        foreach(var election in newestElections)
+        {
+            var electionType = await ElectionTypeManagementService.GetElectionTypeName(election.IdElectionType);
+            electionTypeNames.Add(election.IdElection, electionType);
         }
 
     }

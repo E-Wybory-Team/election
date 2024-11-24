@@ -43,6 +43,21 @@ namespace E_Wybory.Controllers
             return ElectionType;
         }
 
+
+        // GET: api/ElectionTypes/name/5
+        [HttpGet("name/{electionTypeId}")]
+        public async Task<ActionResult<string>> GetElectionTypeName(int electionTypeId)
+        {
+            var ElectionType = await _context.ElectionTypes.Where(type => type.IdElectionType == electionTypeId).FirstOrDefaultAsync();
+
+            if (ElectionType == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(ElectionType.ElectionTypeName);
+        }
+
         // PUT: api/ElectionTypes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

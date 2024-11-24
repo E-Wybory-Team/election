@@ -71,6 +71,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<List<ElectionViewModel>> GetNewestElectionsOfAllTypes()
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<ElectionViewModel>>("/api/Election/newestAllTypes");
+            return await Task.FromResult(response);
+        }
+
         public async Task<ElectionViewModel> GetNewestElectionOfElectionType(int electionTypeId)
         {
             try
@@ -98,6 +104,19 @@ namespace E_Wybory.Client.Services
                 return new List<ElectionViewModel>();
             }
         }
+
+        public ElectionViewModel GetElectionOfTypeOfSingleElection(int electionTypeId, List<ElectionViewModel> elections)
+        {
+            foreach(var election in elections)
+            {
+                if(election.IdElectionType == electionTypeId)
+                {
+                    return election;
+                }
+            }
+            return new ElectionViewModel();
+        }
+
 
 
     }

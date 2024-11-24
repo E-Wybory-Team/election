@@ -214,6 +214,49 @@ namespace E_Wybory.Controllers
         }
 
 
+        [HttpGet("newestAllTypes")]
+        public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElectionsOfAllTypes()
+        {
+            var now = DateTime.Now;
+            var electionTypes = await _context.ElectionTypes.ToListAsync();
+            var elections = new List<ElectionViewModel>();
+
+            foreach (var electionType in electionTypes)
+            {
+                // Get all elections for this type that have started
+                var filteredElections = await _context.Elections
+                    .Where(x => x.IdElectionType == electionType.IdElectionType && x.ElectionStartDate <= now)
+                    .ToListAsync();
+
+                // Find the newest date if there are any matching elections
+                var newestDate = filteredElections.MaxBy(e => e.ElectionStartDate)?.ElectionStartDate;
+
+                if (newestDate != null)
+                {
+                    // Retrieve the election with the newest date
+                    var newestElection = filteredElections
+                        .Where(e => e.ElectionStartDate == newestDate)
+                        .Select(record => new ElectionViewModel
+                        {
+                            IdElection = record.IdElection,
+                            ElectionStartDate = record.ElectionStartDate,
+                            ElectionEndDate = record.ElectionEndDate,
+                            ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                            IdElectionType = record.IdElectionType
+                        })
+                        .FirstOrDefault();
+
+                    if (newestElection != null)
+                    {
+                        elections.Add(newestElection);
+                    }
+                }
+            }
+
+            return Ok(elections);
+        }
+
+
         [HttpGet("newest/{electionTypeId}")]
         public async Task<ActionResult<ElectionViewModel>> GetNewestElectionOfType(int electionTypeId)
         {

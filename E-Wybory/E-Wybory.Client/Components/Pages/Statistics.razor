@@ -108,10 +108,11 @@
         </tbody>
     </table>
 }
-else if(SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
+else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
 {
-    <div class="alert alert-danger mt-3">Nie znaleziono wyborów tego typu, które sie kiedykolwiek rozpoczęły!</div>
+    <div class="alert alert-danger mt-3">Nie znaleziono wyborów tego typu, które się kiedykolwiek zaczęły!</div>
 }
+
 
 @code {
 
@@ -128,30 +129,31 @@ else if(SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
     private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
     private ElectionViewModel election = new ElectionViewModel();
+    private List<ElectionViewModel> allElections = new List<ElectionViewModel>();
 
     private async Task FilterTable()
     {
         wrapper.FilterListWrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
         filteredDistricts = await FilterWrapperService.GetFilteredDistricts(null, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-    }
 
-    protected override async Task OnInitializedAsync()
-    {
-        wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
-        filteredDistricts = await DistrictManagementService.Districts();
-
-        foreach(var district in filteredDistricts)
+        foreach (var district in filteredDistricts)
         {
             var votersNumber = await VoterManagementService.GetNumberVotersByDistrictId(district.IdDistrict);
-            districtVotersNumber.Add(district.IdDistrict, votersNumber);
+            districtVotersNumber[district.IdDistrict] = votersNumber;
 
-            var allElections = await ElectionManagementService.Elections();
-            foreach(var election in allElections)
+            foreach (var election in allElections)
             {
                 districtsVotesNumber[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetVotesNumberByDistrictId(district.IdDistrict, election.IdElection);
                 districtsFrequencies[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, -1);
             }
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
+        filteredDistricts = wrapper.FilterListWrapper.DistrictFilter;
+        allElections = await ElectionManagementService.GetNewestElectionsOfAllTypes();
     }
 
 
@@ -163,9 +165,13 @@ else if(SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
 
         if (SelectedElectionTypeId != 0 && SelectedElectionTypeId != null)
         {
-            election = await ElectionManagementService.GetNewestElectionOfElectionType(SelectedElectionTypeId.Value);
+            election = ElectionManagementService.GetElectionOfTypeOfSingleElection(SelectedElectionTypeId.Value, allElections);
+            if (election.IdElection != 0)
+            {
+                await FilterTable();
+            }
         }
-        await FilterTable();
+
     }
 
     private async Task OnVoivodeshipChanged()
