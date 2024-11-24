@@ -51,10 +51,10 @@
                     <ValidationMessage For="@(() => voteModel.IdCandidate)" />
                 </div>
 
-                <div class="checkbox-group">
-                    <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
-                    <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
-                </div>
+                    <div class="checkbox-group">
+                        <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
+                        <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
+                    </div>
 
                 <button type="submit" class="submit-button">ZAGŁOSUJ</button>
             </EditForm>
@@ -109,6 +109,11 @@
         {
             IdVoter = await AuthService.GetCurrentUserIdVoter();
             IdDistrict = await AuthService.GetCurrentVoterIdDistrict();
+            Console.WriteLine($"Id of voter: {IdVoter} and Id of district: {IdDistrict}");
+            if(IdVoter == 0 || IdDistrict == 0)
+            {
+                errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
+            }
         }
         catch (Exception)
         {

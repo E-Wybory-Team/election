@@ -161,6 +161,37 @@ namespace E_Wybory.Controllers
         }
 
 
+        [HttpGet("ValidVotesNumberDistrict/{districtId}/{electionId}")]
+        public async Task<ActionResult<int>> GetValidVotesNumberByDistrictId(int districtId, int electionId)
+        {
+            //in database, valid is 0 and invalid is 1, so it's opposite
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+            return Votes.Count();
+        }
+
+
+        [HttpGet("InvalidVotesNumberDistrict/{districtId}/{electionId}")]
+        public async Task<ActionResult<int>> GetInvalidVotesNumberByDistrictId(int districtId, int electionId)
+        {
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+            return Votes.Count();
+        }
+
+
+        [HttpGet("VotesNumberDistrictCandidate/{districtId}/{electionId}/{candidateId}")]
+        public async Task<ActionResult<int>> GetVotesNumberByDistrictCandidate(int districtId, int electionId, int candidateId)
+        {
+            if (await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId).AnyAsync())
+            {
+                var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+                return Votes.Count();
+            }
+            else
+            {
+                return NotFound("Not found votes related to this candidate in this election");
+            }
+        }
+
 
         [HttpGet("frequency/{districtId}/{electionId}/{hourMax}")]
         public async Task<ActionResult<double>> GetFrequencyByDistrictIdToHour(int districtId, int electionId, int hourMax)
@@ -207,7 +238,7 @@ namespace E_Wybory.Controllers
                         }
                     }
 
-                    return (electionAttendants / (double)voters.Count()) * 100;
+                    return Math.Truncate((electionAttendants / (double)voters.Count()) * 100);
                 }
                 else
                 {

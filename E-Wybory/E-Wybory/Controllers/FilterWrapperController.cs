@@ -347,6 +347,62 @@ namespace E_Wybory.Controllers
         }
 
 
+
+        // GET: api/FilterWrapper/Candidates
+        [HttpGet("CandidatesElection")]
+        public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesFromElection(
+            [FromQuery] int? electionId,
+            [FromQuery] int? districtId)
+        {
+            var candidatePersonViewModels = new List<CandidatePersonViewModel>();
+            var candidates = await _context.Candidates.ToListAsync();
+
+            foreach (var candidate in candidates)
+            {
+                // Filter conditions
+                if ((electionId != null && candidate.IdElection != electionId) ||
+                    (districtId != null && candidate.IdDistrict != districtId))
+                {
+                    continue; 
+                }
+
+                var personViewModel = await _context.People
+                    .Where(p => p.IdPerson == candidate.IdPerson)
+                    .Select(person => new PersonViewModel
+                    {
+                        IdPerson = person.IdPerson,
+                        Name = person.Name,
+                        Surname = person.Surname,
+                        PESEL = person.Pesel,
+                        BirthDate = person.BirthDate
+                    })
+                    .FirstOrDefaultAsync();
+
+                candidatePersonViewModels.Add(new CandidatePersonViewModel
+                {
+                    candidateViewModel = new CandidateViewModel
+                    {
+                        IdCandidate = candidate.IdCandidate,
+                        CampaignDescription = candidate.CampaignDescription,
+                        EducationStatus = candidate.EducationStatus,
+                        JobType = candidate.JobType,
+                        PlaceOfResidence = candidate.PlaceOfResidence,
+                        PositionNumber = candidate.PositionNumber,
+                        Workplace = candidate.Workplace,
+                        IdPerson = candidate.IdPerson,
+                        IdDistrict = candidate.IdDistrict.GetValueOrDefault(),
+                        IdParty = candidate.IdParty,
+                        IdElection = candidate.IdElection
+                    },
+                    personViewModel = personViewModel
+                });
+            }
+
+            return Ok(candidatePersonViewModels);
+        }
+
+
+
         // GET: api/FilterWrapper/Districts
         [HttpGet("Districts")]
         public async Task<ActionResult<List<DistrictViewModel>>> GetFilteredDistricts(

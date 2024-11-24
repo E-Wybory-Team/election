@@ -101,6 +101,20 @@ namespace E_Wybory.Client.Services
             return response;
             }
 
+
+
+        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElection(int? electionId,  int? districtId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/CandidatesElection", new Dictionary<string, int?>
+            {
+                { "electionId", electionId },
+                { "districtId", districtId }
+            });
+            var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>(url);
+            return response;
+        }
+
+
         public async Task<List<DistrictViewModel>> GetFilteredDistricts(
             int? constituencyId, int? voivodeshipId, int? countyId, int? provinceId)
         {

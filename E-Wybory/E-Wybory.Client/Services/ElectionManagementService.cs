@@ -65,6 +65,26 @@ namespace E_Wybory.Client.Services
             }
         }
 
+        public async Task<List<ElectionViewModel>> GetNewestElections()
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<ElectionViewModel>>("/api/Election/newest");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<ElectionViewModel> GetNewestElectionOfElectionType(int electionTypeId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ElectionViewModel>($"/api/Election/newest/{electionTypeId}");
+                return response ?? new ElectionViewModel();
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("No elections of this type found which were started");
+                return new ElectionViewModel();
+            }
+        }
+
         public async Task<List<ElectionViewModel>> GetElectionsOfType(int electionTypeId)
         {
             try

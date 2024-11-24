@@ -8,7 +8,7 @@ namespace E_Wybory.Client.ViewModels
         public int IdVote { get; set; } = 0;
 
         [Required(ErrorMessage = "Ważność głosu jest obowiązkowa!")]
-        public bool IsValid = false;
+        public bool IsValid { get; set; } = false;
 
         [Required(ErrorMessage = "Wybory są obowiązkowe!")]
         public int IdElection { get; set; } = 0;
