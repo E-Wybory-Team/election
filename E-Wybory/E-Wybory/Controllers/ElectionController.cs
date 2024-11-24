@@ -228,12 +228,10 @@ namespace E_Wybory.Controllers
                     .Where(x => x.IdElectionType == electionType.IdElectionType && x.ElectionStartDate <= now)
                     .ToListAsync();
 
-                // Find the newest date if there are any matching elections
                 var newestDate = filteredElections.MaxBy(e => e.ElectionStartDate)?.ElectionStartDate;
 
                 if (newestDate != null)
                 {
-                    // Retrieve the election with the newest date
                     var newestElection = filteredElections
                         .Where(e => e.ElectionStartDate == newestDate)
                         .Select(record => new ElectionViewModel
@@ -262,8 +260,8 @@ namespace E_Wybory.Controllers
         {
             var now = DateTime.Now;
             List<DateTime> dates = _context.Elections
-                                    .Where(x => x.IdElectionType == electionTypeId && x.ElectionStartDate <= now)
-                                    .Select(x => x.ElectionStartDate)
+                                    .Where(x => x.IdElectionType == electionTypeId && x.ElectionEndDate <= now)
+                                    .Select(x => x.ElectionEndDate)
                                     .ToList();
 
             if (dates.Count() > 0)
@@ -272,7 +270,7 @@ namespace E_Wybory.Controllers
 
 
                 var activeElections = await _context.Elections
-                    .Where(record => record.IdElectionType == electionTypeId && record.ElectionStartDate == newestDate)
+                    .Where(record => record.IdElectionType == electionTypeId && record.ElectionEndDate == newestDate)
                     .Select(record => new ElectionViewModel
                     {
                         IdElection = record.IdElection,
