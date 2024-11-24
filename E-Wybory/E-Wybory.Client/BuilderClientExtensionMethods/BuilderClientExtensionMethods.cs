@@ -11,7 +11,7 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
         {
             endpointUri = string.IsNullOrEmpty(endpointUri) ||
                 !Uri.IsWellFormedUriString(endpointUri, UriKind.Absolute) ? 
-                "https://localhost:8443"  : 
+                "https://localhost:443"  : 
                 endpointUri;
 
             services.AddScoped<AuthHttpMessageHandler>();
