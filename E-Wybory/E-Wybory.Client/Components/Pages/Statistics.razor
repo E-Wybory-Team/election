@@ -81,7 +81,7 @@
     </div>
 </div>
 
-@foreach(var election in elections)
+@if (election.IdElection != 0)
 {
     <h2>Wybory z dnia @election.ElectionStartDate.ToString("dd.MM.yyyy")</h2>
     <table class="candidate-table">
@@ -108,6 +108,10 @@
         </tbody>
     </table>
 }
+else if(SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
+{
+    <div class="alert alert-danger mt-3">Nie znaleziono wyborów tego typu, które sie kiedykolwiek rozpoczęły!</div>
+}
 
 @code {
 
@@ -123,7 +127,7 @@
     private List<string> attendances = new() { "Do godziny 12:00", "Do godziny 17:00", "Całkowita" };
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
     private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
-    private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private ElectionViewModel election = new ElectionViewModel();
 
     private async Task FilterTable()
     {
@@ -159,7 +163,7 @@
 
         if (SelectedElectionTypeId != 0 && SelectedElectionTypeId != null)
         {
-            elections = await ElectionManagementService.GetElectionsOfType(SelectedElectionTypeId.Value);
+            election = await ElectionManagementService.GetNewestElectionOfElectionType(SelectedElectionTypeId.Value);
         }
         await FilterTable();
     }
@@ -192,11 +196,9 @@
 
         foreach (var district in filteredDistricts)
         {
-            foreach (var election in elections)
-            {
-                districtsFrequencies[(district.IdDistrict, election.IdElection)] = 
-                    await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
-            }
+           districtsFrequencies[(district.IdDistrict, election.IdElection)] = 
+              await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
+            
         }
     }
 

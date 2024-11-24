@@ -193,6 +193,7 @@ namespace E_Wybory.Controllers
         }
 
 
+
         [HttpGet("frequency/{districtId}/{electionId}/{hourMax}")]
         public async Task<ActionResult<double>> GetFrequencyByDistrictIdToHour(int districtId, int electionId, int hourMax)
         {

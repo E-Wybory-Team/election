@@ -130,6 +130,7 @@ else
 
 
     private List<CandidatePersonViewModel> filteredCandidates = new List<CandidatePersonViewModel>();
+    private List<CandidatePersonViewModel> noDistrictCandidates = new List<CandidatePersonViewModel>();
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
     private List<PartyViewModel> parties = new List<PartyViewModel>();
     private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
@@ -147,6 +148,7 @@ else
         }
 
         filteredCandidates = await FilterWrapperService.GetFilteredCandidatesFromElection(null, IdDistrict);
+        //add candidates without district
         foreach(var candidate in filteredCandidates)
         {
             var votesNumber = 0;
@@ -175,6 +177,15 @@ else
         {
             newestElectionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(SelectedElectionTypeId.Value, wrapper.ElectionFilter);
             filteredCandidates = await FilterWrapperService.GetFilteredCandidatesFromElection(newestElectionOfType.IdElection, IdDistrict);
+            noDistrictCandidates = await FilterWrapperService.GetFilteredCandidatesWithoutDistrict(newestElectionOfType.IdElection);
+
+            foreach (var districtCandidate in noDistrictCandidates)
+            {
+                if (!CandidateManagementService.IfCandidateListHasCandidate(districtCandidate.candidateViewModel.IdCandidate, filteredCandidates))
+                {
+                    filteredCandidates.Add(districtCandidate);
+                }
+            }
 
             if (filteredCandidates.Count() > 0)
             {
