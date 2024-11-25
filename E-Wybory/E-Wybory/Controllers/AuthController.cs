@@ -115,10 +115,8 @@ namespace E_Wybory.Controllers
             }
 
             string? username = User.Claims.FirstOrDefault(c => c.Type.Equals("name"))?.Value;
-            //int idElectionUser = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type.Equals("IdElectionUser"))?.Value);
             
             if (username is null || !username.Equals(userInfo.Username)) return Unauthorized("Invalid token structure with model compatiblity");
-            //if(idElectionUser == 0 || idElectionUser != userInfo.)
 
             var newToken = await _tokenService.RenewTokenClaims(username, _context, userInfo.CurrentUserType.IdUserType);
 
