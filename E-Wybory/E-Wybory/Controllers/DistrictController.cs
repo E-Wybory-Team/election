@@ -15,6 +15,8 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
     public class DistrictController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -26,6 +28,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Districts
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<District>>> GetDistricts()
         {
             return await _context.Districts.ToListAsync();

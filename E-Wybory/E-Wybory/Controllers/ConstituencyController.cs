@@ -1,6 +1,7 @@
 ﻿using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto.Prng.Drbg;
@@ -10,6 +11,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
     public class ConstituencyController : ControllerBase
     {
         private readonly ElectionDbContext _context;

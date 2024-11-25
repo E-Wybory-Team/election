@@ -13,6 +13,8 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
     public class CountyController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -31,6 +33,9 @@ namespace E_Wybory.Controllers
 
         // GET: api/Counties/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
+
         public async Task<ActionResult<County>> GetCounty(int id)
         {
             var county = await _context.Counties.FindAsync(id);

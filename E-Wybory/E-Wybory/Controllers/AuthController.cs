@@ -93,6 +93,7 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             //Now just checking if header is empty, maybe flag in database?
@@ -165,6 +166,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         [Route("verify-2fa")]
         [Authorize(Policy = "2FAenabled")]
         public async Task<IActionResult> Verify2fa([FromBody] TwoFactorAuthVerifyRequest verReq)
@@ -184,6 +186,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("count-rec-codes/{userId}")]
+        [Authorize]
         public async Task<IActionResult> CountRecCodes(int userId)
         {
             UserWrapper user = new(User);
@@ -221,7 +224,6 @@ namespace E_Wybory.Controllers
 
         [HttpGet("gen-rec-codes/{userId}")]
         [Authorize]
-
         public async Task<IActionResult> GenerateNewTwoFactorRecoveryCodes(int userId)
         {
             var codes = new List<string>();
@@ -257,7 +259,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost("reset-2fa/{userId}")]
-        [Authorize]
+        [Authorize(Policy ="2FAenabled")]
         public async Task<IActionResult> Reset2FA(int userId)
         {
             UserWrapper user = new(User);
@@ -483,6 +485,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("currentUserDistrict")]
+        [Authorize] //[Authorize(Roles = "Komisja wyborcza,Administratorzy")]
         public async Task<ActionResult<int>> GetCurrentUserDistrictId()
         {
 
@@ -497,6 +500,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("currentVoterDistrict")]
+        [Authorize]
         public async Task<ActionResult<int>> GetCurrentVoterDistrictId()
         {
 
@@ -512,6 +516,7 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("currentUserVoterId")]
+        [Authorize]
         public async Task<ActionResult<int>> GetCurrentUserVoterId()
         {
 
@@ -526,6 +531,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("currentUser2fa")]
+        [Authorize]
         public async Task<ActionResult<bool>> GetCurrentUser2faStatus()
         {
             UserWrapper user = new(User);

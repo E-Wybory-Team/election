@@ -39,6 +39,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/Candidates/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
         public async Task<ActionResult<Candidate>> GetCandidate(int id)
         {
             var candidate = await _context.Candidates.FindAsync(id);
@@ -54,6 +56,8 @@ namespace E_Wybory.Controllers
         // PUT: api/Candidates/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
         public async Task<IActionResult> PutCandidate(int id, [FromBody] CandidateViewModel candidateModel)
         {
             if (!EnteredRequiredData(candidateModel))
@@ -98,6 +102,8 @@ namespace E_Wybory.Controllers
         // POST: api/candidates
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
         public async Task<ActionResult<Candidate>> PostCandidate([FromBody] CandidateViewModel candidateModel)
         {
             if (!EnteredRequiredData(candidateModel))
@@ -132,6 +138,8 @@ namespace E_Wybory.Controllers
 
         // DELETE: api/candidates/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
         public async Task<IActionResult> DeleteCandidate(int id)
         {
             var candidate = await _context.Candidates.FindAsync(id);
@@ -164,6 +172,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/Candidate/exist/5
         [HttpGet("exist/{id}")]
+        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+
         public async Task<IActionResult> IfCandidateExists(int id)
         {
             if (CandidateExists(id))
@@ -178,6 +188,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("ElectionDistrictCandidates/{electionId}/{districtId}")]
+        [Authorize]
         public async Task<ActionResult<List<CandidateViewModel>>> GetCandidatesByElectionIdAndDistrict(int electionId, int districtId)
         {
             var Candidates = await _context.Candidates.Where(candidate => candidate.IdElection == electionId && (candidate.IdDistrict == districtId || candidate.IdDistrict == null)).ToListAsync<Candidate>();
