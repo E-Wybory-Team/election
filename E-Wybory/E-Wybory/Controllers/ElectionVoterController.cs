@@ -14,6 +14,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ElectionVoterController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -25,6 +26,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionVoters
         [HttpGet]
+        [Authorize(Roles = "Komisja wyborcza, Urzędnicy wyborczy, Administratorzy")]
+
         public async Task<ActionResult<IEnumerable<ElectionVoter>>> GetElectionVoters()
         {
             return await _context.ElectionVoters.ToListAsync();
@@ -32,6 +35,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionVoters/5/2
         [HttpGet("{idVoter}/{idElection}")]
+        [Authorize(Roles = "Komisja wyborcza, Urzędnicy wyborczy, Administratorzy")]
+
         public async Task<ActionResult<ElectionVoterViewModel>> GetElectionVoter(int idVoter, int idElection)
         {
             var ElectionVoter = _context.ElectionVoters.Where(elVoter => elVoter.IdVoter == idVoter && elVoter.IdElection == idElection).FirstOrDefault();
@@ -56,6 +61,8 @@ namespace E_Wybory.Controllers
         // POST: api/ElectionVoters
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "2FAveryfiedUser, Amdinistratorzy, Komisja wyborcza")] //Policy ="2FAenabled"
+
         public async Task<ActionResult<ElectionVoter>> PostElectionVoter(ElectionVoterViewModel electionVoterViewModel)
         {
 
@@ -94,6 +101,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("exist/{idVoter}/{idElection}")]
+        [Authorize(Roles = "2FAveryfiedUser, Amdinistratorzy, Komisja wyborcza")]
         public async Task<ActionResult<bool>> ElectionVoterAlreadyExists(int idVoter, int idElection)
         {
             return ElectionVoterExists(idVoter, idElection);

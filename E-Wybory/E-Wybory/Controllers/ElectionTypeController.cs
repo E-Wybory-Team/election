@@ -13,6 +13,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
     public class ElectionTypeController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -24,6 +25,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionTypes
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<ElectionType>>> GetElectionTypes()
         {
             return await _context.ElectionTypes.ToListAsync();

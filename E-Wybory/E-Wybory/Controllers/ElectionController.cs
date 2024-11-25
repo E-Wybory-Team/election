@@ -1,6 +1,7 @@
 ﻿using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
@@ -20,6 +21,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election
         [HttpGet]
+        [AllowAnonymous] // ?? [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<IEnumerable<Election>>> GetElection()
         {
             return await _context.Elections.ToListAsync();
@@ -27,6 +29,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<Election>> GetElection(int id)
         {
             var election = await _context.Elections.FindAsync(id);
@@ -42,6 +45,7 @@ namespace E_Wybory.Controllers
         // PUT: api/Election/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<IActionResult> PutElection(int id, ElectionViewModel electionModel)
         {
             if (!EnteredRequiredData(electionModel))
@@ -80,6 +84,7 @@ namespace E_Wybory.Controllers
         // POST: api/Election
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<Election>> PostElection([FromBody] ElectionViewModel electionModel)
         {
             if (!EnteredRequiredData(electionModel))
@@ -101,6 +106,7 @@ namespace E_Wybory.Controllers
 
         // DELETE: api/Election/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<IActionResult> DeleteElection(int id)
         {
             var election = await _context.Elections.FindAsync(id);
@@ -118,6 +124,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/active
         [HttpGet("active")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
         {
             var currentDate = DateTime.UtcNow;

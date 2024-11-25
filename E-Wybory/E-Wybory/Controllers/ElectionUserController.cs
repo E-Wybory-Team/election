@@ -11,6 +11,8 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class ElectionUserController : ControllerBase
     {
         private static UserTypeViewModel DefaultUserTypeViewModel { get => new UserTypeViewModel() { IdUserType = 0, UserTypeName = "Wyborca" }; }
@@ -23,6 +25,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionUsers
         [HttpGet]
+        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+
         public async Task<ActionResult<IEnumerable<ElectionUser>>> GetElectionUsers()
         {
             return await _context.ElectionUsers.ToListAsync();
@@ -30,6 +34,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionUsers/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+
         public async Task<ActionResult<ElectionUser>> GetElectionUser(int id)
         {
             var electionUser = await _context.ElectionUsers.FindAsync(id);
@@ -48,7 +54,7 @@ namespace E_Wybory.Controllers
         public async Task<ActionResult<UserInfoViewModel>> GetUserInfo()
         {
             var claimIdElectionUser = User.FindFirst(c => c.Type.Equals("IdElectionUser"));
-            
+
 
             if (claimIdElectionUser is null || string.IsNullOrEmpty(claimIdElectionUser.Value)) return Unauthorized("Identity claim missing.");
 
@@ -61,7 +67,7 @@ namespace E_Wybory.Controllers
                 .Where(e => e.IdElectionUser == idElectionUser)
                 .ToListAsync();
 
-            if(userUserTypesCollection is null || userUserTypesCollection.Count == 0) return await GetUserInfoByDeafult(idElectionUser);
+            if (userUserTypesCollection is null || userUserTypesCollection.Count == 0) return await GetUserInfoByDeafult(idElectionUser);
 
             var electionUser = userUserTypesCollection.Select(us => us.IdElectionUserNavigation).FirstOrDefault();
 
@@ -105,16 +111,17 @@ namespace E_Wybory.Controllers
                 Name = electionUser.IdPersonNavigation.Name,
                 Surname = electionUser.IdPersonNavigation.Surname,
                 CurrentUserType = DefaultUserTypeViewModel,
-                AvailableUserTypes = new List<UserTypeViewModel> { DefaultUserTypeViewModel},
+                AvailableUserTypes = new List<UserTypeViewModel> { DefaultUserTypeViewModel },
                 Username = electionUser.Email
             };
 
         }
 
-        
+
 
         // GET: api/ElectionUsers/5
         [HttpGet("person/{personId}")]
+        [Authorize(Roles = "Komisja wyborcza, Urzędnicy wyborczy, Administratorzy")]
         public async Task<ActionResult<ElectionUserViewModel>> GetElectionUserByPersonId(int personId)
         {
             var electionUser = await _context.ElectionUsers.Where(user => user.IdPerson == personId).FirstOrDefaultAsync();
@@ -142,6 +149,8 @@ namespace E_Wybory.Controllers
         // PUT: api/ElectionUsers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+
         public async Task<IActionResult> PutElectionUser(int id, ElectionUser user)
         {
             if (id != user.IdElectionUser)
@@ -173,6 +182,7 @@ namespace E_Wybory.Controllers
         // POST: api/ElectionUsers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
         public async Task<ActionResult<ElectionUser>> PostElectionUser(ElectionUser user)
         {
             _context.ElectionUsers.Add(user);
@@ -185,6 +195,8 @@ namespace E_Wybory.Controllers
 
         // DELETE: api/ElectionUsers/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+
         public async Task<IActionResult> DeleteElectionUser(int id)
         {
             var user = await _context.ElectionUsers.FindAsync(id);
@@ -199,7 +211,7 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
-        
+
         private bool ElectionUserExists(int id)
         {
             return _context.ElectionUsers.Any(e => e.IdElectionUser == id);
@@ -212,6 +224,7 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("exist/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> IfUserExists(int id)
         {
             if (ElectionUserExists(id))
@@ -225,6 +238,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("existPerson/{personId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> IfUserPersonIdExists(int personId)
         {
             if (ElectionUserPersonExists(personId))
