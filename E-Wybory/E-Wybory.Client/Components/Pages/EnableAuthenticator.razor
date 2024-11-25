@@ -103,6 +103,12 @@ else
 
         user = new UserWrapper(result.User);
 
+        if (!user.IsValid())
+        {
+            message = "Nie znaleziono użytkownika";
+            return;
+        }
+
         is2faEnabled = user.TwoFAenabled;
         if(!is2faEnabled)
             await LoadSharedKeyAndQrCodeUriAsync(user);

@@ -30,6 +30,7 @@
 @code {
     private string? message;
     private UserWrapper user = default!;
+    bool isValidUser = false;
 
     [SupplyParameterFromForm]
     private TwoFactorAuthVerifyRequest Input { get; set; } = new();
@@ -43,6 +44,14 @@
     private async Task OnValidSubmitAsync()
     {
         Input.Code = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+        isValidUser = !user.IsValid();
+        if(!isValidUser)
+        {
+            message = "Nie znaleziono użytkownika";
+            //StateHasChanged();
+            return;
+        }
+
         Input.UserId = user.Id;
         var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsync(Input);
 
