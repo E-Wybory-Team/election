@@ -13,11 +13,15 @@ namespace E_Wybory.Client.ViewModels
         public string LastName { get; set; } = String.Empty;
 
         [Required(ErrorMessage = "PESEL jest obowiązkowy!")]
+        [StringLength(11, MinimumLength = 11, ErrorMessage = "PESEL musi składać się z dokładnie 11 cyfr.")]
+        [RegularExpression("^[0-9]{11}$", ErrorMessage = "PESEL musi zawierać tylko cyfry.")]
         public string PESEL { get; set; } = String.Empty;
 
         [Required(ErrorMessage = "Data urodzenia jest obowiązkowa!")]
+        
         public DateTime DateOfBirth { get; set; } = DateTime.MinValue;
 
+        [RegularExpression(@"^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Nieprawidłowy adres e-mail. Adres nie może zawierać polskich znaków.")]
         [Required(ErrorMessage = "Adres email jest obowiązkowy!"), EmailAddress]
         public string Email { get; set; } = String.Empty;
 
@@ -34,6 +38,7 @@ namespace E_Wybory.Client.ViewModels
         [Required(ErrorMessage = "Obwód wyborczy jest obowiązkowy!")]
         public int SelectedDistrictId { get; set; } = 0;
 
+        [ValidateDateOfBirthWithPesel]
         public string DateOfBirthString
         {
             get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("yyyy-MM-dd") : string.Empty;
