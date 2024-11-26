@@ -5,7 +5,6 @@ public class ValidateDateOfBirthWithPeselAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        // Sprawdź typ obiektu
         if (validationContext.ObjectInstance is not { })
         {
             return ValidationResult.Success;
