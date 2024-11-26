@@ -1,6 +1,7 @@
 ﻿using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
@@ -9,6 +10,8 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+    [Authorize]
     public class PersonController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -20,6 +23,9 @@ namespace E_Wybory.Controllers
 
         // GET: api/People
         [HttpGet]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
+
         public async Task<ActionResult<IEnumerable<Person>>> GetPeople()
         {
             return await _context.People.ToListAsync();
@@ -27,6 +33,9 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/5
         [HttpGet("{id}")]
+        [AllowAnonymous] //    [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
+
         public async Task<ActionResult<Person>> GetPerson(int id)
         {
             var person = await _context.People.FindAsync(id);
@@ -40,6 +49,8 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+
         public async Task<IActionResult> PutPerson(int id, [FromBody] PersonViewModel personModel)
         {
             if (!EnteredRequiredData(personModel))
@@ -84,6 +95,8 @@ namespace E_Wybory.Controllers
         // POST: api/People
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+
         public async Task<ActionResult<Person>> PostPerson([FromBody] PersonViewModel personModel)
         {
             if (!EnteredRequiredData(personModel))
@@ -106,6 +119,8 @@ namespace E_Wybory.Controllers
 
         // DELETE: api/People/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+
         public async Task<IActionResult> DeletePerson(int id)
         {
             var person = await _context.People.FindAsync(id);
@@ -122,6 +137,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/idFromPesel/3
         [HttpGet("idFromPesel/{pesel}")]
+        [AllowAnonymous] // [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
         public async Task<ActionResult<int>> GetPersonIdByPeselAsync(string pesel)
         {
             var person = await _context.People.Where(p => p.Pesel == pesel).FirstOrDefaultAsync();
@@ -130,7 +147,9 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/fromUser/3
         [HttpGet("fromUser/{electionUserId}")]
-        public async Task<ActionResult<PersonViewModel>> GetPersonIdByPeselAsync(int electionUserId)
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+
+        public async Task<ActionResult<PersonViewModel>> GetPersonViewModelByPeselAsync(int electionUserId)
         {
             var electionUser = await _context.ElectionUsers.Where(u => u.IdElectionUser == electionUserId).FirstOrDefaultAsync();
             if(electionUser == null)
@@ -158,6 +177,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/dataFromId/3
         [HttpGet("dataFromId/{idPerson}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+
         public async Task<ActionResult<string>> GetPersonDataByIdAsync(int idPerson)
         {
             var person = await _context.People.Where(p => p.IdPerson == idPerson).FirstOrDefaultAsync();

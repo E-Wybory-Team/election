@@ -2,6 +2,7 @@
 using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
@@ -11,6 +12,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class VoteController : Controller
     {
         private readonly ElectionDbContext _context;
@@ -22,6 +24,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Votes
         [HttpGet]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
         public async Task<ActionResult<IEnumerable<Domain.Entities.Vote>>> GetVotes()
         {
             return await _context.Votes.ToListAsync();
@@ -29,6 +32,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/Votes/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
         public async Task<ActionResult<Domain.Entities.Vote>> GetVote(int id)
         {
             var Vote = await _context.Votes.FindAsync(id);
@@ -44,6 +49,7 @@ namespace E_Wybory.Controllers
         // POST: api/Votes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "2FAveryfiedUser", Policy="2FAenabled")]
         public async Task<ActionResult<Domain.Entities.Vote>> PostVote([FromBody] VoteViewModel VoteModel)
         {
             Console.WriteLine($"Value of candidate: {VoteModel.IdCandidate}");
@@ -68,23 +74,24 @@ namespace E_Wybory.Controllers
         }
 
         // DELETE: api/Votes/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVote(int id)
-        {
-            var Vote = await _context.Votes.FindAsync(id);
-            if (Vote == null)
-            {
-                return NotFound();
-            }
+        //[HttpDelete("{id}")]
+        //[Authorize(Roles = "Administratorzy")]
+        //public async Task<IActionResult> DeleteVote(int id)
+        //{
+        //    var Vote = await _context.Votes.FindAsync(id);
+        //    if (Vote == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            _context.Votes.Remove(Vote);
-            await _context.SaveChangesAsync();
+        //    _context.Votes.Remove(Vote);
+        //    await _context.SaveChangesAsync();
 
-            //_context.Votes.Remove(Vote);
-            //await _context.SaveChangesAsync();
+        //    //_context.Votes.Remove(Vote);
+        //    //await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         private bool VoteExists(int id)
         {
@@ -103,6 +110,8 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("VotesCandidate/{candidateId}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
         public async Task<ActionResult<List<VoteViewModel>>> GetVotesByCandidateId(int candidateId)
         {
             var Votes = await _context.Votes.Where(candidate => candidate.IdCandidate == candidateId).ToListAsync<Domain.Entities.Vote>();
@@ -128,6 +137,8 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("VotesDistrict/{districtId}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
         public async Task<ActionResult<List<VoteViewModel>>> GetVoteByDistrictId(int districtId)
         {
             var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId).ToListAsync<Domain.Entities.Vote>();

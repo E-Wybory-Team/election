@@ -16,6 +16,8 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
+
     public class PartyController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -27,6 +29,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Parties
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Party>>> GetParties()
         {
             return await _context.Parties.ToListAsync();

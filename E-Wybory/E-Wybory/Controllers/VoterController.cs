@@ -1,6 +1,7 @@
 ﻿using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class VoterController : Controller
     {
         private readonly ElectionDbContext _context;
@@ -19,6 +21,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Voters
         [HttpGet]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Urzędnicy wyborczy")]
         public async Task<ActionResult<IEnumerable<Voter>>> GetVoters()
         {
             return await _context.Voters.ToListAsync();
@@ -26,6 +29,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Voters/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Urzędnicy wyborczy")]
         public async Task<ActionResult<Voter>> GetVoter(int id)
         {
             var Voter = await _context.Voters.FindAsync(id);
@@ -41,6 +45,8 @@ namespace E_Wybory.Controllers
 
         // PUT: api/Voters/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administratorzy, Urzędnicy wyborczy")]
+
         public async Task<IActionResult> PutVoter(int id, [FromBody] VoterViewModel VoterModel)
         {
             if (!EnteredRequiredData(VoterModel))
@@ -85,6 +91,8 @@ namespace E_Wybory.Controllers
         // POST: api/Voters
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Administratorzy, Urzędnicy wyborczy")]
+
         public async Task<ActionResult<Voter>> PostVoter([FromBody] VoterViewModel VoterModel)
         {
             if (!EnteredRequiredData(VoterModel))
@@ -109,6 +117,8 @@ namespace E_Wybory.Controllers
 
         // DELETE: api/Voters/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administratorzy, Urzędnicy wyborczy")]
+
         public async Task<IActionResult> DeleteVoter(int id)
         {
             var Voter = await _context.Voters.FindAsync(id);
@@ -148,6 +158,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/Voter/exist/5
         [HttpGet("exist/{id}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Urzędnicy wyborczy")]
+
         public async Task<IActionResult> IfVoterExists(int id)
         {
             if (VoterExists(id))
@@ -162,6 +174,8 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("voter/{userId}")]
+        [Authorize(Roles = "Administratorzy, Urzędnicy wyborczy")]
+
         public async Task<ActionResult<int>> GetVoterId(int userId)
         {
             var voter = await _context.Voters.Where(user => user.IdElectionUser == userId).FirstOrDefaultAsync();
@@ -176,6 +190,8 @@ namespace E_Wybory.Controllers
         }
 
         [HttpGet("voterRecord/{userId}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+
         public async Task<ActionResult<VoterViewModel>> GetVoterByElectionUserId(int userId)
         {
             var voter = await _context.Voters.Where(user => user.IdElectionUser == userId).FirstOrDefaultAsync();
