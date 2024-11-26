@@ -1,13 +1,38 @@
-﻿
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject ElectionAuthStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<CascadingAuthenticationState>
 <div class="top-row ps-3 navbar navbar-dark">
+
     <div class="container-fluid">
 
         <span class="title">
             e-wybory.gov.pl
             <img src="images/PolandIcon.png" alt="Poland" class="nav-icon" />
         </span>
+        <span class="left-text">Internetowy system wyborczy</span>
+        @if (_user?.Identity != null && _user.Identity.IsAuthenticated)
+        {
+            <nav>
+                <button>Wyloguj</button>
+                <span>Witaj, @userName.!</span>
+            </nav>
+        }
+        else
+        {
+            <nav>
+                <button>Zaloguj się</button>
+            </nav>
+        }
     </div>
 </div>
+
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
@@ -23,28 +48,24 @@
             <NavLink class="nav-link" href="/vote">
                 <img src="images/VoteIcon.png" alt="Vote" class="nav-item-icon" />
                 Głosowanie
-
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/candidatelist">
                 <img src="images/CandidatesIcon.png" alt="Candidates" class="nav-item-icon" />
                 Kandydaci
-
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/statistics">
                 <img src="images/StatsIcon.png" alt="Stats" class="nav-item-icon" />
                 Statystyki
-
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/info">
                 <img src="images/InfoIcon.png" alt="Info" class="nav-item-icon" />
                 Informator wyborczy
-
             </NavLink>
         </div>
 
@@ -54,15 +75,66 @@
             <NavLink class="nav-link" href="login">
                 <img src="images/LogInIcon.png" alt="Log In" class="nav-item-icon" />
                 Zaloguj się
-
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="register">
                 <img src="images/SignUpIcon.png" alt="Sign Up" class="nav-item-icon" />
                 Zarejestruj się
-
             </NavLink>
         </div>
     </nav>
 </div>
+</CascadingAuthenticationState>
+
+@code {
+    private bool isAuthenticated = false;
+    private string? userName;
+
+    private AuthenticationState _authState;
+    private ClaimsPrincipal _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _user = _authState.User;
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        _authState = await task;
+        _user = _authState.User;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+
+   
+    private async Task LoadUserStateAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+            if (isAuthenticated)
+            {
+                userName = user.Identity?.Name ?? "Użytkownik";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in LoadUserStateAsync: {ex.Message}");
+        }
+    }
+
+    private void GoToAccountPage()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+}

@@ -244,3 +244,123 @@ color: white;
         overflow-y: auto;
     }
 }
+
+/* Styl g³ównego kontenera */
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background-color: #003366; /* Kolor t³a: granatowy */
+    color: white; /* Kolor tekstu */
+    height: 60px; /* Wysokoœæ paska */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Subtelny cieñ */
+}
+
+/* Styl dla lewej strony */
+.left-text {
+    font-size: 20px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* Styl dla przycisku konta */
+.account-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    background-color: #0055a5; /* Jasny niebieski */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .account-button:hover {
+        background-color: #003d7a; /* Ciemniejszy niebieski po najechaniu */
+    }
+
+    /* Styl ikony konta */
+    .account-button img {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+/* Styl dla przycisku logowania */
+.login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    background-color: #0066cc; /* Kolor przycisku logowania */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .login-button:hover {
+        background-color: #004d99; /* Ciemniejszy kolor po najechaniu */
+    }
+
+    /* Styl ikony logowania */
+    .login-button img {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+/* Wyrównanie tekstu powitania u¿ytkownika */
+.user-greeting {
+    font-size: 16px;
+    font-weight: normal;
+    margin-right: 16px;
+    color: #f0f0f0;
+}
+
+.top-row {
+    background-color: #1E5899;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: space-between;
+    height: 3.7rem;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.left-text {
+    font-size: 1.1rem;
+    color: white;
+    font-style: revert;
+    font-weight: normal;
+    margin-left: -30px;
+    margin-top: 0px;
+}
+
+.user-greeting {
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+.account-button {
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+    .account-button img {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+    }
+

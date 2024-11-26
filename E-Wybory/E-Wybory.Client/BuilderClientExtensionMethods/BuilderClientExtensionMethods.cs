@@ -44,6 +44,8 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
             services.AddScoped<IElectionUserManagementService, ElectionUserManagementService>();
             services.AddScoped<IVoterManagementService, VoterManagementService>();
             services.AddScoped<IElectionVoterManagementService, ElectionVoterManagementService>();
+            services.AddScoped<ElectionAuthStateProvider>();
+
         }
     }
 }

@@ -20,10 +20,10 @@ namespace E_Wybory.Client.Services
 
             if (response.IsSuccessStatusCode)
             {
-                // Pobierz token z odpowiedzi logowania
+                
                 var token = await response.Content.ReadAsStringAsync();
 
-                // Zapisz token w AuthenticationStateProvider lub w localStorage, jeśli potrzeba
+                
                 if (_stateProvider is not null && !string.IsNullOrEmpty(token))
                 {
                     await _stateProvider.MarkUserAsAuthenticated(token);
@@ -32,7 +32,7 @@ namespace E_Wybory.Client.Services
                 return token;
             }
 
-            return string.Empty; // Zwróć pusty string, jeśli logowanie się nie powiodło
+            return string.Empty; 
         }
 
 
