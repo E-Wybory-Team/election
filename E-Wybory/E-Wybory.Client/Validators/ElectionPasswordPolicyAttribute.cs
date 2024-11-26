@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace E_Wybory.Client.Policies
+namespace E_Wybory.Client.Validators
 {
     public class ElectionPasswordPolicyAttribute : ValidationAttribute
     {

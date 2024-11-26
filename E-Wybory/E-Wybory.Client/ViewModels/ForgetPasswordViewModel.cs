@@ -1,4 +1,4 @@
-﻿using E_Wybory.Client.Policies;
+﻿using E_Wybory.Client.Validators;
 using System.ComponentModel.DataAnnotations;
 
 namespace E_Wybory.Client.ViewModels

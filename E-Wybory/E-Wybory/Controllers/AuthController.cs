@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using Azure.Communication.Email;
 using System.Net;
 using E_Wybory.Services.Interfaces;
-using E_Wybory.Client.Policies;
+using E_Wybory.Client.Validators;
 
 
 namespace E_Wybory.Controllers
