@@ -8,6 +8,7 @@ namespace E_Wybory.Client.ViewModels
         [Required(ErrorMessage ="ID wyborów jest obowiązkowe")] public int IdElection { get; set; } = 0;
         [Required(ErrorMessage = "Data rozpoczęcia wyborów jest obowiązkowa")] public DateTime ElectionStartDate { get; set; } = DateTime.MinValue;
         [Required(ErrorMessage = "Data zakończenia wyborów jest obowiązkowa")] public DateTime ElectionEndDate { get; set; } = DateTime.MinValue;
+        [Range(1,2, ErrorMessage = "Tura wyborów musi być 1 lub 2")]
         public int ElectionTour { get; set; } = 1;
         [Required(ErrorMessage = "Rodzaj wyborów jest obowiązkowy")] public int IdElectionType { get; set; } = 0;
         public string DateOfStartString

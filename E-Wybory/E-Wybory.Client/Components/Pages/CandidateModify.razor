@@ -17,129 +17,130 @@
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
-         <Authorized>
+        <Authorized>
 
-<div class="candidate-form-container">
-    <h1>MODYFIKOWANIE KANDYDATA W WYBORACH</h1>
+            <div class="candidate-form-container">
+                <h1>MODYFIKOWANIE KANDYDATA W WYBORACH</h1>
+                @if (isLoaded){
+                <EditForm EditContext="@editContext" FormName="CandidateModify" OnValidSubmit="HandleEditCandidate" class="candidate-form">
+                    <DataAnnotationsValidator />
 
-    <EditForm FormName="CandidateModify" Model="@candidateModel" OnValidSubmit="HandleEditCandidate" class="candidate-form">
-        <DataAnnotationsValidator />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">IMIĘ</label>
+                            <InputText id="firstName" @bind-Value="candidateModel.personViewModel.Name" placeholder="Wprowadź imię kandydata" />
+                            <ValidationMessage For="@(() => candidateModel.personViewModel.Name)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">NAZWISKO</label>
+                            <InputText id="lastName" @bind-Value="candidateModel.personViewModel.Surname" placeholder="Wprowadź nazwisko kandydata" />
+                            <ValidationMessage For="@(() => candidateModel.personViewModel.Surname)" />
+                        </div>
+                    </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="firstName">IMIĘ</label>
-                <InputText id="firstName" @bind-Value="candidateModel.personViewModel.Name" placeholder="Wprowadź imię kandydata" />
-                <ValidationMessage For="@(() => candidateModel.personViewModel.Name)" />
-            </div>
-            <div class="form-group">
-                <label for="lastName">NAZWISKO</label>
-                <InputText id="lastName" @bind-Value="candidateModel.personViewModel.Surname" placeholder="Wprowadź nazwisko kandydata" />
-                <ValidationMessage For="@(() => candidateModel.personViewModel.Surname)" />
-            </div>
-        </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pesel">PESEL</label>
+                            <InputText id="pesel" @bind-Value="candidateModel.personViewModel.PESEL" placeholder="Wprowadź nr PESEL kandydata" />
+                            <ValidationMessage For="@(() => candidateModel.personViewModel.PESEL)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="dateBirth">DATA URODZENIA</label>
+                            <InputText id="dateBirth" @bind-Value="candidateModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź zawód kandydata" />
+                            <ValidationMessage For="@(() => candidateModel.personViewModel.DateOfBirthString)" />
+                        </div>
+                    </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="pesel">PESEL</label>
-                <InputText id="pesel" @bind-Value="candidateModel.personViewModel.PESEL" placeholder="Wprowadź nr PESEL kandydata" />
-                <ValidationMessage For="@(() => candidateModel.personViewModel.PESEL)" />
-            </div>
-            <div class="form-group">
-                <label for="dateBirth">DATA URODZENIA</label>
-                <InputText id="dateBirth" @bind-Value="candidateModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź zawód kandydata" />
-                <ValidationMessage For="@(() => candidateModel.personViewModel.DateOfBirthString)" />
-            </div>
-        </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="occupation">ZAWÓD</label>
+                            <InputText id="occupation" @bind-Value="candidateModel.candidateViewModel.JobType" placeholder="Wprowadź zawód kandydata" />
+                            <ValidationMessage For="@(() => candidateModel.candidateViewModel.JobType)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="workplace">MIEJSCE PRACY</label>
+                            <InputText id="workplace" @bind-Value="candidateModel.candidateViewModel.Workplace" placeholder="Wprowadź miejsce pracy kandydata" />
+                        </div>
+                        <div class="form-group">
+                            <label for="campaign">OPIS KAMPANII</label>
+                            <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" placeholder="Wprowadź opis kampanii wyborczej kandydata" />
+                        </div>
+                        <div class="form-group">
+                            <label for="listNumber">NUMER NA LIŚCIE</label>
+                            <InputNumber id="listNumber" @bind-Value="candidateModel.candidateViewModel.PositionNumber" placeholder="Wprowadź numer na liście" />
+                            <ValidationMessage For="@(() => candidateModel.candidateViewModel.PositionNumber)" />
+                        </div>
+                    </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="occupation">ZAWÓD</label>
-                <InputText id="occupation" @bind-Value="candidateModel.candidateViewModel.JobType" placeholder="Wprowadź zawód kandydata" />
-                <ValidationMessage For="@(() => candidateModel.candidateViewModel.JobType)" />
-            </div>
-            <div class="form-group">
-                <label for="workplace">MIEJSCE PRACY</label>
-                <InputText id="workplace" @bind-Value="candidateModel.candidateViewModel.Workplace" placeholder="Wprowadź miejsce pracy kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="campaign">OPIS KAMPANII</label>
-                <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" placeholder="Wprowadź opis kampanii wyborczej kandydata" />
-            </div>
-            <div class="form-group">
-                <label for="listNumber">NUMER NA LIŚCIE</label>
-                <InputNumber id="listNumber" @bind-Value="candidateModel.candidateViewModel.PositionNumber" placeholder="Wprowadź numer na liście" />
-                <ValidationMessage For="@(() => candidateModel.candidateViewModel.PositionNumber)" />
-            </div>
-        </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="education">WYKSZTAŁCENIE</label>
+                            <InputSelect id="education" @bind-Value="candidateModel.candidateViewModel.EducationStatus">
+                                <option value="">Wybierz wykształcenie</option>
+                                <option value="Podstawowe">Podstawowe</option>
+                                <option value="Średnie">Średnie</option>
+                                <option value="Wyższe">Wyższe</option>
+                            </InputSelect>
+                        </div>
+                        <div class="form-group">
+                            <label for="partyAffiliation">PRZYNALEŻNOŚĆ DO PARTII</label>
+                            <InputSelect id="partyAffiliation" @bind-Value="candidateModel.candidateViewModel.IdParty">
+                                <option value="">Wybierz partię</option>
+                                @foreach (var party in parties)
+                                {
+                                    <option value="@party.IdParty">
+                                        @party.PartyName
+                                    </option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="form-group">
+                            <label for="election">WYBORY</label>
+                            <InputSelect id="election" @bind-Value="candidateModel.candidateViewModel.IdElection">
+                                <option value="">Wybierz instancję wyborów</option>
+                                @foreach (var election in elections)
+                                {
+                                    <option value="@election.IdElection">
+                                        Od:  @election.ElectionStartDate  do:  @election.ElectionEndDate
+                                    </option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdElection)" />
+                        </div>
+                    </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="education">WYKSZTAŁCENIE</label>
-                <InputSelect id="education" @bind-Value="candidateModel.candidateViewModel.EducationStatus">
-                    <option value="">Wybierz wykształcenie</option>
-                    <option value="Podstawowe">Podstawowe</option>
-                    <option value="Średnie">Średnie</option>
-                    <option value="Wyższe">Wyższe</option>
-                </InputSelect>
-            </div>
-            <div class="form-group">
-                <label for="partyAffiliation">PRZYNALEŻNOŚĆ DO PARTII</label>
-                <InputSelect id="partyAffiliation" @bind-Value="candidateModel.candidateViewModel.IdParty">
-                    <option value="">Wybierz partię</option>
-                    @foreach (var party in parties)
-                    {
-                        <option value="@party.IdParty">
-                            @party.PartyName
-                        </option>
-                    }
-                </InputSelect>
-            </div>
-            <div class="form-group">
-                <label for="election">WYBORY</label>
-                <InputSelect id="election" @bind-Value="candidateModel.candidateViewModel.IdElection">
-                    <option value="">Wybierz instancję wyborów</option>
-                    @foreach (var election in elections)
-                    {
-                        <option value="@election.IdElection">
-                            Od:  @election.ElectionStartDate  do:  @election.ElectionEndDate
-                        </option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdElection)" />
-            </div>
-        </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
+                            <InputText id="placeOfResidence" @bind-Value="candidateModel.candidateViewModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
+                            <ValidationMessage For="@(() => candidateModel.candidateViewModel.PlaceOfResidence)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="districtNumber">OBWÓD WYBORCZY</label>
+                            <InputSelect id="districtNumber" @bind-Value="candidateModel.candidateViewModel.IdDistrict">
+                                <option value="">Wybierz obwód wyborczy</option>
+                                @foreach (var district in districts)
+                                {
+                                    <option value="@district.IdDistrict">
+                                        @district.DistrictName - @district.DistrictHeadquarters
+                                    </option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdDistrict)" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
+                        <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+                    </div>
+                </EditForm>
+                }
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="placeOfResidence">MIEJSCE ZAMIESZKANIA</label>
-                <InputText id="placeOfResidence" @bind-Value="candidateModel.candidateViewModel.PlaceOfResidence" placeholder="Wprowadź miejscowość zamieszkania" />
-                <ValidationMessage For="@(() => candidateModel.candidateViewModel.PlaceOfResidence)" />
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
             </div>
-            <div class="form-group">
-                <label for="districtNumber">OBWÓD WYBORCZY</label>
-                <InputSelect id="districtNumber" @bind-Value="candidateModel.candidateViewModel.IdDistrict">
-                    <option value="">Wybierz obwód wyborczy</option>
-                    @foreach (var district in districts)
-                    {
-                        <option value="@district.IdDistrict">
-                            @district.DistrictName - @district.DistrictHeadquarters
-                        </option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => candidateModel.candidateViewModel.IdDistrict)" />
-            </div>
-        </div>
-        <div class="form-row">
-            <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
-            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
-        </div>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
         </Authorized>
         <NotAuthorized>
             <div class="not-authorized-container">
@@ -162,6 +163,8 @@
     private Dictionary<int, string> candidateNames = new();
     string errorMessage;
     bool formSubmitted = false;
+    private EditContext editContext;
+    private bool isLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -178,15 +181,51 @@
             parties = await PartyManagementService.Parties();
             candidates = await CandidateManagementService.Candidates();
             elections = await ElectionManagementService.Elections();
+
+            editContext = new EditContext(candidateModel);
+            isLoaded = true;
+
+            editContext.OnFieldChanged += async (sender, args) =>
+            {
+                if (args.FieldIdentifier.FieldName == nameof(candidateModel.personViewModel.PESEL))
+                {
+                    var pesel = candidateModel.personViewModel.PESEL;
+                    if (!string.IsNullOrEmpty(pesel) && pesel.Length == 11)
+                    {
+                        candidateModel.personViewModel.DateOfBirthString = ExtractDateOfBirthFromPesel(pesel).ToString("yyyy-MM-dd");
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }
+            };
         }
+
+    }
+    private DateTime ExtractDateOfBirthFromPesel(string pesel)
+    {
+        int year = int.Parse(pesel.Substring(0, 2));
+        int month = int.Parse(pesel.Substring(2, 2));
+        int day = int.Parse(pesel.Substring(4, 2));
+
+        if (month > 40) { year += 2100; month -= 40; }
+        else if (month > 20) { year += 2000; month -= 20; }
+        else { year += 1900; }
+
+        return new DateTime(year, month, day);
     }
 
 
     private async void HandleEditCandidate()
     {
+        if (editContext.Validate())
+        {
             formSubmitted = await PersonManagementService.PutPerson(candidateModel.personViewModel);
             formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
             errorMessage = formSubmitted ? "Candidate modified successful!" : "Candidate modification fails";
+        }
+        else
+        {
+            errorMessage = "Please fix the validation errors.";
+        }
     }
     private void Cancel()
     {
