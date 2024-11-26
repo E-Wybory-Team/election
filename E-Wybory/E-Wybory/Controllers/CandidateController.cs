@@ -217,6 +217,7 @@ namespace E_Wybory.Controllers
 
             return CandidatesViewModels;
         }
+
     }
 }
 

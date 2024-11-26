@@ -101,6 +101,35 @@ namespace E_Wybory.Client.Services
             return response;
             }
 
+
+
+        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElection(int? electionId,  int? districtId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/CandidatesElection", new Dictionary<string, int?>
+            {
+                { "electionId", electionId },
+                { "districtId", districtId }
+            });
+            var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>(url);
+            return response;
+        }
+
+
+        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElectionRegions(int? electionId,int? voivodeshipId,int? countyId,int? provinceId,int? districtId)
+        {
+            var url = BuildUrlWithParameters("/api/FilterWrapper/CandidatesElectionRegions", new Dictionary<string, int?>
+            {
+                { "electionId", electionId },
+                { "voivodeshipId", voivodeshipId },
+                { "countyId", countyId },
+                { "provinceId", provinceId },
+                { "districtId", districtId }
+            });
+            var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>(url);
+            return response;
+        }
+
+
         public async Task<List<DistrictViewModel>> GetFilteredDistricts(
             int? constituencyId, int? voivodeshipId, int? countyId, int? provinceId)
         {
@@ -141,6 +170,13 @@ namespace E_Wybory.Client.Services
             });
 
             var response = await _httpClient.GetFromJsonAsync<List<CandidateViewModel>>(url);
+            return response;
+        }
+
+
+        public async Task<List<CandidatePersonViewModel>> GetFilteredCandidatesWithoutDistrict(int electionId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>($"api/FilterWrapper/CandidatesWithoutRegions/{electionId}");
             return response;
         }
     }

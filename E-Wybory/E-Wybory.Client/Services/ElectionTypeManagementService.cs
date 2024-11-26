@@ -16,6 +16,15 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<string> GetElectionTypeName(int electionTypeId)
+        {
+            //Properly validate model before that 
+            //All properties must be innitialize
+            var response = await _httpClient.GetStringAsync($"/api/ElectionType/name/{electionTypeId}");
+
+            return await Task.FromResult(response);
+        }
+
         public string? GetElectionTypeNameById(int electionTypeId, List<ElectionTypeViewModel> electionTypes)
         {
             var party = electionTypes

@@ -6,5 +6,6 @@ namespace E_Wybory.Client.Services
     {
         Task<List<ElectionTypeViewModel>> ElectionTypes();
         string? GetElectionTypeNameById(int electionTypeId, List<ElectionTypeViewModel> electionTypes);
+        Task<string> GetElectionTypeName(int electionTypeNameId);
     }
 }

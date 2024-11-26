@@ -149,6 +149,33 @@ namespace E_Wybory.Controllers
             return Ok(activeElections);
         }
 
+        // GET: api/Election/type
+        [HttpGet("type/{electionTypeId}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+
+        public async Task<ActionResult<List<ElectionViewModel>>> GetElectionsOfType(int electionTypeId)
+        {
+
+            var typeElections = await _context.Elections
+                .Where(record => record.IdElectionType == electionTypeId)
+                .Select(record => new ElectionViewModel
+                {
+                    IdElection = record.IdElection,
+                    ElectionStartDate = record.ElectionStartDate,
+                    ElectionEndDate = record.ElectionEndDate,
+                    ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                    IdElectionType = electionTypeId
+                })
+                .ToListAsync();
+
+            if (typeElections == null || typeElections.Count() == 0)
+            {
+                return NotFound("No elections of this type found.");
+            }
+
+            return Ok(typeElections);
+        }
+
 
         private bool ElectionExists(int id)
         {
@@ -164,6 +191,116 @@ namespace E_Wybory.Controllers
             }
 
             return true;
+        }
+
+
+        [HttpGet("newest")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElections()
+        {
+            var now = DateTime.Now;
+            List<DateTime> dates = _context.Elections
+                                    .Where(x => x.ElectionStartDate <= now )
+                                    .Select(x => x.ElectionStartDate)
+                                    .ToList();
+
+            DateTime newestDate = dates.Max();
+            Console.WriteLine($"Max date: {newestDate}");
+
+
+            var activeElections = await _context.Elections
+                .Where(record => record.ElectionStartDate == newestDate)
+                .Select(record => new ElectionViewModel
+                {
+                    IdElection = record.IdElection,
+                    ElectionStartDate = record.ElectionStartDate,
+                    ElectionEndDate = record.ElectionEndDate,
+                    ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                    IdElectionType = record.IdElectionType
+                })
+                .ToListAsync();
+
+            return Ok(activeElections);
+        }
+
+
+        [HttpGet("newestAllTypes")]
+        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElectionsOfAllTypes()
+        {
+            var now = DateTime.Now;
+            var electionTypes = await _context.ElectionTypes.ToListAsync();
+            var elections = new List<ElectionViewModel>();
+
+            foreach (var electionType in electionTypes)
+            {
+                // Get all elections for this type that have started
+                var filteredElections = await _context.Elections
+                    .Where(x => x.IdElectionType == electionType.IdElectionType && x.ElectionStartDate <= now)
+                    .ToListAsync();
+
+                var newestDate = filteredElections.MaxBy(e => e.ElectionStartDate)?.ElectionStartDate;
+
+                if (newestDate != null)
+                {
+                    var newestElection = filteredElections
+                        .Where(e => e.ElectionStartDate == newestDate)
+                        .Select(record => new ElectionViewModel
+                        {
+                            IdElection = record.IdElection,
+                            ElectionStartDate = record.ElectionStartDate,
+                            ElectionEndDate = record.ElectionEndDate,
+                            ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                            IdElectionType = record.IdElectionType
+                        })
+                        .FirstOrDefault();
+
+                    if (newestElection != null)
+                    {
+                        elections.Add(newestElection);
+                    }
+                }
+            }
+
+            return Ok(elections);
+        }
+
+
+        [HttpGet("newest/{electionTypeId}")]
+        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ElectionViewModel>> GetNewestElectionOfType(int electionTypeId)
+        {
+            var now = DateTime.Now;
+            List<DateTime> dates = _context.Elections
+                                    .Where(x => x.IdElectionType == electionTypeId && x.ElectionEndDate <= now)
+                                    .Select(x => x.ElectionEndDate)
+                                    .ToList();
+
+            if (dates.Count() > 0)
+            {
+                DateTime newestDate = dates.Max();
+
+
+                var activeElections = await _context.Elections
+                    .Where(record => record.IdElectionType == electionTypeId && record.ElectionEndDate == newestDate)
+                    .Select(record => new ElectionViewModel
+                    {
+                        IdElection = record.IdElection,
+                        ElectionStartDate = record.ElectionStartDate,
+                        ElectionEndDate = record.ElectionEndDate,
+                        ElectionTour = record.ElectionTour.GetValueOrDefault(),
+                        IdElectionType = record.IdElectionType
+                    })
+                    .FirstOrDefaultAsync();
+
+                return Ok(activeElections);
+            }
+            else
+            {
+                return NotFound("Not found elections of this type which were started");
+            }
         }
     }
 }

@@ -4,10 +4,15 @@
 @using E_Wybory.Client.FilterData
 @using E_Wybory.Client.ViewModels
 @using E_Wybory.Client.Services;
+@inject ICandidateManagementService CandidateManagementService
 @inject IPartyManagementService PartyManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
+@inject IElectionManagementService ElectionManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
+@inject IVoteManagementService VoteManagementService
+@inject IVoterManagementService VoterManagementService
+@inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 <link href="tables.css" rel="stylesheet" />
 
@@ -15,6 +20,8 @@
     <h2 class="title">SZCZEGÓŁOWE WYNIKI DLA OBWODU</h2>    @* url bedzie detailed-statistics/{districtId:int}    trzeba kandydatów co mają ten districtID,  liczba wyborców uprawdnionych do głosowania tak jak na poprzedzającej stronie, liczba głosów nieważnych i liczba głosów ważnych oraz liczba głosów na poszczególnych kandydatów*@
 </div>
 
+@if (string.IsNullOrEmpty(errorMessageAtStart))
+{
 <div class="filters">
     <div class="filter-group">
         <label>Rodzaj wyborów</label>
@@ -30,17 +37,21 @@
     </div>
     <div class="filter-group">
         <label>Liczba uprawnionych wyborców:</label>
-        <p>150</p>                                      @* nigdzie indziej nie używamy <p> , styl zmieniony w app.css *@
+        <p>@votersNumber</p>                                      @* nigdzie indziej nie używamy <p> , styl zmieniony w app.css *@
     </div>
-    <div class="filter-group">
-        <label>Liczba głosów nieważnych:</label>
-        <p>10</p>
-    </div>
-    <div class="filter-group">
-        <label>Liczba głosów ważnych:</label>
-        <p>100</p>
 
-    </div>
+    @if (string.IsNullOrEmpty(errorMessage) && newestElectionOfType.IdElection != 0)
+    {
+        <div class="filter-group">
+            <label>Liczba głosów nieważnych:</label>
+                <p>@invalidVotesNumbers[newestElectionOfType.IdElection]</p>
+        </div>
+        <div class="filter-group">
+            <label>Liczba głosów ważnych:</label>
+                <p>@validVotesNumbers[newestElectionOfType.IdElection]</p>
+
+        </div>
+    }
    
     @* <div class="filter-group">
         <label>Numer obwodu</label>
@@ -59,6 +70,10 @@
     </div>  *@
 </div>
 
+    @if (string.IsNullOrEmpty(errorMessage) && newestElectionOfType.IdElection != 0)
+    {
+        <h2>Wybory @newestElectionTypeName z dnia: @newestElectionOfType.ElectionStartDate.ToString("dd.MM.yyyy")</h2>
+        
 <table class="candidate-table">
     <thead>
         <tr>
@@ -79,78 +94,141 @@
 
             <tr>
 
-                <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td
+                <td>@candidate.personViewModel.Surname @candidate.personViewModel.Name</td>
                 <td>@partyName</td>
-                <td>@candidate.candidateViewModel.PositionNumber</td
+                <td>@candidate.candidateViewModel.PositionNumber</td>
+                <td>@votesNumberOfCandidates[candidate.candidateViewModel.IdCandidate]</td>
             </tr>
 
         }
     </tbody>
-</table>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+}
+
+else
+{
+    <div class="alert alert-danger mt-3">@errorMessageAtStart</div>
+}
 
 @code {
 
     private int? SelectedElectionTypeId { get; set; } = null;
-    private int? SelectedVoivodeshipId { get; set; } = null;
-    private int? SelectedCountyId { get; set; } = null;
-    private int? SelectedProvinceId { get; set; } = null;
-    private int? SelectedDistrictId { get; set; } = null;
+    private int IdDistrict = 0;
+    private int votersNumber = 0;
+    private Dictionary<int, int> validVotesNumbers = new Dictionary<int,int>();
+    private Dictionary<int, int> invalidVotesNumbers = new Dictionary<int, int>();
+    private string errorMessageAtStart = String.Empty;
+    private string errorMessage= String.Empty;
+    private string newestElectionTypeName = String.Empty;
+    private ElectionViewModel newestElectionOfType = new ElectionViewModel();
+    private Dictionary<int, int> votesNumberOfCandidates = new Dictionary<int, int>();
+
 
     private List<CandidatePersonViewModel> filteredCandidates = new List<CandidatePersonViewModel>();
+    private List<CandidatePersonViewModel> noDistrictCandidates = new List<CandidatePersonViewModel>();
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
     private List<PartyViewModel> parties = new List<PartyViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
 
     protected override async Task OnInitializedAsync()
     {
-        //it must be executed here because every parameters at the beginning are null
-        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        try
+        {
+            IdDistrict = await AuthService.GetCurrentUserIdDistrict();
+        }
+        catch (Exception)
+        {
+            errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+            //NavigationManager.NavigateTo("/");
+        }
+
+        filteredCandidates = await FilterWrapperService.GetFilteredCandidatesFromElection(null, IdDistrict);
+        //add candidates without district
+        foreach(var candidate in filteredCandidates)
+        {
+            var votesNumber = 0;
+            try
+            {
+                votesNumber = await VoteManagementService.GetVotesNumberByDistrictCandidate(IdDistrict, newestElectionOfType.IdElection, candidate.candidateViewModel.IdCandidate);
+            }
+            catch(Exception ex)
+            {
+                //votesNumber = 0;
+            }
+            votesNumberOfCandidates.Add(candidate.candidateViewModel.IdCandidate, votesNumber);
+        }
+
         wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
         parties = await PartyManagementService.Parties();
+        votersNumber = await VoterManagementService.GetNumberVotersByDistrictId(IdDistrict);
+        errorMessage = "Proszę wybrać typ wyborów!";
     }
 
 
     private async Task FilterCandidate()
     {
-        wrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        newestElectionOfType = await ElectionManagementService.GetNewestElectionOfElectionType(SelectedElectionTypeId.Value);
+        if (newestElectionOfType.IdElection != 0) //only if was found
+        {
+            newestElectionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(SelectedElectionTypeId.Value, wrapper.ElectionFilter);
+            filteredCandidates = await FilterWrapperService.GetFilteredCandidatesFromElection(newestElectionOfType.IdElection, IdDistrict);
+            noDistrictCandidates = await FilterWrapperService.GetFilteredCandidatesWithoutDistrict(newestElectionOfType.IdElection);
+
+            foreach (var districtCandidate in noDistrictCandidates)
+            {
+                if (!CandidateManagementService.IfCandidateListHasCandidate(districtCandidate.candidateViewModel.IdCandidate, filteredCandidates))
+                {
+                    filteredCandidates.Add(districtCandidate);
+                }
+            }
+
+            if (filteredCandidates.Count() > 0)
+            {
+                foreach (var candidate in filteredCandidates)
+                {
+                    var votesNumber = 0;
+                    try
+                    {
+                        votesNumber = await VoteManagementService.GetVotesNumberByDistrictCandidate(IdDistrict, newestElectionOfType.IdElection, candidate.candidateViewModel.IdCandidate);
+                        validVotesNumbers[newestElectionOfType.IdElection] = await VoteManagementService.GetValidVotesNumberByDistrictId(IdDistrict, newestElectionOfType.IdElection);
+                        invalidVotesNumbers[newestElectionOfType.IdElection] = await VoteManagementService.GetInvalidVotesNumberByDistrictId(IdDistrict, newestElectionOfType.IdElection);
+                    }
+                        catch (Exception ex)
+                        {
+                        }
+                        votesNumberOfCandidates[candidate.candidateViewModel.IdCandidate] = votesNumber;
+                    }
+                    errorMessage = String.Empty;
+                }
+                else
+                {
+                    errorMessage = "Nie znaleziono kandydatów w najnowszych wyborach tego typu";
+                    return;
+                }
+            }
+            else
+            {
+                errorMessage = "Nie znaleziono wyborów tego typu, które się odbyły";
+            }
     }
+
 
     private async Task OnElectionTypeChanged()
     {
-        SelectedVoivodeshipId = null;
-        SelectedCountyId = null;
-        SelectedProvinceId = null;
-        SelectedDistrictId = null;
+        if (SelectedElectionTypeId != 0 && SelectedElectionTypeId != null)
+        {
+            await FilterCandidate();
+        }
+        else
+        {
+            errorMessage = "Nie wybrano typu wyborów!";
+        }
 
-        await FilterCandidate();
     }
 
-    private async Task OnVoivodeshipChanged()
-    {
-        SelectedCountyId = null;
-        SelectedProvinceId = null;
-        SelectedDistrictId = null;
-
-        await FilterCandidate();
-    }
-
-    private async Task OnCountyChanged()
-    {
-        SelectedProvinceId = null;
-        SelectedDistrictId = null;
-
-        await FilterCandidate();
-    }
-
-    private async Task OnProvinceChanged()
-    {
-        SelectedDistrictId = null;
-
-        await FilterCandidate();
-    }
-
-    private async Task OnDistrictChanged()
-    {
-        await FilterCandidate();
-    }
 }

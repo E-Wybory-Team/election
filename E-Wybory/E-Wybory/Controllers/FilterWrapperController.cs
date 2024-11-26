@@ -12,6 +12,7 @@ using E_Wybory.ExtensionMethods;
 using System.Xml.Linq;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace E_Wybory.Controllers
 {
@@ -103,7 +104,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/ListsWrapper
         [HttpGet("ListsWrapper")]
-        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+        [AllowAnonymous]//[Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
         public async Task<ActionResult<FilterListWrapper>> GetFilteredListsWrapper(
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
@@ -355,9 +356,192 @@ namespace E_Wybory.Controllers
         }
 
 
+
+        // GET: api/FilterWrapper/Candidates
+        [HttpGet("CandidatesElection")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+
+        public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesFromElection(
+            [FromQuery] int? electionId,
+            [FromQuery] int? districtId)
+        {
+            var candidatePersonViewModels = new List<CandidatePersonViewModel>();
+            var candidates = await _context.Candidates.ToListAsync();
+
+            foreach (var candidate in candidates)
+            {
+                // Filter conditions
+                if ((electionId != null && candidate.IdElection != electionId) ||
+                    (districtId != null && candidate.IdDistrict != districtId && candidate.IdDistrict != null))
+                {
+                    continue;
+                }
+
+                var personViewModel = await _context.People
+                    .Where(p => p.IdPerson == candidate.IdPerson)
+                    .Select(person => new PersonViewModel
+                    {
+                        IdPerson = person.IdPerson,
+                        Name = person.Name,
+                        Surname = person.Surname,
+                        PESEL = person.Pesel,
+                        BirthDate = person.BirthDate
+                    })
+                    .FirstOrDefaultAsync();
+
+                candidatePersonViewModels.Add(new CandidatePersonViewModel
+                {
+                    candidateViewModel = new CandidateViewModel
+                    {
+                        IdCandidate = candidate.IdCandidate,
+                        CampaignDescription = candidate.CampaignDescription,
+                        EducationStatus = candidate.EducationStatus,
+                        JobType = candidate.JobType,
+                        PlaceOfResidence = candidate.PlaceOfResidence,
+                        PositionNumber = candidate.PositionNumber,
+                        Workplace = candidate.Workplace,
+                        IdPerson = candidate.IdPerson,
+                        IdDistrict = candidate.IdDistrict.GetValueOrDefault(),
+                        IdParty = candidate.IdParty,
+                        IdElection = candidate.IdElection
+                    },
+                    personViewModel = personViewModel
+                });
+            }
+
+            return Ok(candidatePersonViewModels);
+        }
+
+
+        // GET: api/FilterWrapper/Candidates
+        [HttpGet("CandidatesElectionRegions")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesFromElectionRegions(
+            [FromQuery] int? electionId,
+            [FromQuery] int? voivodeshipId,
+            [FromQuery] int? countyId,
+            [FromQuery] int? provinceId,
+            [FromQuery] int? districtId)
+        {
+            var candidatePersonViewModels = new List<CandidatePersonViewModel>();
+            var candidates = await _context.Candidates
+                .Include(candElection => candElection.IdElectionNavigation)
+                .Include(candDist => candDist.IdDistrictNavigation)
+                .ThenInclude(district => district.IdProvinceNavigation)
+                .ThenInclude(province => province.IdCountyNavigation)
+                .ThenInclude(county => county.IdVoivodeshipNavigation)
+                .ToListAsync();
+
+            foreach (var candidate in candidates)
+            {
+                var candidateElectionId = candidate.IdElection;
+                var candidateVoivodeshipId = candidate.IdDistrictNavigation?.IdProvinceNavigation?.IdCountyNavigation.IdVoivodeship;
+                var candidateCountyId = candidate.IdDistrictNavigation?.IdProvinceNavigation?.IdCounty;
+                var candidateProvinceId = candidate.IdDistrictNavigation?.IdProvince;
+
+                if ((electionId != null && candidateElectionId != electionId) ||
+                    (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
+                    (countyId != null && candidateCountyId != countyId) ||
+                    (provinceId != null && candidateProvinceId != provinceId) ||
+                    (districtId != null && candidate.IdDistrict != districtId && candidate.IdDistrict != null))
+                {
+                    continue; // Skip this candidate if it doesn't match the filter conditions
+                }
+
+                // Retrieve person data for the current candidate
+                var personViewModel = await _context.People
+                    .Where(p => p.IdPerson == candidate.IdPerson)
+                    .Select(person => new PersonViewModel
+                    {
+                        IdPerson = person.IdPerson,
+                        Name = person.Name,
+                        Surname = person.Surname,
+                        PESEL = person.Pesel,
+                        BirthDate = person.BirthDate
+                    })
+                    .FirstOrDefaultAsync();
+
+                // Add the candidate and their person data to the list
+                candidatePersonViewModels.Add(new CandidatePersonViewModel
+                {
+                    candidateViewModel = new CandidateViewModel
+                    {
+                        IdCandidate = candidate.IdCandidate,
+                        CampaignDescription = candidate.CampaignDescription,
+                        EducationStatus = candidate.EducationStatus,
+                        JobType = candidate.JobType,
+                        PlaceOfResidence = candidate.PlaceOfResidence,
+                        PositionNumber = candidate.PositionNumber,
+                        Workplace = candidate.Workplace,
+                        IdPerson = candidate.IdPerson,
+                        IdDistrict = candidate.IdDistrict.GetValueOrDefault(),
+                        IdParty = candidate.IdParty,
+                        IdElection = candidate.IdElection
+                    },
+                    personViewModel = personViewModel
+                });
+            }
+
+            return Ok(candidatePersonViewModels);
+        }
+
+
+
+        // GET: api/FilterWrapper/Candidates
+        [HttpGet("CandidatesWithoutRegions/{electionId}")]
+        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
+
+        public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesWithoutRegions(
+            int electionId)
+        {
+            var candidatePersonViewModels = new List<CandidatePersonViewModel>();
+            var candidates = await _context.Candidates.Where(candidate => candidate.IdElection == electionId && candidate.IdDistrict == null).ToListAsync();
+
+            foreach (var candidate in candidates)
+            {
+
+                // Retrieve person data for the current candidate
+                var personViewModel = await _context.People
+                    .Where(p => p.IdPerson == candidate.IdPerson)
+                    .Select(person => new PersonViewModel
+                    {
+                        IdPerson = person.IdPerson,
+                        Name = person.Name,
+                        Surname = person.Surname,
+                        PESEL = person.Pesel,
+                        BirthDate = person.BirthDate
+                    })
+                    .FirstOrDefaultAsync();
+
+                // Add the candidate and their person data to the list
+                candidatePersonViewModels.Add(new CandidatePersonViewModel
+                {
+                    candidateViewModel = new CandidateViewModel
+                    {
+                        IdCandidate = candidate.IdCandidate,
+                        CampaignDescription = candidate.CampaignDescription,
+                        EducationStatus = candidate.EducationStatus,
+                        JobType = candidate.JobType,
+                        PlaceOfResidence = candidate.PlaceOfResidence,
+                        PositionNumber = candidate.PositionNumber,
+                        Workplace = candidate.Workplace,
+                        IdPerson = candidate.IdPerson,
+                        IdDistrict = candidate.IdDistrict.GetValueOrDefault(),
+                        IdParty = candidate.IdParty,
+                        IdElection = candidate.IdElection
+                    },
+                    personViewModel = personViewModel
+                });
+            }
+
+            return Ok(candidatePersonViewModels);
+        }
+
+
         // GET: api/FilterWrapper/Districts
         [HttpGet("Districts")]
-        [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+        [AllowAnonymous]//[Authorize(Roles = "Pracownicy PKW, Administratorzy")]
 
         public async Task<ActionResult<List<DistrictViewModel>>> GetFilteredDistricts(
         [FromQuery] int? constituencyId,

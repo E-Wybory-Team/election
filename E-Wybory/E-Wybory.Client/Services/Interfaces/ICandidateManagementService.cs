@@ -11,5 +11,6 @@ namespace E_Wybory.Client.Services
         Task<CandidateViewModel> GetCandidateById(int id);
         Task<bool> DeleteCandidate(int candidateId);
         Task<List<CandidateViewModel>> GetCandidatesByElectionDistrictId(int electionId, int districtId);
+        bool IfCandidateListHasCandidate(int candidateId, List<CandidatePersonViewModel> candidates);
     }
 }

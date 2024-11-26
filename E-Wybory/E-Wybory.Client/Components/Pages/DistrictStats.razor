@@ -1,7 +1,15 @@
 ﻿@page "/districtstats"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Text.RegularExpressions
+@inject IAuthService AuthService
+@inject IVoteManagementService VoteManagementService
+@inject IVoterManagementService VoterManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
+@inject IDistrictManagementService DistrictManagementService
 <link href="forms.css" rel="stylesheet" />
 
 
@@ -11,29 +19,45 @@
             <div class="form-container">
                 <h1>STATYSTYKI GŁOSOWANIA DLA OBWODU</h1>
             
-                <form>
-                    <div class="form-group">
-                        <label for="district">OBWÓD GŁOSOWANIA</label>
-                        <input type="text" id="district" value="@districtName" readonly />
-                    </div>
-            
-                    <div class="form-group">
-                        <label for="eligibleCount">LICZBA UPRAWNIONYCH DO GŁOSOWANIA</label>
-                        <input type="text" id="eligibleCount" value="@eligibleCount" readonly />
-                    </div>
-            
-                    <div class="form-group">
-                        <label for="noonTurnout">FREKWENCJA NA GODZINĘ 12:00</label>
-                        <input type="text" id="noonTurnout" value="@noonTurnout" readonly />
-                    </div>
-            
-                    <div class="form-group">
-                        <label for="eveningTurnout">FREKWENCJA NA GODZINĘ 17:00</label>
-                        <input type="text" id="eveningTurnout" value="@eveningTurnout" readonly />
-                    </div>
-            
-                    <a href="/detailed-results" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
-                </form>
+                @if (string.IsNullOrEmpty(errorMessage))
+                {
+                    <form>
+                        <div class="form-group">
+                            <label for="district">OBWÓD GŁOSOWANIA</label>
+                            <input type="text" id="district" value="@district.DistrictHeadquarters" readonly />
+                        </div>
+
+                    
+
+                        <div class="form-group">
+                            <label for="eligibleCount">LICZBA UPRAWNIONYCH DO GŁOSOWANIA</label>
+                            <input type="text" id="eligibleCount" value="@eligibleCount" readonly />
+                        </div>
+
+                    @foreach (var election in newestElections)
+                    {
+                            <label>Wybory @electionTypeNames[election.IdElection] 
+                                z dnia @election.ElectionStartDate.ToString("dd.MM.yyyy")</label>
+
+                        <div class="form-group">
+                            <label for="noonTurnout">FREKWENCJA NA GODZINĘ 12:00</label>
+                            <input type="text" id="noonTurnout" value="@frequencyElections[(election.IdElection, 12)] %" readonly /> 
+                        </div>
+
+                        <div class="form-group">
+                            <label for="eveningTurnout">FREKWENCJA NA GODZINĘ 17:00</label>
+                            <input type="text" id="eveningTurnout" value="@frequencyElections[(election.IdElection, 17)] %" readonly />
+                        </div>
+                    }
+
+                        <a href="/detailed-statistics" class="submit-button">SZCZEGÓŁOWE WYNIKI</a>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+                
             </div>
         </Authorized>
         <NotAuthorized>
@@ -47,8 +71,66 @@
 </CascadingAuthenticationState>
 
 @code {
-    private string districtName = "OKW 1 Kędzierzyn Koźle";
-    private string eligibleCount = "150";
-    private string noonTurnout = "23,73 %";
-    private string eveningTurnout = "52,26 %";
+    private int eligibleCount = 0;
+
+    private string errorMessage = String.Empty;
+    private int IdDistrict = 0;
+    private List<ElectionViewModel> newestElections = new List<ElectionViewModel>();
+    private DistrictViewModel district = new DistrictViewModel();
+    private List<int> frequencyHours = new List<int> { 12, 17 };
+    private Dictionary<(int, int), double> frequencyElections = new Dictionary<(int, int), double>();
+    private Dictionary<int, string> electionTypeNames = new Dictionary<int, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            IdDistrict = await AuthService.GetCurrentUserIdDistrict();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+            return;
+            //NavigationManager.NavigateTo("/");
+        }
+
+        eligibleCount = await VoterManagementService.GetNumberVotersByDistrictId(IdDistrict);
+        newestElections = await ElectionManagementService.GetNewestElections();
+        district = await DistrictManagementService.GetDistrictById(IdDistrict);
+
+
+        foreach (var (election, index) in newestElections.Select((value, i) => (value, i)))
+        {
+            var firstFrequency = await VoteManagementService.GetFrequencyByDistrictIdToHour(IdDistrict, election.IdElection, frequencyHours[0]);
+            var secondFrequency = await VoteManagementService.GetFrequencyByDistrictIdToHour(IdDistrict, election.IdElection, frequencyHours[1]);
+            frequencyElections.Add((election.IdElection, frequencyHours[0]), firstFrequency);
+            frequencyElections.Add((election.IdElection, frequencyHours[1]), secondFrequency);
+        }
+
+        foreach(var election in newestElections)
+        {
+            var electionType = await ElectionTypeManagementService.GetElectionTypeName(election.IdElectionType);
+            electionTypeNames.Add(election.IdElection, electionType);
+        }
+
+    }
+
+    private static int ExtractHour(string input)
+    {
+        var timePattern = @"\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b";
+        var regex = new Regex(timePattern);
+
+        var match = regex.Match(input);
+        if (match.Success)
+        {
+            var timeParts = match.Value.Split(':');
+            if (int.TryParse(timeParts[0], out int hour))
+            {
+                return hour;
+            }
+        }
+
+        return -1;
+    }
+
 }

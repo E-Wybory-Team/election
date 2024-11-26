@@ -11,5 +11,10 @@ namespace E_Wybory.Client.Services
         Task<bool> PutElection(ElectionViewModel election);
         Task<bool> DeleteElection(int electionId);
         Task<ElectionViewModel> GetElectionById(int id);
+        Task<List<ElectionViewModel>> GetElectionsOfType(int electionTypeId);
+        Task<List<ElectionViewModel>> GetNewestElections();
+        Task<ElectionViewModel> GetNewestElectionOfElectionType(int electionTypeId);
+        Task<List<ElectionViewModel>> GetNewestElectionsOfAllTypes();
+        ElectionViewModel GetElectionOfTypeOfSingleElection(int electionTypeId, List<ElectionViewModel> elections);
     }
 }

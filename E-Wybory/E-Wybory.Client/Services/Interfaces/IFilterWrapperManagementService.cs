@@ -15,5 +15,8 @@ namespace E_Wybory.Client.Services
 
         Task<FilterListWrapper> GetFilteredListsWrapper(int? voivodeshipId, int? countyId, int? provinceId);
         Task<List<CandidateViewModel>> GetFilteredCandidatesFromParty(int? partyId, int? electionId);
+        Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElection(int? electionId, int? districtId);
+        Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElectionRegions(int? electionId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId);
+        Task<List<CandidatePersonViewModel>> GetFilteredCandidatesWithoutDistrict(int electionId);
     }
 }

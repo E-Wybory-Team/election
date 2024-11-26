@@ -62,5 +62,11 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<VoterViewModel>($"/api/Voter/voterRecord/{userId}");
             return await Task.FromResult(response);
         }
+
+        public async Task<int> GetNumberVotersByDistrictId(int districtId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>($"/api/Voter/votersDistrict/{districtId}");
+            return await Task.FromResult(response);
+        }
     }
 }

@@ -541,7 +541,7 @@ namespace E_Wybory.Controllers
                 return NotFound("Not found user set to this id");
             }
 
-            return electionUser.Is2Faenabled;
+            return user.TwoFAveryfied;
 
         }
 

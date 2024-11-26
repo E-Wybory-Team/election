@@ -37,15 +37,54 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
-        public async Task<List<VoteViewModel>> GetVotesIdByCandidateId(int candidateId)
+        public async Task<List<VoteViewModel>> GetVotesIdByCandidateId(int candidateId, int electionId)
         {
-            var response = await _httpClient.GetFromJsonAsync<List<VoteViewModel>>($"/api/Vote/VotesCandidate/{candidateId}");
+            var response = await _httpClient.GetFromJsonAsync<List<VoteViewModel>>($"/api/Vote/VotesCandidate/{candidateId}/{electionId}");
             return await Task.FromResult(response);
         }
 
-        public async Task<List<VoteViewModel>> GetVotesByDistrictId(int districtId)
+        public async Task<List<VoteViewModel>> GetVotesByDistrictId(int districtId, int electionId)
         {
-            var response = await _httpClient.GetFromJsonAsync<List<VoteViewModel>>($"/api/Vote/VotesDistrict/{districtId}");
+            var response = await _httpClient.GetFromJsonAsync<List<VoteViewModel>>($"/api/Vote/VotesDistrict/{districtId}/{electionId}");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<int> GetVotesNumberByDistrictId(int districtId, int electionId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>($"/api/Vote/VotesNumberDistrict/{districtId}/{electionId}");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<int> GetValidVotesNumberByDistrictId(int districtId, int electionId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>($"/api/Vote/ValidVotesNumberDistrict/{districtId}/{electionId}");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<int> GetInvalidVotesNumberByDistrictId(int districtId, int electionId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<int>($"/api/Vote/InvalidVotesNumberDistrict/{districtId}/{electionId}");
+            return await Task.FromResult(response);
+        }
+
+        public async Task<int> GetVotesNumberByDistrictCandidate(int districtId, int electionId, int candidateId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<int>($"/api/Vote/VotesNumberDistrictCandidate/{districtId}/{electionId}/{candidateId}");
+                return await Task.FromResult(response);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine("Not found votes in this district related to this candidate");
+                return 0;
+            }
+
+        }
+
+        public async Task<double> GetFrequencyByDistrictIdToHour(int districtId, int electionId, int hourMax)
+        {
+            var response = await _httpClient.GetFromJsonAsync<double>($"/api/Vote/frequency/{districtId}/{electionId}/{hourMax}");
             return await Task.FromResult(response);
         }
     }

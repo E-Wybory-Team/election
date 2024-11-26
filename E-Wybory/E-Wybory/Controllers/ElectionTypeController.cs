@@ -13,7 +13,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+    [Authorize(Roles = "Pracownicy PKW, Administratorzy, Komisja wyborcza")]
     public class ElectionTypeController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -43,6 +43,22 @@ namespace E_Wybory.Controllers
             }
 
             return ElectionType;
+        }
+
+
+        // GET: api/ElectionTypes/name/5
+        [HttpGet("name/{electionTypeId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<string>> GetElectionTypeName(int electionTypeId)
+        {
+            var ElectionType = await _context.ElectionTypes.Where(type => type.IdElectionType == electionTypeId).FirstOrDefaultAsync();
+
+            if (ElectionType == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(ElectionType.ElectionTypeName);
         }
 
         // PUT: api/ElectionTypes/5

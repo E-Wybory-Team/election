@@ -55,5 +55,17 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<List<CandidateViewModel>>($"/api/Candidate/ElectionDistrictCandidates/{electionId}/{districtId}");
             return await Task.FromResult(response);
         }
+
+        public bool IfCandidateListHasCandidate(int candidateId, List<CandidatePersonViewModel> candidates)
+        {
+            foreach(var candidate in candidates)
+            {
+                if(candidate.candidateViewModel.IdCandidate == candidateId)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
