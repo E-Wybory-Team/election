@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <div class="nav-scrollable">
         <nav class="flex-column">
 
             @if (_user?.Identity == null || !_user.Identity.IsAuthenticated)
@@ -235,6 +235,7 @@
     protected override async Task OnInitializedAsync()
     {
         System.Diagnostics.Debug.WriteLine("Hello");
+
         _authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _user = _authState.User;
 

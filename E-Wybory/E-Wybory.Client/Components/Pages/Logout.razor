@@ -1,10 +1,11 @@
 ﻿@page "/logout"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
-@inject ElectionAuthStateProvider AuthStateProvider
-@inject ElectionAuthStateProvider AuthenticationStateProvider
-@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 <link href="forms.css" rel="stylesheet" />
 
@@ -35,7 +36,7 @@
             bool isLoggedOut = await AuthService.Logout();
             if (isLoggedOut)
             {
-                await AuthStateProvider.MarkUserAsLoggedOut();
+                await (AuthenticationStateProvider as ElectionAuthStateProvider)!.MarkUserAsLoggedOut();
                 NavigationManager.NavigateTo(""); 
                 System.Diagnostics.Debug.WriteLine("Logged Out");
             }

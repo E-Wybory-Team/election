@@ -93,7 +93,7 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("logout")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
             //Now just checking if header is empty, maybe flag in database?

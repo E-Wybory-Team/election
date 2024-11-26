@@ -1,11 +1,13 @@
 ﻿@page "/account"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
-@inject ElectionAuthStateProvider AuthenticationStateProvider
-@using E_Wybory.Client.ViewModels
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 <link href="forms.css" rel="stylesheet" />
 

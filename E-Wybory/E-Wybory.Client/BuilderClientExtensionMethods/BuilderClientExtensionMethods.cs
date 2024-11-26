@@ -25,7 +25,6 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
             services.AddSingleton<UrlEncoder>(UrlEncoder.Default);
 
 
-            services.AddScoped<AuthenticationStateProvider, ElectionAuthStateProvider>();
             services.AddAuthorizationCore();
 
             services.AddScoped<IAuthService, AuthService>();
@@ -45,7 +44,7 @@ namespace E_Wybory.Client.BuilderClientExtensionMethods
             services.AddScoped<IVoterManagementService, VoterManagementService>();
             services.AddScoped<IElectionVoterManagementService, ElectionVoterManagementService>();
             services.AddScoped<IVoteManagementService, VoteManagementService>();
-            services.AddScoped<ElectionAuthStateProvider>();
+            services.AddScoped<AuthenticationStateProvider, ElectionAuthStateProvider>();
         }
     }
 }
