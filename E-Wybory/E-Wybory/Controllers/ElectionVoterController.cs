@@ -61,7 +61,7 @@ namespace E_Wybory.Controllers
         // POST: api/ElectionVoters
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "2FAveryfiedUser, Amdinistratorzy, Komisja wyborcza")] //Policy ="2FAenabled"
+        [Authorize(Roles = "2FAveryfiedUser, Administratorzy, Komisja wyborcza")] //Policy ="2FAenabled"
 
         public async Task<ActionResult<ElectionVoter>> PostElectionVoter(ElectionVoterViewModel electionVoterViewModel)
         {
@@ -99,9 +99,9 @@ namespace E_Wybory.Controllers
             return _context.Voters.Any(e => e.IdVoter == idVoter) 
                 && _context.Elections.Any(e => e.IdElection == idElection);
         }
-
+       
         [HttpGet("exist/{idVoter}/{idElection}")]
-        [Authorize(Roles = "2FAveryfiedUser, Amdinistratorzy, Komisja wyborcza")]
+        [Authorize(Roles = "2FAveryfiedUser, Administratorzy, Komisja wyborcza")]
         public async Task<ActionResult<bool>> ElectionVoterAlreadyExists(int idVoter, int idElection)
         {
             return ElectionVoterExists(idVoter, idElection);
