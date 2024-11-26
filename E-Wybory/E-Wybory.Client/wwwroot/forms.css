@@ -293,3 +293,88 @@ input, select {
     margin: 0;
 }
 
+/* Kontener formularza */
+.account-form-container {
+    max-width: 500px; /* Zmniejszenie szerokości formularza */
+    margin: 0 auto; /* Wyśrodkowanie formularza */
+    padding: 20px;
+    background-color: #ffffff; /* Białe tło */
+    border-radius: 10px; /* Zaokrąglone rogi */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Lekki cień */
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Odstęp między sekcjami */
+}
+
+    /* Pola formularza */
+    .account-form-container .form-group {
+        display: flex;
+        flex-direction: row; /* Ustawianie etykiet i pól obok siebie */
+        justify-content: space-between;
+        align-items: center; /* Wyrównanie etykiet i pól */
+        gap: 10px;
+    }
+
+    .account-form-container label {
+        font-size: 14px;
+        font-weight: bold; /* Pogrubienie etykiet */
+        color: #333;
+        min-width: 120px; /* Minimalna szerokość etykiet */
+        text-align: right; /* Wyrównanie etykiety do prawej */
+    }
+
+    .account-form-container .form-input {
+        width: 100%;
+        max-width: 300px; /* Szerokość pól */
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9; /* Lekko szare tło */
+    }
+
+    /* Sekcja przycisków */
+    .account-form-container .two-factor-section,
+    .account-form-container .password-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .account-form-container .two-factor-status {
+        font-size: 14px;
+        font-weight: bold;
+        padding: 10px 15px;
+        border-radius: 5px;
+        background-color: #ffe6e6; /* Domyślne czerwone tło */
+        color: #e60000; /* Domyślnie czerwony tekst */
+    }
+
+    .account-form-container .two-factor-status-blue {
+        background-color: #e6f2ff;
+        color: #1E5899;
+    }
+
+    /* Styl przycisków */
+    .account-form-container .submit-button,
+    .account-form-container .change-password-button {
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #1E5899; /* Domyślne niebieskie tło */
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        text-align: center;
+    }
+
+        .account-form-container .submit-button:hover,
+        .account-form-container .change-password-button:hover {
+            background-color: #ffffff;
+            color: #1E5899;
+            border: 1px solid #1E5899; /* Dodanie obramowania przy najechaniu */
+        }

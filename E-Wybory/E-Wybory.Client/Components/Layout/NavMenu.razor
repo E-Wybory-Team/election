@@ -1,110 +1,311 @@
-﻿
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+@inject ElectionUserManagementService ElectionUserManagementService
+@inject PersonManagementService PersonManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
 
-        <span class="title">
-            e-wybory.gov.pl
-            <img src="images/PolandIcon.png" alt="Poland" class="nav-icon" />
-        </span>
+
+@using System.Security.Claims
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<CascadingAuthenticationState>
+    <div class="top-row ps-3 navbar navbar-dark">
+
+        <div class="container-fluid">
+
+            <span class="title">
+                e-wybory.gov.pl
+                <img src="images/PolandIcon.png" alt="Poland" class="nav-icon" />
+            </span>
+            <span class="left-text">Internetowy system wyborczy</span>
+            <div class="user-controls">
+                @if (_user?.Identity != null && _user.Identity.IsAuthenticated)
+                {
+                    <span class="user-greeting">Witaj, @userName!</span>
+                    <button class="account-button" @onclick="Logout">Wyloguj</button>
+                }
+                else
+                {
+                    <button class="login-button" @onclick="GoToLoginPage">Zaloguj się</button>
+                }
+            </div>
+        </div>
     </div>
-</div>
 
-@*  onclick="document.querySelector('.navbar-toggler').click()"
- *@
-<div class="nav-scrollable">
-    <nav class="flex-column">
-        <div class="nav-item px-3 first-item">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <img src="images/HomeIcon.png" alt="Home" class="nav-item-icon-first" />
-                Strona główna
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/vote">
-                <img src="images/VoteIcon.png" alt="Vote" class="nav-item-icon" />
-                Głosowanie
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/candidatelist">
-                <img src="images/CandidatesIcon.png" alt="Candidates" class="nav-item-icon" />
-                Kandydaci
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/statistics">
-                <img src="images/StatsIcon.png" alt="Stats" class="nav-item-icon" />
-                Statystyki
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/info">
-                <img src="images/InfoIcon.png" alt="Info" class="nav-item-icon" />
-                Informator wyborczy
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/configure-election">
-                <img src="images/ConfigureElection.png" alt="ConfigureElection" class="nav-item-icon" />
-                Konfiguruj wybory
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/committeelist">
-                <img src="images/ConfigureCommittee.png" alt="ConfigureCommittee" class="nav-item-icon" />
-                Konfiguruj komitet
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/candidatelist">
-                <img src="images/ConfigureCandidate.png" alt="ConfigureCandidate" class="nav-item-icon" />
-                Konfiguruj kandydata
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/constituencylist">
-                <img src="images/ConfigureConstituency.png" alt="ConfigureConstituency" class="nav-item-icon" />
-                Konfiguruj okręg
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/districtlist">
-                <img src="images/ConfigureDistrict2.png" alt="ConfigureDistrict" class="nav-item-icon" />
-                Konfiguruj obwód
-
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/commissionerslist">
-                <img src="images/ConfigureCommittee.png" alt="Info" class="nav-item-icon" />
-                Konfiguruj skład komisji
-
-            </NavLink>
-        </div>
-    </nav>
-
+    <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
         <nav class="flex-column">
-            <div class="nav-item px-3 login-item">
-                <NavLink class="nav-link" href="login">
-                    <img src="images/LogInIcon.png" alt="Log In" class="nav-item-icon" />
-                    Zaloguj się
 
+            @if (_user?.Identity == null || !_user.Identity.IsAuthenticated)
+            {
+                
+                <div class="nav-item px-3 first-item">
+                    <NavLink class="nav-link" href="">
+                        <img src="images/HomeIcon.png" alt="Home" class="nav-item-icon-first" />
+                        Strona główna
+                    </NavLink>
+                </div>
+            }
+            else if (_user?.Identity.IsAuthenticated ?? false)
+            {
+                
+                @if (UserHasRole("Pracownicy PKW") || UserHasRole("Administratorzy"))
+                {
+                    <div class="nav-item px-3 first-item">
+                        <NavLink class="nav-link" href="PKWHome">
+                            <img src="images/HomeIcon.png" alt="Home" class="nav-item-icon-first" />
+                            Strona główna (PKW)
+                        </NavLink>
+                    </div>
+                }
+                else if (UserHasRole("Urzędnicy wyborczy"))
+                {
+                    <div class="nav-item px-3 first-item">
+                        <NavLink class="nav-link" href="UWHome">
+                            <img src="images/HomeIcon.png" alt="Home" class="nav-item-icon-first" />
+                            Strona główna (UW)
+                        </NavLink>
+                    </div>
+                }
+                else if (UserHasRole("Komisja wyborcza"))
+                {
+                    <div class="nav-item px-3 first-item">
+                        <NavLink class="nav-link" href="COHome">
+                            <img src="images/HomeIcon.png" alt="Home" class="nav-item-icon-first" />
+                            Strona główna (CO)
+                        </NavLink>
+                    </div>
+                }
+                else
+                {
+                    
+                    <div class="nav-item px-3 first-item">
+                        <NavLink class="nav-link" href="">
+                            <img src="images/HomeIcon.png" alt="Home" class="nav-item-icon-first" />
+                            Strona główna
+                        </NavLink>
+                    </div>
+                }
+            }
+
+            
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/vote">
+                    <img src="images/VoteIcon.png" alt="Vote" class="nav-item-icon" />
+                    Głosowanie
                 </NavLink>
             </div>
-            <div class="nav-item px-3 register-item">
-                <NavLink class="nav-link" href="register">
-                    <img src="images/SignUpIcon.png" alt="Sign Up" class="nav-item-icon" />
-                    Zarejestruj się
-
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/candidateinfo">
+                    <img src="images/CandidatesIcon.png" alt="Candidates" class="nav-item-icon" />
+                    Kandydaci
                 </NavLink>
             </div>
-    </nav>
-</div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/statistics">
+                    <img src="images/StatsIcon.png" alt="Stats" class="nav-item-icon" />
+                    Statystyki
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/info">
+                    <img src="images/InfoIcon.png" alt="Info" class="nav-item-icon" />
+                    Informator wyborczy
+                </NavLink>
+            </div>
+
+            
+            @if (UserHasRole("Pracownicy PKW") || UserHasRole("Administratorzy"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/configure-election">
+                        <img src="images/ConfigureElection.png" alt="ConfigureElection" class="nav-item-icon" />
+                        Konfiguruj wybory
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/committeelist">
+                        <img src="images/ConfigureCommittee.png" alt="ConfigureCommittee" class="nav-item-icon" />
+                        Konfiguruj komitet
+                    </NavLink>
+                </div>     
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/candidatelist">
+                        <img src="images/ConfigureCandidate.png" alt="ConfigureCandidate" class="nav-item-icon" />
+                        Konfiguruj kandydata
+                
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/constituencylist">
+                        <img src="images/ConfigureConstituency.png" alt="ConfigureConstituency" class="nav-item-icon" />
+                        Konfiguruj okręg
+                
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/districtlist">
+                        <img src="images/ConfigureDistrict2.png" alt="ConfigureDistrict" class="nav-item-icon" />
+                        Konfiguruj obwód
+                
+                    </NavLink>
+                </div>
+            }
+            @if (UserHasRole("Urzędnicy wyborczy"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/commissionerslist">
+                        <img src="images/ConfigureCommittee.png" alt="Info" class="nav-item-icon" />
+                        Konfiguruj skład komisji
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/voterslist">
+                        <img src="images/ConfigureVotersIcon.png" alt="Info" class="nav-item-icon" />
+                        Konfiguruj wyborców
+                    </NavLink>
+                </div>
+            }
+            @if (UserHasRole("Komisja wyborcza"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/districtstats">
+                        <img src="images/DistrictStatsIcon.png" alt="Info" class="nav-item-icon" />
+                        Statystyki dla obwodów
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/cancelvoter">
+                        <img src="images/CancelVoterIcon.png" alt="Info" class="nav-item-icon" />
+                        Wypis wyborców
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/checkstatus">
+                        <img src="images/CHeckStatusIcon.png" alt="Info" class="nav-item-icon" />
+                        Status głosowania
+                    </NavLink>
+                </div>
+            }
+
+            
+            @if (_user?.Identity == null || !_user.Identity.IsAuthenticated)
+            {
+                <div class="nav-item px-3 login-item">
+                    <NavLink class="nav-link" href="login">
+                        <img src="images/LogInIcon.png" alt="Log In" class="nav-item-icon" />
+                        Zaloguj się
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3 register-item">
+                    <NavLink class="nav-link" href="register">
+                        <img src="images/SignUpIcon.png" alt="Sign Up" class="nav-item-icon" />
+                        Zarejestruj się
+                    </NavLink>
+                </div>
+            }
+
+            
+            @if (_user?.Identity != null && _user.Identity.IsAuthenticated)
+            {
+                <div class="nav-item px-3 account-item">
+                    <NavLink class="nav-link" href="account">
+                        <img src="images/AccountIcon.png" alt="Account" class="nav-item-icon" />
+                        Konto
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3 logout-item">
+                    <NavLink class="nav-link" href="logout">
+                        <img src="images/LogOutIcon.png" alt="Log Out" class="nav-item-icon" />
+                        Wyloguj się
+                    </NavLink>
+                </div>
+            }
+        </nav>
+    </div>
+</CascadingAuthenticationState>
+
+@code {
+    private string? userName;
+    private ClaimsPrincipal _user;
+    private AuthenticationState _authState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        System.Diagnostics.Debug.WriteLine("Hello");
+        _authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _user = _authState.User;
+
+        if (_user.Identity != null && _user.Identity.IsAuthenticated)
+        {
+            await LoadUserNameAsync();
+        }
+
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private async Task LoadUserNameAsync()
+    {
+        System.Diagnostics.Debug.WriteLine("Any1Here ?");
+        try
+        {
+            var idClaim = _user.FindFirst("IdElectionUser")?.Value;
+            if (!string.IsNullOrEmpty(idClaim) && int.TryParse(idClaim, out var idElectionUser))
+            {
+                
+                var electionUser = await ElectionUserManagementService.GetElectionUserById(idElectionUser);
+                if (electionUser != null)
+                {
+                    var person = await PersonManagementService.GetPersonById(electionUser.IdPerson);
+                    userName = person?.Name ?? "Użytkownik";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while loading user name: {ex.Message}");
+            userName = "Użytkownik";
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        _authState = await task;
+        _user = _authState.User;
+
+        if (_user.Identity != null && _user.Identity.IsAuthenticated)
+        {
+            await LoadUserNameAsync();
+        }
+        else
+        {
+            userName = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void GoToLoginPage()
+    {
+        System.Diagnostics.Debug.WriteLine("LOGIN BRO");
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private async Task Logout()
+    {
+        NavigationManager.NavigateTo("/logout");
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+
+    private bool UserHasRole(string roleName)
+    {
+        return _user?.IsInRole(roleName) ?? false;
+    }
+
+}
