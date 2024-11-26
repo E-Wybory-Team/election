@@ -219,6 +219,7 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasIndex(e => e.IdPerson, "uniquePerson").IsUnique();
 
             entity.Property(e => e.IdElectionUser).HasColumnName("idElectionUser");
+            entity.Property(e => e.AccountIsActive).HasColumnName("accountIsActive");
             entity.Property(e => e.Email)
                 .HasMaxLength(50)
                 .HasColumnName("email");
@@ -231,6 +232,7 @@ public partial class ElectionDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(15)
                 .HasColumnName("phoneNumber");
+            entity.Property(e => e.RetryCount).HasColumnName("retryCount");
             entity.Property(e => e.UserSecret)
                 .HasMaxLength(100)
                 .HasColumnName("userSecret");

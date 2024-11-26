@@ -21,7 +21,9 @@ public partial class ElectionUser
 
     public bool Is2Faenabled { get; set; }
 
+    public bool AccountIsActive { get; set; }
 
+    public int RetryCount { get; set; }
     public virtual District IdDistrictNavigation { get; set; } = null!;
 
     public virtual Person IdPersonNavigation { get; set; } = null!;
