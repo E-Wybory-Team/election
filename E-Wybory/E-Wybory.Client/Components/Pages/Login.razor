@@ -10,7 +10,7 @@
 
 
 
-
+<CascadingAuthenticationState>
 <div class="login-form">
     <div class="icon">
         <img src="images/profile-tick.png" alt="Ikona logowania" width="400" height="400" />
@@ -50,6 +50,7 @@
 
 
 </div>
+</CascadingAuthenticationState>
 
 @code {
     private LoginViewModel loginModel = new LoginViewModel();
@@ -63,7 +64,7 @@
         if (!string.IsNullOrEmpty(token))
         {
             // Zapis tokena w localStorage
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
+            await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "authToken", token);
 
             // Dekodowanie tokena i przekierowanie na podstawie roli
             var roles = DecodeJwtRoles(token);

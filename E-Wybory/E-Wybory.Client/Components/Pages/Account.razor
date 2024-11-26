@@ -1,0 +1,108 @@
+﻿@page "/account"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@inject NavigationManager NavigationManager
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
+@inject ElectionAuthStateProvider AuthenticationStateProvider
+@using E_Wybory.Client.ViewModels
+
+<link href="forms.css" rel="stylesheet" />
+
+
+<CascadingAuthenticationState>
+    <div class="account-form-container">
+        <h1>Twoje Konto</h1>
+
+
+        <div class="form-group">
+            <label>Imię</label>
+            <InputText @bind-Value="person.Name" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+            <label>Nazwisko</label>
+            <InputText @bind-Value="person.Surname" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+            <label>PESEL</label>
+            <InputText @bind-Value="person.PESEL" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+            <label>Data urodzenia</label>
+            <InputText @bind-Value="person.DateOfBirthString" readonly class="form-input" />
+        </div>
+
+
+        <div class="form-group">
+            <label>Email</label>
+            <InputText @bind-Value="user.Email" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+            <label>Numer telefonu</label>
+            <InputText @bind-Value="user.PhoneNumber" readonly class="form-input" />
+        </div>
+
+
+        <div class="two-factor-section">
+            <label>Weryfikacja dwuetapowa</label>
+            <span class="two-factor-status @VerificationClass">@VerificationMessage</span>
+            <button class="submit-button" @onclick="NavigateTo2FA">Weryfikuj</button>
+        </div>
+
+
+        <div class="password-section">
+            <label>Hasło</label>
+            <button class="change-password-button" @onclick="NavigateToChangePassword">Zmień hasło</button>
+        </div>
+    </div>
+</CascadingAuthenticationState>
+
+@code {
+    private PersonViewModel person = new();
+    private ElectionUserViewModel user = new();
+    private string VerificationMessage;
+    private string VerificationClass;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userIdClaim = authState.User.FindFirst("IdElectionUser")?.Value;
+
+        if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+        {
+            
+            user = await ElectionUserManagementService.GetElectionUserById(userId);
+            person = await PersonManagementService.GetPersonById(user.IdPerson);
+ 
+            UpdateVerificationMessage(!string.IsNullOrEmpty(user.UserSecret));
+        }
+    }
+
+    private void UpdateVerificationMessage(bool is2FAEnabled)
+    {
+        if (is2FAEnabled)
+        {
+            VerificationMessage = "Użytkownik zweryfikowany";
+            VerificationClass = "status-alert-blue";
+        }
+        else
+        {
+            VerificationMessage = "Użytkownik niezweryfikowany";
+            VerificationClass = "status-alert-red";
+        }
+    }
+
+    private void NavigateTo2FA()
+    {
+        NavigationManager.NavigateTo("/verify/2fa-code");
+    }
+
+    private void NavigateToChangePassword()
+    {
+        NavigationManager.NavigateTo("/forgot-password");
+    }
+}

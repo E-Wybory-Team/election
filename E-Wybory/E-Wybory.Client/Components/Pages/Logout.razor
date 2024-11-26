@@ -1,0 +1,76 @@
+﻿@page "/logout"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject ElectionAuthStateProvider AuthStateProvider
+@inject ElectionAuthStateProvider AuthenticationStateProvider
+@using System.Security.Claims
+
+<link href="forms.css" rel="stylesheet" />
+
+<CascadingAuthenticationState>
+    <div class="form-container">
+        <h1>Czy na pewno chcesz się wylogować?</h1>
+        <div class="form-row">
+            <button class="submit-button" @onclick="ConfirmLogout">Wyloguj się</button>
+            <button class="cancel-button" @onclick="CancelLogout">Anuluj</button>
+        </div>
+    </div>
+</CascadingAuthenticationState>
+
+@code {
+    private ClaimsPrincipal _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _user = authState.User;
+    }
+
+    private async Task ConfirmLogout()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("Preparing to logout");
+            bool isLoggedOut = await AuthService.Logout();
+            if (isLoggedOut)
+            {
+                await AuthStateProvider.MarkUserAsLoggedOut();
+                NavigationManager.NavigateTo(""); 
+                System.Diagnostics.Debug.WriteLine("Logged Out");
+            }
+            else
+            {
+                Console.WriteLine("Nie udało się wylogować użytkownika.");
+                System.Diagnostics.Debug.WriteLine("Couldn't log out.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd podczas wylogowywania: {ex.Message}");
+        }
+    }
+
+    private void CancelLogout()
+    {
+        
+        if (_user?.IsInRole("Pracownicy PKW") == true || _user?.IsInRole("Administratorzy") == true)
+        {
+            NavigationManager.NavigateTo("/PKWHome");
+        }
+        else if (_user?.IsInRole("Urzędnicy wyborczy") == true)
+        {
+            NavigationManager.NavigateTo("/UWHome");
+        }
+        else if (_user?.IsInRole("Komisja wyborcza") == true)
+        {
+            NavigationManager.NavigateTo("/COHome");
+        }
+        else
+        {
+            NavigationManager.NavigateTo(""); 
+        }
+
+        System.Diagnostics.Debug.WriteLine("Cancel clicked");
+    }
+}
