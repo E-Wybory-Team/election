@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -11,7 +11,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="_Imports.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="_Imports.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bunit" Version="1.36.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="3.1.32" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.5.3" />
@@ -31,9 +43,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Client\Components\Pages\" />
+    <Folder Include="Client\Utils\" />
     <Folder Include="Infrastructure\" />
     <Folder Include="Application\" />
-    <Folder Include="Server\" />
   </ItemGroup>
 
 </Project>

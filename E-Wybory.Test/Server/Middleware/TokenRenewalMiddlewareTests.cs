@@ -8,7 +8,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace E_Wybory.Tests
+namespace E_Wybory.Test.Server.Middleware
 {
     public class TokenRenewalMiddlewareTests
     {
