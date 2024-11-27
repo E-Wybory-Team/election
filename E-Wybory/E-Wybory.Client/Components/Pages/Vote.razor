@@ -135,16 +135,16 @@
             errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
         }
 
-            var committees = await PartyManagementService.Parties();
+        var committees = await PartyManagementService.Parties();
 
 
-            foreach (var activeElection in activeElections)
+        foreach (var activeElection in activeElections)
+        {
+            var hasVoted = await ElectionVoterManagementService.ElectionVoterExists(IdVoter, activeElection.IdElection);
+            if (!hasVoted)
             {
-                var hasVoted = await ElectionVoterManagementService.ElectionVoterExists(IdVoter, activeElection.IdElection);
-                if (!hasVoted)
-                {
-                    filteredElections.Add(activeElection);
-                    votesInElections.Add(activeElection.IdElection, new VoteViewModel()
+                filteredElections.Add(activeElection);
+                votesInElections.Add(activeElection.IdElection, new VoteViewModel()
                         {
                             IdDistrict = IdDistrict,
                             IdElection = activeElection.IdElection,
@@ -152,43 +152,43 @@
                             IdCandidate = 0
                         });
 
-                    // Initialize the dictionary entry
-                    var candidates = await CandidateManagementService.GetCandidatesByElectionDistrictId(activeElection.IdElection, IdDistrict);
-                    if (candidates != null && candidates.Any())
+                // Initialize the dictionary entry
+                var candidates = await CandidateManagementService.GetCandidatesByElectionDistrictId(activeElection.IdElection, IdDistrict);
+                if (candidates != null && candidates.Any())
+                {
+
+                    electionCandidates[activeElection.IdElection] = candidates;
+
+                    foreach (var candidate in candidates)
                     {
-
-                        electionCandidates[activeElection.IdElection] = candidates;
-
-                        foreach (var candidate in candidates)
+                        if (!candidatesData.ContainsKey(candidate.IdCandidate))
                         {
-                            if (!candidatesData.ContainsKey(candidate.IdCandidate))
-                            {
 
-                                var person = await PersonManagementService.GetPersonNameSurnameById(candidate.IdPerson);
-                                if (candidate.IdParty != null)
-                                {
-                                    var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
-                                    Console.WriteLine($"Party name: {partyName}");
-                                    person += " - partia: " + partyName;
-                                }
-                                if (!string.IsNullOrEmpty(person))
-                                {
-                                    candidatesData[candidate.IdCandidate] = person;
-                                }
+                            var person = await PersonManagementService.GetPersonNameSurnameById(candidate.IdPerson);
+                            if (candidate.IdParty != null)
+                            {
+                                var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
+                                Console.WriteLine($"Party name: {partyName}");
+                                person += " - partia: " + partyName;
+                            }
+                            if (!string.IsNullOrEmpty(person))
+                            {
+                                candidatesData[candidate.IdCandidate] = person;
                             }
                         }
                     }
                 }
             }
+        }
 
-            activeElections = filteredElections;
+        activeElections = filteredElections;
 
-            if (!activeElections.Any())
-            {
-                errorMessageAtStart = "Nie ma dostępnych wyborów dla użytkownika.";
-                //NavigationManager.NavigateTo("/");
-            }
-            electionTypes = await ElectionTypeManagementService.ElectionTypes();
+        if (!activeElections.Any())
+        {
+            errorMessageAtStart = "Nie ma dostępnych wyborów dla użytkownika.";
+            //NavigationManager.NavigateTo("/");
+        }
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }
 
 
@@ -210,6 +210,7 @@
                 errorMessage = "Głosowanie się nie powiodło!";
                 if (votingResult1)
                 {
+                    voteModel.IsValid = !voteModel.IsValid; //because user chose invalid vote(or did not choose)
                     var votingResult2 = await VoteManagementService.AddVote(voteModel);
                     if (votingResult1 && votingResult2)
                     {

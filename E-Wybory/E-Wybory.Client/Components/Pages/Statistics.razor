@@ -69,9 +69,11 @@
             }
         </select>
     </div>
+    @if(SelectedProvinceId != null)
+    {
     <div class="filter-group">
         <label>Frekwencja</label>
-        <select @onchange="(e => OnFrequencyChanged(e))">
+        <select bind="@SelectedAttendance" @onchange="(e => OnFrequencyChanged(e))">
             <option value="">Wybierz frekwencję</option>
             @foreach (var attendance in attendances)
             {
@@ -79,11 +81,19 @@
             }
         </select>
     </div>
+    }
 </div>
 
 @if (election.IdElection != 0)
 {
+    var frequency = -1;
+    if(SelectedFrequency != -1)
+    {
+        frequency = SelectedFrequency;
+    }
     <h2>Wybory z dnia @election.ElectionStartDate.ToString("dd.MM.yyyy")</h2>
+    if (SelectedProvinceId != null)
+    {
     <table class="candidate-table">
         <thead>
             <tr>
@@ -91,22 +101,26 @@
                 <th>Obwodowa komisja wyborcza</th>
                 <th>Liczba uprawnionych</th>
                 <th>Liczba głosów elektronicznych</th>
-                <th>Liczba głosów elektronicznych * 100 / liczba uprawnionych do głosowania</th>
+                <th>Frekwencja</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var district in filteredDistricts)
             {
+                    @if (districtsVotesNumber.ContainsKey((district.IdDistrict, election.IdElection)) && districtsFrequencies.ContainsKey((district.IdDistrict, election.IdElection, frequency)))
+                {
                 <tr>
                     <td>@district.IdDistrict</td>
                     <td>@district.DistrictHeadquarters</td>
                     <td>@districtVotersNumber[district.IdDistrict]</td>
                     <td>@districtsVotesNumber[(district.IdDistrict, election.IdElection)]</td>
-                    <td>@districtsFrequencies[(district.IdDistrict, election.IdElection)] %</td>
+                    <td>@districtsFrequencies[(district.IdDistrict, election.IdElection, frequency)] %</td>
                 </tr>
+                }
             }
         </tbody>
     </table>
+    }
 }
 else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
 {
@@ -120,10 +134,12 @@ else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
     private int? SelectedVoivodeshipId { get; set; } = null;
     private int? SelectedCountyId { get; set; } = null;
     private int? SelectedProvinceId { get; set; } = null;
+    private int SelectedFrequency { get; set; } = -1;
+    private string? SelectedAttendance { get; set; } = null;
 
     private Dictionary<int, int> districtVotersNumber = new Dictionary<int, int>();
-    private Dictionary<(int, int), int> districtsVotesNumber = new Dictionary<(int, int), int>();
-    private Dictionary<(int, int), double> districtsFrequencies = new Dictionary<(int, int), double>();
+    private Dictionary<(int, int), int> districtsVotesNumber = new Dictionary<(int, int), int>(); //keys: districtId, electionId
+    private Dictionary<(int, int, int), double> districtsFrequencies = new Dictionary<(int, int, int), double>(); //keys: districtId, electionId, frequency
 
     private List<string> attendances = new() { "Do godziny 12:00", "Do godziny 17:00", "Całkowita" };
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
@@ -131,20 +147,34 @@ else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
     private ElectionViewModel election = new ElectionViewModel();
     private List<ElectionViewModel> allElections = new List<ElectionViewModel>();
 
-    private async Task FilterTable()
+    private async Task FilterTable(bool toChangeDictionaries)
     {
         wrapper.FilterListWrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-        filteredDistricts = await FilterWrapperService.GetFilteredDistricts(null, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
 
-        foreach (var district in filteredDistricts)
+        //ifs below are added to limit calculations to db to read data
+        if (toChangeDictionaries) //changes dictionaries only if province is selected
         {
-            var votersNumber = await VoterManagementService.GetNumberVotersByDistrictId(district.IdDistrict);
-            districtVotersNumber[district.IdDistrict] = votersNumber;
-
-            foreach (var election in allElections)
+            filteredDistricts = await FilterWrapperService.GetFilteredDistricts(null, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+            foreach (var district in filteredDistricts)
             {
-                districtsVotesNumber[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetVotesNumberByDistrictId(district.IdDistrict, election.IdElection);
-                districtsFrequencies[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, -1);
+                if (!districtVotersNumber.ContainsKey(district.IdDistrict)) //change only if value of this key is not counted
+                {
+                    var votersNumber = await VoterManagementService.GetNumberVotersByDistrictId(district.IdDistrict);
+                    districtVotersNumber[district.IdDistrict] = votersNumber;
+                }
+
+                foreach (var election in allElections)
+                {
+                    if (!districtsVotesNumber.ContainsKey((district.IdDistrict, election.IdElection))) //change only if value of this key is not counted
+                    {
+                        districtsVotesNumber[(district.IdDistrict, election.IdElection)] = await VoteManagementService.GetVotesNumberByDistrictId(district.IdDistrict, election.IdElection);
+                    }
+
+                    if (!districtsFrequencies.ContainsKey((district.IdDistrict, election.IdElection, -1))) //change only if value of this key is not counted
+                    {
+                        districtsFrequencies[(district.IdDistrict, election.IdElection, -1)] = await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, -1);
+                    }
+                }
             }
         }
     }
@@ -162,36 +192,43 @@ else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
         SelectedVoivodeshipId = null;
         SelectedCountyId = null;
         SelectedProvinceId = null;
+        SelectedAttendance = null;
+        SelectedFrequency = -1;
 
         if (SelectedElectionTypeId != 0 && SelectedElectionTypeId != null)
         {
             election = ElectionManagementService.GetElectionOfTypeOfSingleElection(SelectedElectionTypeId.Value, allElections);
             if (election.IdElection != 0)
             {
-                await FilterTable();
+                await FilterTable(false);
             }
         }
-
     }
 
     private async Task OnVoivodeshipChanged()
     {
         SelectedCountyId = null;
         SelectedProvinceId = null;
+        SelectedAttendance = null;
+        SelectedFrequency = -1;
 
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnCountyChanged()
     {
         SelectedProvinceId = null;
+        SelectedAttendance = null;
+        SelectedFrequency = -1;
 
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnProvinceChanged()
     {
-        await FilterTable();
+        SelectedAttendance = null;
+        SelectedFrequency = -1;
+        await FilterTable(true);
     }
 
     private async Task OnFrequencyChanged(ChangeEventArgs e)
@@ -202,10 +239,13 @@ else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
 
         foreach (var district in filteredDistricts)
         {
-           districtsFrequencies[(district.IdDistrict, election.IdElection)] = 
-              await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
-            
+            if (!districtsFrequencies.ContainsKey((district.IdDistrict, election.IdElection, hourMax))) //change only if value of this key is null
+            {
+                districtsFrequencies[(district.IdDistrict, election.IdElection, (int)hourMax)] =
+                   await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
+            }
         }
+        SelectedFrequency = hourMax;
     }
 
     private static int ExtractHour(string input)

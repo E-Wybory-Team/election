@@ -36,6 +36,7 @@ namespace E_Wybory.Client.ViewModels
         public string ConfirmPassword { get; set; } = String.Empty;
 
         [Required(ErrorMessage = "Obwód wyborczy jest obowiązkowy!")]
+        [Range(1, int.MaxValue, ErrorMessage = "Proszę wybrać obwód!")]
         public int SelectedDistrictId { get; set; } = 0;
 
         [ValidateDateOfBirthWithPesel]

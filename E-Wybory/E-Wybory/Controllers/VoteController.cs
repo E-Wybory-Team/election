@@ -178,7 +178,7 @@ namespace E_Wybory.Controllers
         public async Task<ActionResult<int>> GetValidVotesNumberByDistrictId(int districtId, int electionId)
         {
             //in database, valid is 0 and invalid is 1, so it's opposite
-            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
             return Votes.Count();
         }
 
@@ -188,7 +188,7 @@ namespace E_Wybory.Controllers
 
         public async Task<ActionResult<int>> GetInvalidVotesNumberByDistrictId(int districtId, int electionId)
         {
-            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
             return Votes.Count();
         }
 
@@ -198,10 +198,17 @@ namespace E_Wybory.Controllers
 
         public async Task<ActionResult<int>> GetVotesNumberByDistrictCandidate(int districtId, int electionId, int candidateId)
         {
-            if (await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId).AnyAsync())
+            if (await _context.Candidates.Where(candidate => candidate.IdCandidate == candidateId && candidate.IdElection == electionId && candidate.IdDistrict == districtId).AnyAsync())
             {
-                var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
-                return Votes.Count();
+                if (await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId).AnyAsync())
+                {
+                    var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+                    return Votes.Count();
+                }
+                else
+                {
+                    return 0;
+                }
             }
             else
             {
@@ -270,5 +277,6 @@ namespace E_Wybory.Controllers
                 return BadRequest("Entered incorrect hour");
             }
         }
+
     }
 }
