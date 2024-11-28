@@ -124,7 +124,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/active
         [HttpGet("active")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
+        //[Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
         {
             var currentDate = DateTime.UtcNow;

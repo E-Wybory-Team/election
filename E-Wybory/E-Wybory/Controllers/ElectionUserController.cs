@@ -34,7 +34,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionUsers/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+        //[Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
 
         public async Task<ActionResult<ElectionUser>> GetElectionUser(int id)
         {
