@@ -22,7 +22,7 @@ namespace E_Wybory.Controllers
         // GET: api/Election
         [HttpGet]
         [AllowAnonymous] // ?? [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
-        public async Task<ActionResult<IEnumerable<Election>>> GetElection()
+        public async Task<ActionResult<IEnumerable<Election>>> GetElections()
         {
             return await _context.Elections.ToListAsync();
         }
@@ -124,7 +124,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/active
         [HttpGet("active")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
+        [AllowAnonymous]//[Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
         {
             var currentDate = DateTime.UtcNow;
@@ -195,7 +195,8 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newest")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElections()
         {
             var now = DateTime.Now;
