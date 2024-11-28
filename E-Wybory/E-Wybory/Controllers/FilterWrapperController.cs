@@ -439,16 +439,25 @@ namespace E_Wybory.Controllers
                 var candidateCountyId = candidate.IdDistrictNavigation?.IdProvinceNavigation?.IdCounty;
                 var candidateProvinceId = candidate.IdDistrictNavigation?.IdProvince;
 
-                if ((electionId != null && candidateElectionId != electionId) ||
-                    (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
-                    (countyId != null && candidateCountyId != countyId) ||
-                    (provinceId != null && candidateProvinceId != provinceId) ||
-                    (districtId != null && candidate.IdDistrict != districtId && candidate.IdDistrict != null))
+                if (candidate.IdDistrict == null)
                 {
-                    continue; // Skip this candidate if it doesn't match the filter conditions
+                    if (electionId != null && candidateElectionId != electionId)
+                    {
+                        continue; // Skip this candidate only if electionId doesn't match
+                    }
+                }
+                else
+                {
+                    if ((electionId != null && candidateElectionId != electionId) ||
+                        (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
+                        (countyId != null && candidateCountyId != countyId) ||
+                        (provinceId != null && candidateProvinceId != provinceId) ||
+                        (districtId != null && candidate.IdDistrict != districtId))
+                    {
+                        continue; // Skip this candidate if it doesn't match the filter conditions
+                    }
                 }
 
-                // Retrieve person data for the current candidate
                 var personViewModel = await _context.People
                     .Where(p => p.IdPerson == candidate.IdPerson)
                     .Select(person => new PersonViewModel
@@ -461,7 +470,6 @@ namespace E_Wybory.Controllers
                     })
                     .FirstOrDefaultAsync();
 
-                // Add the candidate and their person data to the list
                 candidatePersonViewModels.Add(new CandidatePersonViewModel
                 {
                     candidateViewModel = new CandidateViewModel

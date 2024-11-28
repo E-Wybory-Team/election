@@ -233,19 +233,22 @@ else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
 
     private async Task OnFrequencyChanged(ChangeEventArgs e)
     {
-        var attendance = e.Value?.ToString();
-        var hourMax = ExtractHour(attendance);
-        Console.WriteLine($"Extracted hour: {hourMax}");
-
-        foreach (var district in filteredDistricts)
+        if (election.IdElection != 0) //executing only if current election exists
         {
-            if (!districtsFrequencies.ContainsKey((district.IdDistrict, election.IdElection, hourMax))) //change only if value of this key is null
+            var attendance = e.Value?.ToString();
+            var hourMax = ExtractHour(attendance);
+            Console.WriteLine($"Extracted hour: {hourMax}");
+
+            foreach (var district in filteredDistricts)
             {
-                districtsFrequencies[(district.IdDistrict, election.IdElection, (int)hourMax)] =
-                   await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
+                if (!districtsFrequencies.ContainsKey((district.IdDistrict, election.IdElection, hourMax))) //change only if value of this key is null
+                {
+                    districtsFrequencies[(district.IdDistrict, election.IdElection, (int)hourMax)] =
+                       await VoteManagementService.GetFrequencyByDistrictIdToHour(district.IdDistrict, election.IdElection, (int)hourMax);
+                }
             }
+            SelectedFrequency = hourMax;
         }
-        SelectedFrequency = hourMax;
     }
 
     private static int ExtractHour(string input)

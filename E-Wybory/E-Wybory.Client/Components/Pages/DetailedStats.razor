@@ -140,57 +140,57 @@ else
     private string newestElectionTypeName = String.Empty;
 
     private List<CandidatePersonViewModel> filteredCandidates = new List<CandidatePersonViewModel>();
-    private List<CandidatePersonViewModel> nullDistrictCandidates = new List<CandidatePersonViewModel>();
     private FilterListWrapperFull wrapper = new FilterListWrapperFull();
     private List<PartyViewModel> parties = new List<PartyViewModel>();
     private ElectionViewModel newestElection = new ElectionViewModel();
     private Dictionary<int, int> votesNumberOfCandidates = new Dictionary<int, int>();
 
 
-    private async Task FilterTable()
+    private async Task FilterTable(bool toMakeCalculations) //parameter is introduces in order to limit calculations with server
     {
         wrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
         if (newestElection.IdElection != 0) //only if was found
         {
-            newestElectionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(SelectedElectionTypeId.Value, wrapper.ElectionFilter);
-            filteredCandidates.Clear();
-            filteredCandidates = nullDistrictCandidates;
-            var currentDistricts = await FilterWrapperService.GetFilteredDistricts(null, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-            foreach(var district in currentDistricts)
-            {
-                var districtCandidates = await FilterWrapperService.GetFilteredCandidatesFromElectionRegions(newestElection.IdElection, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, district.IdDistrict);
-
-                if (districtCandidates.Count() > 0)
+                newestElectionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(SelectedElectionTypeId.Value, wrapper.ElectionFilter);
+                filteredCandidates.Clear();
+                if (toMakeCalculations)
                 {
-                    foreach (var candidate in districtCandidates)
-                    {
-                        var votesNumber = 0;
-                        try
-                        {
-                            votesNumber = await VoteManagementService.GetVotesNumberByDistrictCandidate(district.IdDistrict, newestElection.IdElection, candidate.candidateViewModel.IdCandidate);
-                        }
-                        catch (Exception ex)
-                        {
-                        }
-                        if (votesNumberOfCandidates.ContainsKey(candidate.candidateViewModel.IdCandidate))
-                        {
-                            votesNumberOfCandidates[candidate.candidateViewModel.IdCandidate] = votesNumber;
-                        }
-                        else
-                        {
-                            votesNumberOfCandidates.Add(candidate.candidateViewModel.IdCandidate, votesNumber);
-                        }
+                var currentDistricts = await FilterWrapperService.GetFilteredDistricts(null, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+                foreach(var district in currentDistricts)
+                {
+                    var districtCandidates = await FilterWrapperService.GetFilteredCandidatesFromElectionRegions(newestElection.IdElection, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, district.IdDistrict);
 
+                    if (districtCandidates.Count() > 0)
+                    {
+                        foreach (var candidate in districtCandidates)
+                        {
+                            var votesNumber = 0;
+                            try
+                            {
+                                votesNumber = await VoteManagementService.GetVotesNumberByDistrictCandidate(district.IdDistrict, newestElection.IdElection, candidate.candidateViewModel.IdCandidate);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                            if (votesNumberOfCandidates.ContainsKey(candidate.candidateViewModel.IdCandidate))
+                            {
+                                votesNumberOfCandidates[candidate.candidateViewModel.IdCandidate] = votesNumber;
+                            }
+                            else
+                            {
+                                votesNumberOfCandidates.Add(candidate.candidateViewModel.IdCandidate, votesNumber);
+                            }
+
+                        }
+                    }
+                    foreach (var districtCandidate in districtCandidates)
+                    {
+                        if(!CandidateManagementService.IfCandidateListHasCandidate(districtCandidate.candidateViewModel.IdCandidate, filteredCandidates))
+                        {
+                            filteredCandidates.Add(districtCandidate);
+                        }
                     }
                 }
-                foreach (var districtCandidate in districtCandidates)
-                {
-                    if(!CandidateManagementService.IfCandidateListHasCandidate(districtCandidate.candidateViewModel.IdCandidate, filteredCandidates))
-                    {
-                        filteredCandidates.Add(districtCandidate);
-                    }
-                }
-
             }
 
             errorMessage = String.Empty;
@@ -206,7 +206,6 @@ else
         //filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
         wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
         parties = await PartyManagementService.Parties();
-        nullDistrictCandidates = await FilterWrapperService.GetFilteredCandidatesWithoutDistrict(newestElection.IdElection);
         errorMessage = "Proszę wybrać typ wyborów!";
     }
 
@@ -215,7 +214,7 @@ else
         if(SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
         {
             newestElection = await ElectionManagementService.GetNewestElectionOfElectionType(SelectedElectionTypeId.Value);
-            await FilterTable();
+            await FilterTable(false);
         }
         SelectedVoivodeshipId = null;
         SelectedCountyId = null;
@@ -229,7 +228,7 @@ else
         SelectedProvinceId = null;
         SelectedDistrictId = null;
 
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnCountyChanged()
@@ -237,19 +236,19 @@ else
         SelectedProvinceId = null;
         SelectedDistrictId = null;
 
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnProvinceChanged()
     {
         SelectedDistrictId = null;
 
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnDistrictChanged()
     {
-        await FilterTable();
+        await FilterTable(true);
     }
 
 }
