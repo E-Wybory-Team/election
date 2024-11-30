@@ -199,7 +199,7 @@ namespace E_Wybory.Controllers
             {
                 if (await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId).AnyAsync())
                 {
-                    var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+                    var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
                     return Votes.Count();
                 }
                 else

@@ -56,6 +56,11 @@
                         <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
                     </div>
 
+                    <div class="checkbox-group">
+                        <InputCheckbox class="checkbox" @bind-Value="@sentConfirmation" id="confirmation" />
+                        <label for="confirmation" class="checkbox-label">Chcę otrzymać potwierdzenie głosowania na adres e-mail</label>
+                    </div>
+
                 <button type="submit" class="submit-button">ZAGŁOSUJ</button>
             </EditForm>
         }
@@ -86,6 +91,7 @@
     private string errorMessage = String.Empty;
     private int IdDistrict = 0;
     private int IdVoter = 0;
+    private bool sentConfirmation { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -208,6 +214,10 @@
                     };
                 var votingResult1 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
                 errorMessage = "Głosowanie się nie powiodło!";
+                if (sentConfirmation)
+                {
+                    await AuthService.SendingConfirmation();
+                }
                 if (votingResult1)
                 {
                     voteModel.IsValid = !voteModel.IsValid; //because user chose invalid vote(or did not choose)

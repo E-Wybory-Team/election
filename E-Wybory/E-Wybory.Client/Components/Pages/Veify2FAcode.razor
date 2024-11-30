@@ -44,7 +44,7 @@
     private async Task OnValidSubmitAsync()
     {
         Input.Code = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
-        isValidUser = !user.IsValid();
+        isValidUser = user.IsValid();
         if(!isValidUser)
         {
             message = "Nie znaleziono użytkownika";

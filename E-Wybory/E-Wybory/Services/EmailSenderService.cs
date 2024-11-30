@@ -42,6 +42,41 @@ namespace E_Wybory.Services
 
             return emailSendOperation;
         }
+
+        public async Task<EmailSendOperation> SendEmailWithPdfAttachmentAsync(string email, string subject, string message, string pdfFilePath)
+        {
+            BinaryData pdfContent = BinaryData.FromBytes(await File.ReadAllBytesAsync(pdfFilePath));
+
+            EmailAttachment pdfAttachment = new EmailAttachment(
+                name: "generatedDocument.pdf",
+                contentType: "application/pdf", 
+                content: pdfContent 
+            );
+
+            var emailClient = new EmailClient(_emailOptions.ConnectionString);
+
+            var emailMessage = new EmailMessage(
+                senderAddress: _emailOptions.SenderAddress,
+                content: new EmailContent(subject)
+                {
+                    PlainText = message,
+                    Html = $@"
+		            <html>
+			            <body>
+				            <h1>{message}</h1>
+			            </body>
+		            </html>"
+                },
+                recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(email) }));
+
+            emailMessage.Attachments.Add(pdfAttachment);
+
+            EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                WaitUntil.Completed,
+                emailMessage);
+
+            return emailSendOperation;
+        }
     }
 
     public class EmailOptions
