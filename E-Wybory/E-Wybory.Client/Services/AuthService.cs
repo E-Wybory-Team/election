@@ -199,5 +199,11 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<bool> SendingConfirmation()
+        {
+            var response = await _httpClient.GetAsync("/api/auth/voteConfirmation");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
     }
 }

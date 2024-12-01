@@ -39,7 +39,9 @@ namespace E_Wybory.Controllers
         private readonly ElectionDbContext _context;
         private readonly IJWTService _tokenService;
         private readonly IEmailSenderService _emailSenderService;
+        private IPdfGeneratorService pdfGeneratorService = new PdfGenerateService();
         private static readonly ElectionPasswordPolicyAttribute _policyAttribute = new ElectionPasswordPolicyAttribute();
+
         public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService)
         {
             this._context = context;
@@ -543,6 +545,43 @@ namespace E_Wybory.Controllers
 
             return user.TwoFAveryfied;
 
+        }
+
+        [HttpGet("voteConfirmation")]
+        public async Task<ActionResult<bool>> CreatePdfOfVotingConfirmation()
+        {
+            UserWrapper user = new(User);
+            var electionUser = await _context.ElectionUsers.FindAsync(user.Id);
+            if (electionUser == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
+            var person = await _context.People.FindAsync(electionUser.IdPerson);
+
+            try
+            {
+                var pdfPath = await pdfGeneratorService.GeneratePdfWithImage_Syncfusion("Zaświadczenie o głosowaniu", $"Potwierdzamy oddanie " +
+                    $"głosu przez użytkownika " + $"{person.Name} {person.Surname} posługującego się numerem PESEL: {person.Pesel} \n " +
+                    $"Pozdrawiamy, \n" +
+                    $"Twórcy aplikacji E-Wybory");
+
+                var emailOperationResult = await _emailSenderService.SendEmailWithPdfAttachmentAsync(electionUser.Email, "E-wybory: Potwierdzenie głosowania", "Dzień dobry,\n " +
+                                                                    "W załączeniu przesyłamy zaświadczenie potwierdzające uczestnictwo w wyborach na platformie E-Wybory. \n " +
+                                                                    "Pozdrawiamy,\nTwórcy aplikacji E-Wybory", pdfPath);
+
+                if (System.IO.File.Exists(pdfPath))
+                {
+                    System.IO.File.Delete(pdfPath);
+                }
+                IActionResult result = emailOperationResult is not null && emailOperationResult.HasCompleted ?
+                Ok("Pdf file sent in email correctly.") : StatusCode(500, "Failed to send email");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+
+            return Ok();
         }
 
     }

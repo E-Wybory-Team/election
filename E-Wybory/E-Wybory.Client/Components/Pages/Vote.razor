@@ -18,76 +18,68 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 <link href="forms.css" rel="stylesheet" />
-<CascadingAuthenticationState>
-    <AuthorizeView Context="authContext">
-         <Authorized>
-            <div class="form-container">
-                <h1>ODDAWANIE GŁOSU</h1>
+<div class="form-container">
+    <h1>ODDAWANIE GŁOSU</h1>
+
+    @if (string.IsNullOrEmpty(errorMessageAtStart))
+    {
+    @if (activeElections != null && activeElections.Count() > 0)
+    {
+        @foreach (var election in activeElections)
+        {
+            var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
+
+            var voteModel = votesInElections[election.IdElection];
             
-                @if (string.IsNullOrEmpty(errorMessageAtStart))
-                {
-                @if (activeElections != null && activeElections.Count() > 0)
-                {
-                    @foreach (var election in activeElections)
-                    {
-                        var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
-            
-                        var voteModel = votesInElections[election.IdElection];
-                        
-            
-                        <EditForm Model="@voteModel" OnValidSubmit="() => HandleVoteSubmit(election.IdElection)">
-                            <DataAnnotationsValidator />
-            
-                            <h2>Wybory @electionTypeName</h2>
-            
-                            <div class="form-group">
-                                <label for="kandydat">Kandydat</label>
-                                <select @bind="@voteModel.IdCandidate" id="kandydat" class="form-select">
-                                    <option value="">Wybierz kandydata</option>
-                                    @if (electionCandidates.ContainsKey(election.IdElection))
-                                    {
-                                        @foreach (var candidate in electionCandidates[election.IdElection])
-                                        {
-                                            <option value="@candidate.IdCandidate">
-                                                @candidatesData[candidate.IdCandidate]
-                                            </option>
-                                        }
-                                    }
-                                </select>
-                                <ValidationMessage For="@(() => voteModel.IdCandidate)" />
-                            </div>
-            
-                                <div class="checkbox-group">
-                                    <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
-                                    <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
-                                </div>
-            
-                            <button type="submit" class="submit-button">ZAGŁOSUJ</button>
-                        </EditForm>
-                    }
-                }
-                }
-                else
-                {
-                    <div class="alert alert-danger mt-3">@errorMessageAtStart</div>
-                }
-            
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger mt-3">@errorMessage</div>
-                }
-            
-            </div>
-        </Authorized>
-        <NotAuthorized>
-            <div class="not-authorized-container">
-                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
-                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
-                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
-            </div>
-        </NotAuthorized>
-    </AuthorizeView>
-</CascadingAuthenticationState>
+
+            <EditForm Model="@voteModel" OnValidSubmit="() => HandleVoteSubmit(election.IdElection)">
+                <DataAnnotationsValidator />
+
+                <h2>Wybory @electionTypeName</h2>
+
+                <div class="form-group">
+                    <label for="kandydat">Kandydat</label>
+                    <select @bind="@voteModel.IdCandidate" id="kandydat" class="form-select">
+                        <option value="">Wybierz kandydata</option>
+                        @if (electionCandidates.ContainsKey(election.IdElection))
+                        {
+                            @foreach (var candidate in electionCandidates[election.IdElection])
+                            {
+                                <option value="@candidate.IdCandidate">
+                                    @candidatesData[candidate.IdCandidate]
+                                </option>
+                            }
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => voteModel.IdCandidate)" />
+                </div>
+
+                    <div class="checkbox-group">
+                        <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
+                        <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <InputCheckbox class="checkbox" @bind-Value="@sentConfirmation" id="confirmation" />
+                        <label for="confirmation" class="checkbox-label">Chcę otrzymać potwierdzenie głosowania na adres e-mail</label>
+                    </div>
+
+                <button type="submit" class="submit-button">ZAGŁOSUJ</button>
+            </EditForm>
+        }
+    }
+    }
+    else
+    {
+        <div class="alert alert-danger mt-3">@errorMessageAtStart</div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+
+</div>
 
 @code {
     private VoteViewModel voteModel = new VoteViewModel();
@@ -102,6 +94,7 @@
     private string errorMessage = String.Empty;
     private int IdDistrict = 0;
     private int IdVoter = 0;
+    private bool sentConfirmation { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -233,6 +226,10 @@
                     };
                 var votingResult1 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
                 errorMessage = "Głosowanie się nie powiodło!";
+                if (sentConfirmation)
+                {
+                    await AuthService.SendingConfirmation();
+                }
                 if (votingResult1)
                 {
                     voteModel.IsValid = !voteModel.IsValid; //because user chose invalid vote(or did not choose)
