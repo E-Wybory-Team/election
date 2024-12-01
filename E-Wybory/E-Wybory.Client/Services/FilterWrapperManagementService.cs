@@ -159,6 +159,7 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<List<UserPersonViewModel>>(url);
             return response;
         }
+        
 
         public async Task<List<CandidateViewModel>> GetFilteredCandidatesFromParty(
             int? partyId, int? electionId)

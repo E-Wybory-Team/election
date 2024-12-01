@@ -601,7 +601,6 @@ namespace E_Wybory.Controllers
         // GET: api/FilterWrapper/Users
         [HttpGet("Users")]
         [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
-
         public async Task<ActionResult<List<UserPersonViewModel>>> GetFilteredUsers(
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
@@ -667,6 +666,7 @@ namespace E_Wybory.Controllers
 
             return Ok(userPersonViewModels);
         }
+
 
 
         // GET: api/FilterWrapper/PartiesCandidates

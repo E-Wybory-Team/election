@@ -8,5 +8,7 @@ namespace E_Wybory.Client.Services
         Task<bool> UserExists(int id);
         Task<ElectionUserViewModel> GetElectionUserById(int id);
         Task<bool> UserPersonIdExists(int personId);
+        Task<bool> PutUser(ElectionUserViewModel userModel);
+        Task<bool> PutUserDistrict(ElectionUserViewModel userModel, int districtId);
     }
 }
