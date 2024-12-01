@@ -40,16 +40,7 @@ namespace E_Wybory.Test.Server.Controllers
                 new Candidate { IdCandidate = 2, JobType = "Job2" }
             }.AsQueryable();
 
-            var mockSet = new Mock<DbSet<Candidate>>();
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(candidates.Provider);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Expression).Returns(candidates.Expression);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.ElementType).Returns(candidates.ElementType);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.GetEnumerator()).Returns(candidates.GetEnumerator());
-
-            mockSet.As<IAsyncEnumerable<Candidate>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<System.Threading.CancellationToken>()))
-                .Returns(new TestAsyncEnumerator<Candidate>(candidates.GetEnumerator()));
-
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<Candidate>(candidates.Provider));
+            var mockSet = MockDbSet.CreateMockDbSet(candidates);
 
             _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
 
@@ -82,6 +73,20 @@ namespace E_Wybory.Test.Server.Controllers
         }
 
         [Fact]
+        public async Task GetCandidate_ReturnsNotFound_WhenCandidateDoesNotExist()
+        {
+            // Arrange
+            _mockContext.Setup(c => c.Candidates.FindAsync(1)).ReturnsAsync((Candidate)null);
+
+            // Act
+            var result = await _controller.GetCandidate(1);
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<Candidate>>(result);
+            Assert.IsType<NotFoundResult>(actionResult.Result);
+        }
+
+        [Fact]
         public async Task PutCandidate_UpdatesCandidate()
         {
             // Arrange
@@ -107,16 +112,7 @@ namespace E_Wybory.Test.Server.Controllers
 
             var candidates = new List<Candidate> { candidate }.AsQueryable();
 
-            var mockSet = new Mock<DbSet<Candidate>>();
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(candidates.Provider);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Expression).Returns(candidates.Expression);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.ElementType).Returns(candidates.ElementType);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.GetEnumerator()).Returns(candidates.GetEnumerator());
-
-            mockSet.As<IAsyncEnumerable<Candidate>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<System.Threading.CancellationToken>()))
-                .Returns(new TestAsyncEnumerator<Candidate>(candidates.GetEnumerator()));
-
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<Candidate>(candidates.Provider));
+            var mockSet = MockDbSet.CreateMockDbSet(candidates);
 
             mockSet.Setup(m => m.FindAsync(1)).ReturnsAsync(candidate);
 
@@ -160,16 +156,7 @@ namespace E_Wybory.Test.Server.Controllers
                 new Candidate { IdCandidate = 1, JobType = "Job1" }
             };
 
-            var mockSet = new Mock<DbSet<Candidate>>();
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(candidates.AsQueryable().Provider);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Expression).Returns(candidates.AsQueryable().Expression);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.ElementType).Returns(candidates.AsQueryable().ElementType);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.GetEnumerator()).Returns(candidates.AsQueryable().GetEnumerator());
-
-            mockSet.As<IAsyncEnumerable<Candidate>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<System.Threading.CancellationToken>()))
-                .Returns(new TestAsyncEnumerator<Candidate>(candidates.AsQueryable().GetEnumerator()));
-
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<Candidate>(candidates.AsQueryable().Provider));
+            var mockSet = MockDbSet.CreateMockDbSet<Candidate>(candidates.AsQueryable());
 
             mockSet.Setup(m => m.Add(It.IsAny<Candidate>())).Callback<Candidate>((candidate) =>
             {
@@ -217,16 +204,7 @@ namespace E_Wybory.Test.Server.Controllers
                 new Candidate { IdCandidate = 1, IdElection = 1, IdDistrict = 1, JobType = "Job1" }
             }.AsQueryable();
 
-            var mockSet = new Mock<DbSet<Candidate>>();
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(candidates.Provider);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Expression).Returns(candidates.Expression);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.ElementType).Returns(candidates.ElementType);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.GetEnumerator()).Returns(candidates.GetEnumerator());
-
-            mockSet.As<IAsyncEnumerable<Candidate>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<System.Threading.CancellationToken>()))
-                .Returns(new TestAsyncEnumerator<Candidate>(candidates.GetEnumerator()));
-
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<Candidate>(candidates.Provider));
+            var mockSet = MockDbSet.CreateMockDbSet(candidates);
 
             _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
 
@@ -248,16 +226,7 @@ namespace E_Wybory.Test.Server.Controllers
                 new Candidate { IdCandidate = 2, IdElection = 1, IdDistrict = 2, JobType = "Job2" }
             }.AsQueryable();
 
-            var mockSet = new Mock<DbSet<Candidate>>();
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(candidates.Provider);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Expression).Returns(candidates.Expression);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.ElementType).Returns(candidates.ElementType);
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.GetEnumerator()).Returns(candidates.GetEnumerator());
-
-            mockSet.As<IAsyncEnumerable<Candidate>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<System.Threading.CancellationToken>()))
-                .Returns(new TestAsyncEnumerator<Candidate>(candidates.GetEnumerator()));
-
-            mockSet.As<IQueryable<Candidate>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<Candidate>(candidates.Provider));
+            var mockSet = MockDbSet.CreateMockDbSet(candidates);
 
             _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
 
@@ -269,5 +238,115 @@ namespace E_Wybory.Test.Server.Controllers
             var returnValue = Assert.IsType<List<CandidateViewModel>>(actionResult.Value);
             Assert.Single(returnValue);
         }
+
+        [Fact]
+        public async Task PutCandidate_ReturnsBadRequest_ForInvalidModel()
+        {
+            // Arrange
+            var invalidModel = new CandidateViewModel { IdCandidate = 1 }; // Missing required fields
+
+            // Act
+            var result = await _controller.PutCandidate(1, invalidModel);
+
+            // Assert
+            var actionResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Not entered data to all required fields", actionResult.Value);
+        }
+
+        [Fact]
+        public async Task PostCandidate_ReturnsConflict_ForDuplicateData()
+        {
+            // Arrange
+            var candidateModel = new CandidateViewModel { IdCandidate = 1, JobType = "Job", PlaceOfResidence = "City", PositionNumber = 1, IdPerson = 1, IdElection = 1 };
+
+
+            var candidates = new List<Candidate>
+            {
+                new Candidate { IdPerson = 1, IdElection = 1 }
+            }.AsQueryable();
+
+            var mockSet = MockDbSet.CreateMockDbSet(candidates);
+            _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
+
+            // Act
+            var result = await _controller.PostCandidate(candidateModel);
+
+            // Assert
+            var actionResult = Assert.IsType<ConflictObjectResult>(result.Result);
+            Assert.Equal("These data exists in database", actionResult.Value);
+        }
+
+        [Fact]
+        public async Task DeleteCandidate_ReturnsNotFound_ForNonExistentId()
+        {
+            // Arrange
+            _mockContext.Setup(c => c.Candidates.FindAsync(It.IsAny<int>())).ReturnsAsync((Candidate)null);
+
+            // Act
+            var result = await _controller.DeleteCandidate(1);
+
+            // Assert
+            var actionResult = Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task GetCandidatesByElectionIdAndDistrict_ReturnsEmptyList_ForNoMatchingCandidates()
+        {
+            // Arrange
+            var candidates = new List<Candidate>().AsQueryable();
+            var mockSet = MockDbSet.CreateMockDbSet(candidates);
+
+            _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
+
+            // Act
+            var result = await _controller.GetCandidatesByElectionIdAndDistrict(1, 1);
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<List<CandidateViewModel>>>(result);
+            var returnValue = Assert.IsType<List<CandidateViewModel>>(actionResult.Value);
+            Assert.Empty(returnValue);
+        }
+
+        [Fact]
+        public async Task IfCandidateExists_ReturnsNotFound_ForInvalidId()
+        {
+            // Arrange
+            var candidate = new Candidate { IdCandidate = 1 };
+
+            var mockSet = MockDbSet.CreateMockDbSet(new List<Candidate> { candidate }.AsQueryable());
+
+            _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
+
+            // Act
+            var result = await _controller.IfCandidateExists(2);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task PutCandidate_ReturnsBadRequest_OnDatabaseException()
+        {
+            // Arrange
+            var candidateModel = new CandidateViewModel { IdCandidate = 1, JobType = "Job", PlaceOfResidence = "City", PositionNumber = 1, IdPerson = 1, IdElection = 1 };
+
+            var candidate = new Candidate { IdCandidate = 1 };
+            var mockSet = MockDbSet.CreateMockDbSet(new List<Candidate> { candidate }.AsQueryable());
+
+            mockSet.Setup(m => m.FindAsync(1)).ReturnsAsync(candidate);
+
+            _mockContext.Setup(c => c.Candidates).Returns(mockSet.Object);
+
+            _mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<System.Threading.CancellationToken>())).ThrowsAsync(new DbUpdateException());
+
+            // Act
+            var result = await _controller.PutCandidate(1, candidateModel);
+
+            // Assert
+            var actionResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Impossible to execute in database", actionResult.Value);
+        }
+
+
     }
 }
