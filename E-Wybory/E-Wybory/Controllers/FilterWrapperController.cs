@@ -701,5 +701,44 @@ namespace E_Wybory.Controllers
             }
             return candidateViewModels;
         }
+
+        [HttpGet("RegionsOfDistrict/{districtId}")]
+        public async Task<ActionResult<List<string>>> GetRegionsOfDistrict(int districtId)
+        {
+            var districts = await _context.Districts
+                            .Include(district => district.IdProvinceNavigation)
+                            .ThenInclude(province => province.IdCountyNavigation)
+                            .ThenInclude(county => county.IdVoivodeshipNavigation)
+                            .ToListAsync();
+
+            var regionList = new List<string>();
+
+            if(!(await _context.Districts.AnyAsync(district => district.IdDistrict == districtId)))
+            {
+                return NotFound();
+            }
+
+            var district = districts.Where(district => district.IdDistrict == districtId).FirstOrDefault();
+            var districtName = district.DistrictName;
+            regionList.Add(districtName);
+
+            if (district.IdProvince != null)
+            {
+                var provinceName = district.IdProvinceNavigation.ProvinceName;
+                var countyName = district.IdProvinceNavigation.IdCountyNavigation.CountyName;
+                var voivodeshipname = district.IdProvinceNavigation.IdCountyNavigation.IdVoivodeshipNavigation.VoivodeshipName;
+                regionList.Add(provinceName);
+                regionList.Add(countyName);
+                regionList.Add(voivodeshipname);
+                
+            }
+            else
+            {
+                regionList.Add(String.Empty);
+                regionList.Add(String.Empty);
+                regionList.Add(String.Empty);
+            }
+            return regionList;
+        }
     }
 }

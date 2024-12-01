@@ -9,5 +9,7 @@ namespace E_Wybory.Client.Services
         Task<bool> AddUserTypeSet(UserTypeSetViewModel userTypeSetViewModel);
         Task<bool> DeleteUserTypeSet(int userTypeSetId);
         Task<bool> UserWithTypeGroupExists(int userTypeId, int electionUserId);
+        Task<UserTypeSetViewModel> SetWithTypeGroupExists(int typeGroupId, int electionUserId);
+        Task<bool> PutUserTypeSet(UserTypeSetViewModel userTypeSetModel);
     }
 }

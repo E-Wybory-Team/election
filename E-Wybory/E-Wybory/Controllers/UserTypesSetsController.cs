@@ -153,6 +153,42 @@ namespace E_Wybory.Controllers
             return Ok(); //there was problems with CreatedAtAction result
         }
 
+
+        // PUT: api/UserTypeSets/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUserTypeSet(int id, [FromBody] UserTypeSetViewModel userTypeSetViewModel)
+        {
+
+            if (id != userTypeSetViewModel.IdUserTypeSet || !UserTypeSetExists(id))
+            {
+                return Conflict("Incorrect id");
+            }
+
+            var UserTypeSet = await _context.UserTypeSets.FindAsync(id);
+
+            if (UserTypeSet == null)
+            {
+                return NotFound();
+            }
+
+
+            UserTypeSet.IdUserTypeSet = userTypeSetViewModel.IdUserTypeSet;
+            UserTypeSet.IdElectionUser = userTypeSetViewModel.IdElectionUser;
+            UserTypeSet.IdUserType = userTypeSetViewModel.IdUserType;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Impossible to execute in database");
+            }
+            return Ok();
+        }
+
+
         // DELETE: api/UserTypeSets/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUserTypeSet(int id)
@@ -168,6 +204,7 @@ namespace E_Wybory.Controllers
 
             return NoContent();
         }
+
 
         private bool UserTypeSetExists(int id)
         {
@@ -190,11 +227,38 @@ namespace E_Wybory.Controllers
             return false;
         }
 
+        private bool TypeGroupOfElectionUserExists(int userTypeGroupId, int electionUserId)
+        {
+        return _context.UserTypeSets.Any(e => e.IdUserTypeNavigation.IdUserTypesGroup == userTypeGroupId && e.IdElectionUser == electionUserId);
+
+        }
+
         [HttpGet("typeGroupUser/{userTypeId}/{electionUserId}")]
         public async Task<ActionResult<bool>> UserWithTypeGroupExists(int userTypeId, int electionUserId)
         {
             return UserTypeGroupOfElectionUserExists(userTypeId, electionUserId);
       
+        }
+
+        [HttpGet("setGroupUser/{typeGroupId}/{electionUserId}")]
+        public async Task<ActionResult<UserTypeSetViewModel>> GetUserWithTypeGroupSet(int typeGroupId, int electionUserId)
+        {
+            if(!TypeGroupOfElectionUserExists(typeGroupId, electionUserId))
+            {
+                return new UserTypeSetViewModel(); //empty object
+            }
+
+            var set = await _context.UserTypeSets.Where(e => e.IdUserTypeNavigation.IdUserTypesGroup == typeGroupId 
+                                            && e.IdElectionUser == electionUserId).FirstOrDefaultAsync();
+
+            var userTypeSetViewModel = new UserTypeSetViewModel()
+            {
+                IdUserTypeSet = set.IdUserTypeSet,
+                IdElectionUser = set.IdElectionUser,
+                IdUserType = set.IdUserType
+            };
+
+            return userTypeSetViewModel;
         }
 
     }

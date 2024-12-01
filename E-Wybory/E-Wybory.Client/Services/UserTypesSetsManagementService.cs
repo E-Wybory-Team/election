@@ -36,8 +36,20 @@ namespace E_Wybory.Client.Services
             public async Task<bool> UserWithTypeGroupExists(int userTypeId, int electionUserId)
             {
                 var response = await _httpClient.GetFromJsonAsync<bool>($"/api/UserTypesSets/typeGroupUser/{userTypeId}/{electionUserId}");
-                Console.WriteLine($"Is success: {response}");
                 return response;
             }
+
+            public async Task<UserTypeSetViewModel> SetWithTypeGroupExists(int typeGroupId, int electionUserId)
+            {
+                var response = await _httpClient.GetFromJsonAsync<UserTypeSetViewModel>($"/api/UserTypesSets/setGroupUser/{typeGroupId}/{electionUserId}");
+                return await Task.FromResult(response);
+            }
+
+            public async Task<bool> PutUserTypeSet(UserTypeSetViewModel userTypeSetModel)
+            {
+                var response = await _httpClient.PutAsJsonAsync($"/api/UserTypesSets/{userTypeSetModel.IdUserTypeSet}", userTypeSetModel);
+                return await Task.FromResult(response.IsSuccessStatusCode);
+            }
+
     }
 }
