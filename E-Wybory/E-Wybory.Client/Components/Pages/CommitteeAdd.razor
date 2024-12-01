@@ -21,6 +21,7 @@
         <div class="form-group">
             <label for="nr-listy">NR LISTY</label>
             <InputNumber @bind-Value="committeeModel.ListCommiteeNumber" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
+            <ValidationMessage For="@(() => committeeModel.ListCommiteeNumber)" />
         </div>
         <div class="form-group-smaller">
             <label for="nazwa">NAZWA KOMITETU</label>
@@ -60,7 +61,7 @@
         </div>
 
         <div class="form-row">
-            <button type="submit" class="submit-button">MODYFIKUJ</button>
+            <button type="submit" class="submit-button">DODAJ</button>
             <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
@@ -93,6 +94,6 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/commissionerslist");
+        NavigationManager.NavigateTo("/committeelist");
     }
 }

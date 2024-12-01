@@ -19,6 +19,7 @@
         <div class="form-group">
             <label for="nr-listy">NR LISTY</label>
             <InputNumber @bind-Value="committeeModel.ListCommiteeNumber" id="nr-listy" class="form-input" placeholder="Wprowadź nr listy komitetu" />
+            <ValidationMessage For="@(() => committeeModel.ListCommiteeNumber)" />
         </div>
         <div class="form-group-smaller">
             <label for="nazwa">NAZWA KOMITETU</label>

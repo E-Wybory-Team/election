@@ -10,6 +10,7 @@ namespace E_Wybory.Client.ViewModels
         public string? PartyAddress { get; set; } = null;
         [Required(ErrorMessage = "Rodzaj partii jest obowiązkowy!")] public string PartyType { get; set; } = String.Empty;
         [Required(ErrorMessage ="Koalicyjnośc jest obowiązkowa!")] public bool IsCoalition { get; set; } = false;
+        [Range(1, int.MaxValue, ErrorMessage = "Nr Listy musi być większy od 0")]
         public int? ListCommiteeNumber { get; set; } = null;
         public string? Website { get; set; } = null;
     }

@@ -50,7 +50,7 @@
         <div class="form-group">
             <label for="dzien-wyborow">ROZPOCZĘCIE WYBORÓW</label>
             <InputText @bind-Value="electionModel.DateOfStartString" id="dzien-wyborow" type="datetime-local" placeholder="Wprowadź datę rozpoczęcia wyborów" />
-            <ValidationMessage For="@(() => electionModel.ElectionStartDate)" />
+            <ValidationMessage For="@(() => electionModel.DateOfEndString)" />
         </div>
 
         <div class="form-group">
@@ -59,13 +59,19 @@
             <ValidationMessage For="@(() => electionModel.ElectionEndDate)" />
         </div>
 
+        @if (!string.IsNullOrEmpty(errorMessageDate))
+        {
+            <div class="alert alert-danger mt-3">@errorMessageDate</div>
+        }
+
         <div class="form-group">
             <label for="tura">TURA WYBORÓW</label>
             <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
+            <ValidationMessage For="@(() => electionModel.ElectionTour)" />
         </div>
 
          <div class="form-row">
-            <button type="submit" class="submit-button">MODYFIKUJ WYBORY</button>
+            <button type="submit" class="submit-button" @onclick="ValidateDates">MODYFIKUJ WYBORY</button>
             <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
@@ -92,6 +98,7 @@
     private int SelectedElectionId { get; set; } = 0;
     bool isModifiedElection = false;
     string errorMessage;
+    string errorMessageDate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -118,4 +125,15 @@
         NavigationManager.NavigateTo("/configure-election");
     }
 
+    private void ValidateDates()
+    {
+        if (electionModel.ElectionStartDate >= electionModel.ElectionEndDate)
+        {
+            errorMessageDate = "Data zakończenia wyborów nie może być wcześniejsza niż data rozpoczęcia wyborów";
+        }
+        else
+        {
+            errorMessageDate = string.Empty;
+        }
+    }
 }

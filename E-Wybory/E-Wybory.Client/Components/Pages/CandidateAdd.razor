@@ -39,7 +39,7 @@
             </div>
             <div class="form-group">
                 <label for="birthDate">DATA URODZENIA</label>
-                <InputText @bind-Value="candidatePersonModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź datę urodzenia kandydata" />
+                <InputText id="birthDate" @bind-Value="candidatePersonModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź datę urodzenia kandydata" />
                 <ValidationMessage For="@(() => candidatePersonModel.personViewModel.DateOfBirthString)" />
             </div>
         </div>
@@ -204,7 +204,7 @@
         NavigationManager.NavigateTo("/candidatelist");
     }
 
-    private void HandlePeselInput(ChangeEventArgs e)
+    public void HandlePeselInput(ChangeEventArgs e)
     {
         var pesel = e.Value?.ToString();
 

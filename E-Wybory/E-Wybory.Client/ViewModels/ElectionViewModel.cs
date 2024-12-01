@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace E_Wybory.Client.ViewModels
 {
+    [ElectionDateRange]
     public class ElectionViewModel
     {
         [Required(ErrorMessage ="ID wyborów jest obowiązkowe")] public int IdElection { get; set; } = 0;
@@ -11,6 +12,7 @@ namespace E_Wybory.Client.ViewModels
         [Range(1,2, ErrorMessage = "Tura wyborów musi być 1 lub 2")]
         public int ElectionTour { get; set; } = 1;
         [Required(ErrorMessage = "Rodzaj wyborów jest obowiązkowy")] public int IdElectionType { get; set; } = 0;
+        [Required(ErrorMessage = "Data rozpoczęcia wyborów jest obowiązkowa")]
         public string DateOfStartString
         {
             get => ElectionStartDate != DateTime.MinValue
@@ -24,7 +26,7 @@ namespace E_Wybory.Client.ViewModels
                 }
             }
         }
-
+        [Required(ErrorMessage = "Data zakończenia wyborów jest obowiązkowa")]
         public string DateOfEndString
         {
             get => ElectionEndDate != DateTime.MinValue

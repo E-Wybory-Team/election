@@ -40,6 +40,7 @@ namespace E_Wybory.Client.ViewModels
         public int SelectedDistrictId { get; set; } = 0;
 
         [ValidateDateOfBirthWithPesel]
+        [Required(ErrorMessage = "Niepoprawny pesel!")]
         public string DateOfBirthString
         {
             get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("yyyy-MM-dd") : string.Empty;

@@ -42,7 +42,7 @@
                 <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
                 <div class="input-content">
                     <label for="birthdate" class="form-label">DATA URODZENIA</label>
-                    <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" id="birthdate" placeholder="DATA URODZENIA" />
+                    <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" id="birthdate" placeholder="DATA URODZENIA" readonly />
                     <ValidationMessage For="@(() => registrationModel.DateOfBirthString)" />
                 </div>
             </div>
