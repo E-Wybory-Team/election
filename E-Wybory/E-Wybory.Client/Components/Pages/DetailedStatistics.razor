@@ -152,13 +152,16 @@ else
         foreach(var candidate in filteredCandidates)
         {
             var votesNumber = 0;
-            try
+            if (newestElectionOfType.IdElection != 0)
             {
-                votesNumber = await VoteManagementService.GetVotesNumberByDistrictCandidate(IdDistrict, newestElectionOfType.IdElection, candidate.candidateViewModel.IdCandidate);
-            }
-            catch(Exception ex)
-            {
-                //votesNumber = 0;
+                try
+                {
+                    votesNumber = await VoteManagementService.GetVotesNumberByDistrictCandidate(IdDistrict, newestElectionOfType.IdElection, candidate.candidateViewModel.IdCandidate);
+                }
+                catch (Exception ex)
+                {
+                    //votesNumber = 0;
+                }
             }
             votesNumberOfCandidates.Add(candidate.candidateViewModel.IdCandidate, votesNumber);
         }

@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@using CustomComponents = E_Wybory.Client.Components.Pages
 @inject IAuthService AuthService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
@@ -79,19 +80,31 @@
 
         <div class="form-row double-column">
             <div class="input-group">
-                <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
-                <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
-                    <option value="">Wybierz Obwód</option>
-                    @foreach (var district in districts)
+            <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
+            <input type="text" class="form-control search-input"
+                   placeholder="Szukaj Obwód..."
+                   @oninput="(e => OnSearchChanged(e))" />
+            <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
+                <option value="">Wybierz Obwód</option>
+                @if (filteredDistricts != null && filteredDistricts.Count > 0)
+                {
+                    @foreach (var district in filteredDistricts)
                     {
                         <option value="@district.IdDistrict">
                             @district.DistrictName - @district.DistrictHeadquarters
                         </option>
                     }
-                </select>
-                <ValidationMessage For="@(() => registrationModel.SelectedDistrictId)" />
+                }
+                else
+                {
+                    <option disabled>Brak wyników</option>
+                }
+            </select>
+            <ValidationMessage For="@(() => registrationModel.SelectedDistrictId)" />
             </div>
         </div>
+
+
 
         <button type="submit" class="submit-button">ZAREJESTRUJ</button>
     </EditForm>
@@ -111,14 +124,23 @@
 
     bool formSubmitted = false;
 
+    private string searchQuery { get; set; } = string.Empty;
+    private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
+
     protected override async Task OnInitializedAsync()
     {
         districts = await DistrictManagementService.Districts();
+        filteredDistricts = districts;
     }
 
 
     private async Task HandleRegistration()
     {
+        if(registrationModel.SelectedDistrictId == 0)
+        {
+            errorMessage = "Proszę podać obwód!";
+            return;
+        }
         //Maybe it is the better plan to make it return HttpResponse with more verbose payload
         int index = await PersonManagementService.GetPersonIdByPeselAsync(registrationModel.PESEL);
 
@@ -230,5 +252,12 @@
         return age >= 18;
     }
 
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        filteredDistricts = districts
+            .Where(d => d.DistrictName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
 
 }

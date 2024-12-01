@@ -6,6 +6,7 @@ using E_Wybory.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using E_Wybory.Client.ViewModels;
+using NuGet.Packaging.Signing;
 
 namespace E_Wybory.Controllers
 {
@@ -35,8 +36,9 @@ namespace E_Wybory.Controllers
         // GET: api/ElectionUsers/5
         [HttpGet("{id}")]
         //[Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+        [Authorize]
 
-        public async Task<ActionResult<ElectionUser>> GetElectionUser(int id)
+        public async Task<ActionResult<ElectionUserViewModel>> GetElectionUser(int id)
         {
             var electionUser = await _context.ElectionUsers.FindAsync(id);
 
@@ -45,7 +47,18 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
 
-            return electionUser;
+            var electionUserViewModel = new ElectionUserViewModel()
+            {
+                IdElectionUser = electionUser.IdElectionUser,
+                Email = electionUser.Email,
+                PhoneNumber = electionUser.PhoneNumber,
+                Password = electionUser.Password,
+                IdPerson = electionUser.IdPerson,
+                IdDistrict = electionUser.IdDistrict,
+                UserSecret = electionUser.UserSecret
+            };
+
+            return electionUserViewModel;
         }
 
         // GET: api/ElectionUsers/user-info

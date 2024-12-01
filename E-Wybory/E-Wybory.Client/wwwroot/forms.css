@@ -378,3 +378,12 @@ input, select {
             color: #1E5899;
             border: 1px solid #1E5899; /* Dodanie obramowania przy najechaniu */
         }
+
+.search-input {
+    border: none;
+    width: 90%;
+    padding: 5px;
+    margin: 5px auto;
+    box-sizing: border-box;
+}
+
