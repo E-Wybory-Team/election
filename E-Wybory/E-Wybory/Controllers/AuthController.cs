@@ -168,7 +168,6 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
         [Route("verify-2fa")]
         [Authorize(Policy = "2FAenabled")]
         public async Task<IActionResult> Verify2fa([FromBody] TwoFactorAuthVerifyRequest verReq)
