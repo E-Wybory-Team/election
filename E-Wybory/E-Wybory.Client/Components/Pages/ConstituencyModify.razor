@@ -51,7 +51,7 @@
     public int constituencyId { get; set; }
 
     bool isModifiedConstituency = false;
-    string errorMessage;
+    private string errorMessage = String.Empty;
 
     private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();
 
@@ -59,7 +59,7 @@
     {
         if (! await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
-            errorMessage = "Constituency not found";
+            errorMessage = "Nie znaleziono okręgu!";
             Cancel();
         }
         else
@@ -68,10 +68,10 @@
         }
     }
 
-    private async void HandleModifySubmit()
+    private async Task HandleModifySubmit()
     {
         isModifiedConstituency = await ConstituencyManagementService.PutConstituency(constituencyModel);
-        errorMessage = isModifiedConstituency ? "Constituency modified successful!" : "Constituency modified fails";
+        errorMessage = isModifiedConstituency ? "Modyfikacja okręgu się powiodła!" : "Podano istniejącą już nazwę okręgu!";
         if (isModifiedConstituency)
         {
             NavigationManager.NavigateTo("/constituencylist");

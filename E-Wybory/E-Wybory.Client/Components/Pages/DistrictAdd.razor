@@ -147,12 +147,16 @@
         constituencies = await ConstituencyManagementService.Constituences();
     }
 
-    private async void HandleSubmit()
+    private async Task HandleSubmit()
     {
         districtModel.IdProvince = SelectedProvinceId;
         Console.WriteLine($"District attributes: {districtModel.DistrictName} - {districtModel.DistrictHeadquarters} - {districtModel.DisabledFacilities} - {districtModel.IdConstituency} - {districtModel.IdProvince}");
         isAddedDistrict = await DistrictManagementService.AddDistrict(districtModel);
-        errorMessage = isAddedDistrict ? "Adding successful!" : "Adding fails";
+        errorMessage = isAddedDistrict ? "Dodawanie obwodu udało się!" : "Niepowodzenie w dodawaniu obwodu!";
+        if(isAddedDistrict)
+        {
+            Cancel();
+        }
     }
 
     private async Task FilterRegions()
