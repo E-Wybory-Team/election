@@ -1,9 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,12 +18,12 @@ namespace E_Wybory.Test.Server.Utils
 
         public IQueryable CreateQuery(Expression expression)
         {
-            return new TestAsyncEnumerableQueryProvider<TEntity>(expression);
+            return new TestAsyncEnumerable<TEntity>(expression);
         }
 
         public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
         {
-            return new TestAsyncEnumerableQueryProvider<TElement>(expression);
+            return new TestAsyncEnumerable<TElement>(expression);
         }
 
         public object Execute(Expression expression)
@@ -40,21 +38,32 @@ namespace E_Wybory.Test.Server.Utils
 
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression expression)
         {
-            return new TestAsyncEnumerableQueryProvider<TResult>(expression);
+            return new TestAsyncEnumerable<TResult>(expression);
         }
 
         public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
         {
-            return Execute<TResult>(expression);
+            var expectedResultType = typeof(TResult).GetGenericArguments()[0];
+            var executionResult = typeof(IQueryProvider)
+                                 .GetMethod(
+                                      name: nameof(IQueryProvider.Execute),
+                                      genericParameterCount: 1,
+                                      types: new[] { typeof(Expression) })!
+                                 .MakeGenericMethod(expectedResultType)
+                                 .Invoke(this, new[] { expression })!;
+
+            return (TResult)typeof(Task).GetMethod(nameof(Task.FromResult))
+                                        ?.MakeGenericMethod(expectedResultType)
+                                         .Invoke(null, new[] { executionResult })!;
         }
     }
 
-    internal class TestAsyncEnumerableQueryProvider<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
+    internal class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
     {
-        public TestAsyncEnumerableQueryProvider(IEnumerable<T> enumerable) : base(enumerable)
+        public TestAsyncEnumerable(IEnumerable<T> enumerable) : base(enumerable)
         { }
 
-        public TestAsyncEnumerableQueryProvider(Expression expression) : base(expression)
+        public TestAsyncEnumerable(Expression expression) : base(expression)
         { }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
