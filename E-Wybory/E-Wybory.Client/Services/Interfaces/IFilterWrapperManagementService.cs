@@ -18,5 +18,6 @@ namespace E_Wybory.Client.Services
         Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElection(int? electionId, int? districtId);
         Task<List<CandidatePersonViewModel>> GetFilteredCandidatesFromElectionRegions(int? electionId, int? voivodeshipId, int? countyId, int? provinceId, int? districtId);
         Task<List<CandidatePersonViewModel>> GetFilteredCandidatesWithoutDistrict(int electionId);
+        Task<List<string>> GetRegionsOfDistrict(int districtId);
     }
 }

@@ -1,10 +1,17 @@
 ﻿@page "/commissionersdelete/{commissionerId:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager NavigationManager
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject IUserTypeManagementService UserTypeManagementService
+@inject IUserTypeSetsManagementService UserTypeSetsManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
 
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
@@ -12,30 +19,33 @@
          <Authorized>
 <div class="form-container">
     <h1>POTWIERDŹ USUNIĘCIE CZŁONKA KOMISJI</h1>
-    <EditForm Model="@commissionerModel">
+    @if(readyToPrint)
+    {
+    <EditForm Model="@userTypeSetViewModel">
         <div class="form-group-smaller">
             <label for="pesel">PESEL CZŁONKA KOMISJI</label>
-            <InputText @bind-Value="commissionerModel.PESEL" id="pesel" class="form-input" readonly />
+            <InputText @bind-Value="@enteredPesel" id="pesel" class="form-input" readonly />
         </div>
-        <div class="form-group-smaller">
-            <label for="wojewodztwo">WOJEWÓDZTWO</label>
-            <InputText @bind-Value="commissionerModel.Wojewodztwo" id="wojewodztwo" class="form-input" readonly />
-        </div>
-        <div class="form-group-smaller">
-            <label for="powiat">POWIAT</label>
-            <InputText @bind-Value="commissionerModel.Powiat" id="powiat" class="form-input" readonly />
-        </div>
-        <div class="form-group-smaller">
-            <label for="gmina">GMINA</label>
-            <InputText @bind-Value="commissionerModel.Gmina" id="gmina" class="form-input" readonly />
-        </div>
-        <div class="form-group-smaller">
+            <div class="form-group-smaller">
+                <label for="wojewodztwo">WOJEWÓDZTWO</label>
+                <InputText @bind-Value="@regionNames[3]" id="wojewodztwo" class="form-input" readonly />
+            </div>
+            <div class="form-group-smaller">
+                <label for="powiat">POWIAT</label>
+                <InputText @bind-Value="@regionNames[2]" id="powiat" class="form-input" readonly />
+            </div>
+            <div class="form-group-smaller">
+                <label for="gmina">GMINA</label>
+                <InputText @bind-Value="@regionNames[1]" id="gmina" class="form-input" readonly />
+            </div>
+                    
+            <div class="form-group-smaller">
             <label for="numer-obwodu">NUMER OBWODU</label>
-            <InputText @bind-Value="commissionerModel.NumerObwodu" id="numer-obwodu" class="form-input" readonly />
+            <InputText @bind-Value="@regionNames[0]" id="numer-obwodu" class="form-input" readonly />
         </div>
         <div class="form-group-smaller">
             <label for="stopien">STOPIEŃ</label>
-            <InputText @bind-Value="commissionerModel.Stopien" id="stopien" class="form-input" readonly />
+            <InputText @bind-Value="@typeName" id="stopien" class="form-input" readonly />
         </div>
         <div class="form-row">
             <button type="button" class="red-submit-button" @onclick="DeleteCommissioner">USUŃ</button>
@@ -43,6 +53,11 @@
         </div>
         
     </EditForm>
+    }
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
 </div>
                      </Authorized>
         <NotAuthorized>
@@ -58,41 +73,48 @@
     [Parameter]
     public int commissionerId { get; set; }
 
-    private CommissionerModel commissionerModel = new CommissionerModel();
+    private bool readyToPrint = false;
 
-    protected override void OnInitialized()
+    private UserTypeSetViewModel userTypeSetViewModel = new UserTypeSetViewModel();
+    private int commissionGroupId = 2;
+    private string errorMessage = String.Empty;
+    private string? enteredPesel { get; set; } = null;
+    private string? typeName { get; set; } = null;
+    private List<string> regionNames = new List<string>();
+
+
+    protected override async Task OnInitializedAsync()
     {
-        var commissioner = GetCommissionerById(commissionerId);
-        if (commissioner != null)
+        if (!(await ElectionUserManagementService.UserExists(commissionerId)))
         {
-            commissionerModel = new CommissionerModel
-                {
-                    PESEL = commissioner.Person.PESEL.ToString(),
-                    Wojewodztwo = "Mazowieckie",
-                    Powiat = "Powiat 1",
-                    Gmina = "Gmina 1",
-                    NumerObwodu = "Obwód 1",
-                    Stopien = commissioner.Rank
-                };
+            errorMessage = "Not found user with this ID";
+            Cancel();
+            return;
         }
-    }
 
-    private Commissioner? GetCommissionerById(int id)
-    {
-        // Mockowanie danych komisarza
-        var commissioners = new List<Commissioner>
+        userTypeSetViewModel = await UserTypeSetsManagementService.SetWithTypeGroupExists(commissionGroupId, commissionerId);
+        if (userTypeSetViewModel.IdUserTypeSet == 0)
         {
-            new Commissioner { IdCommissioner = 1, Rank = "Przewodniczący", Person = new Person { PESEL = 85293128490 }},
-            new Commissioner { IdCommissioner = 2, Rank = "Członek", Person = new Person { PESEL = 92731028594 }}
-        };
-        return commissioners.FirstOrDefault(c => c.IdCommissioner == id);
+            errorMessage = "Not found user set to this group ID";
+            Cancel();
+            return;
+        }
+
+        typeName = await UserTypeManagementService.GetUserTypeNameById(userTypeSetViewModel.IdUserType);
+
+        var person = await PersonManagementService.GetPersonIdByIdElectionUser(commissionerId);
+        enteredPesel = person.PESEL;
+
+        var electionUser = await ElectionUserManagementService.GetElectionUserById(commissionerId);
+        regionNames = await FilterWrapperService.GetRegionsOfDistrict(electionUser.IdDistrict);
+        readyToPrint = true;
     }
 
-    private void DeleteCommissioner()
+
+    private async Task DeleteCommissioner()
     {
-        // Logika usuwania komisarza
-        Console.WriteLine($"Usunięto komisarza o numerze PESEL: {commissionerModel.PESEL}");
-        NavigationManager.NavigateTo("/commissionerslist");
+        var isDeletedCommissioner = await UserTypeSetsManagementService.DeleteUserTypeSet(userTypeSetViewModel.IdUserTypeSet);
+        errorMessage = isDeletedCommissioner ? "Usunięto członka komisji pomyślnie!" : "Usuwanie członka komisji nie powiodło się";
     }
 
     private void Cancel()
@@ -100,25 +122,4 @@
         NavigationManager.NavigateTo("/commissionerslist");
     }
 
-    public class CommissionerModel
-    {
-        public string PESEL { get; set; }
-        public string Wojewodztwo { get; set; }
-        public string Powiat { get; set; }
-        public string Gmina { get; set; }
-        public string NumerObwodu { get; set; }
-        public string Stopien { get; set; }
-    }
-
-    public class Commissioner
-    {
-        public int IdCommissioner { get; set; }
-        public string Rank { get; set; }
-        public Person Person { get; set; }
-    }
-
-    public class Person
-    {
-        public long PESEL { get; set; }
-    }
 }

@@ -192,6 +192,29 @@ namespace E_Wybory.Controllers
             return NoContent();
         }
 
+
+        [HttpPut("district/{userId}/{districtId}")]
+        [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+
+        public async Task<IActionResult> PutDistrictToElectionUser(int userId, int districtId)
+        {
+            if(!(await _context.ElectionUsers.AnyAsync(user => user.IdElectionUser == userId)))
+            {
+                return NotFound("Not found user with that id");
+            }
+
+            if (!(await _context.Districts.AnyAsync(district => district.IdDistrict == districtId)))
+            {
+                return NotFound("Not found district with that id");
+            }
+
+            var user = await _context.ElectionUsers.FindAsync(userId);
+            user.IdDistrict = districtId;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
         // POST: api/ElectionUsers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]

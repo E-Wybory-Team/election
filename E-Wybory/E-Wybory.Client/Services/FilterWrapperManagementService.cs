@@ -159,6 +159,7 @@ namespace E_Wybory.Client.Services
             var response = await _httpClient.GetFromJsonAsync<List<UserPersonViewModel>>(url);
             return response;
         }
+        
 
         public async Task<List<CandidateViewModel>> GetFilteredCandidatesFromParty(
             int? partyId, int? electionId)
@@ -177,6 +178,13 @@ namespace E_Wybory.Client.Services
         public async Task<List<CandidatePersonViewModel>> GetFilteredCandidatesWithoutDistrict(int electionId)
         {
             var response = await _httpClient.GetFromJsonAsync<List<CandidatePersonViewModel>>($"api/FilterWrapper/CandidatesWithoutRegions/{electionId}");
+            return response;
+        }
+
+
+        public async Task<List<string>> GetRegionsOfDistrict(int districtId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<string>>($"api/FilterWrapper/RegionsOfDistrict/{districtId}");
             return response;
         }
     }
