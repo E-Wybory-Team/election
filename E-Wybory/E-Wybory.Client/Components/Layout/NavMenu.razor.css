@@ -1,8 +1,9 @@
 .nav-icon {
-    width: 47px;
+    width: 45px;
     height: 52px;
     margin-right: 8px;
-    margin-left: 5px;
+    margin-left: 0px;
+    margin-top: 3px;
     vertical-align: middle;
 }
 
@@ -28,12 +29,14 @@
     height: 3.65rem;
     background-color: #1E5899;
     position: fixed;
+    padding: 0 20px;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .navbar-toggler:checked ~ .nav-scrollable {
@@ -164,22 +167,17 @@
     font-size: 20px;
     font-weight: bold;
     white-space: nowrap;
-    margin: 0 auto; 
-    text-align: center; 
-    position: absolute;
-    left: 22%; 
-    transform: translateX(-50%); 
+    color: white; 
 
     
 }
 
-/* Styl dla przycisku konta */
 .account-button {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 8px 12px;
-    background-color: #0055a5; /* Jasny niebieski */
+    background-color: #0055a5; 
     border: none;
     border-radius: 5px;
     color: white;
@@ -295,5 +293,13 @@
     .account-button:hover {
         background-color: #003d7a;
     }
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
 
 

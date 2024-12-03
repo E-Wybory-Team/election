@@ -16,11 +16,13 @@
 
         <div class="container-fluid">
 
-            <span class="title">
-                e-wybory.gov.pl
-                <img src="images/PolandIcon.png" alt="Poland" class="nav-icon" />
-            </span>
-            <span class="left-text">Internetowy system wyborczy</span>
+            <div class="logo-container">
+                <span class="title">
+                    e-wybory.gov.pl
+                    <img src="images/PolandIcon.png" alt="Poland" class="nav-icon" />
+                </span>
+                <span class="left-text">Internetowy system wyborczy</span>
+            </div>
             <div class="user-controls">
                 @if (_user?.Identity != null && _user.Identity.IsAuthenticated)
                 {
