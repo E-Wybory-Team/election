@@ -87,7 +87,9 @@
     {
         if (!(await ElectionUserManagementService.UserExists(commissionerId)))
         {
-            errorMessage = "Not found user with this ID";
+            errorMessage = "Nie znaleziono użytkownika o podanym ID";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
             return;
         }
@@ -95,7 +97,9 @@
         userTypeSetViewModel = await UserTypeSetsManagementService.SetWithTypeGroupExists(commissionGroupId, commissionerId);
         if (userTypeSetViewModel.IdUserTypeSet == 0)
         {
-            errorMessage = "Not found user set to this group ID";
+            errorMessage = "Nie znaleziono użytkownika o podanym ID";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
             return;
         }
@@ -115,6 +119,12 @@
     {
         var isDeletedCommissioner = await UserTypeSetsManagementService.DeleteUserTypeSet(userTypeSetViewModel.IdUserTypeSet);
         errorMessage = isDeletedCommissioner ? "Usunięto członka komisji pomyślnie!" : "Usuwanie członka komisji nie powiodło się";
+        if(isDeletedCommissioner)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

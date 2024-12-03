@@ -76,11 +76,15 @@
         if (activeElections.Count() == 0)
         {
             errorMessage = "Nie ma żadnych trwających wyborów";
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
         }
     }
 
     private async Task CheckStatus()
     {
+        hasVoted = null;
         if(activeElections.Count() > 0)
         {
             if (!string.IsNullOrWhiteSpace(pesel))
@@ -100,6 +104,7 @@
                         }
                         else
                         {
+                            errorMessage = String.Empty;
                             if (hasVoted == null)
                             {
                                 hasVoted = false;    

@@ -142,7 +142,9 @@
     {
         if (!(await ElectionUserManagementService.UserExists(commissionerId)))
         {
-            errorMessage = "Not found user with this ID";
+            errorMessage = "Nie znaleziono użytkownika o podanym ID";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
             return;
         }
@@ -150,7 +152,9 @@
         userTypeSetViewModel = await UserTypeSetsManagementService.SetWithTypeGroupExists(commissionGroupId, commissionerId);
         if(userTypeSetViewModel.IdUserTypeSet == 0)
         {
-            errorMessage = "Not found user set to this group ID";
+            errorMessage = "Nie znaleziono użytkownika przypisanego do takiej grupy typów użytkownika";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
             return;
         }
@@ -188,6 +192,12 @@
 
         var isModifiedCommissioner = await UserTypeSetsManagementService.PutUserTypeSet(userTypeSetViewModel);
         errorMessage = isModifiedCommissioner ? "Zmodyfikowano członka komisji pomyślnie!" : "Modyfikacja członka komisji nie powiodła się";
+        if(isModifiedCommissioner)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
         //Cancel();
     }
 

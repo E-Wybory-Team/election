@@ -87,7 +87,13 @@
     private async Task HandleValidSubmit()
     {
         isAddedElection = await ElectionManagementService.AddElection(electionModel);
-        errorMessage = isAddedElection ? "Adding election successful!" : "Adding election fails";
+        errorMessage = isAddedElection ? "Dodano wybory pomyślnie!" : "Nie udało sie dodać wyborów";
+        if(isAddedElection)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

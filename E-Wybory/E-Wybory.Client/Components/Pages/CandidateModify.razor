@@ -170,7 +170,9 @@
     {
         if (!await CandidateManagementService.CandidateExists(candidateId))
         {
-            errorMessage = "Candidate not found";
+            errorMessage = "Nie znaleziono kandydata!";
+            StateHasChanged();
+            await Task.Delay(1000);
             NavigationManager.NavigateTo("/candidatelist");
         }
         else
@@ -220,11 +222,17 @@
         {
             formSubmitted = await PersonManagementService.PutPerson(candidateModel.personViewModel);
             formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
-            errorMessage = formSubmitted ? "Candidate modified successful!" : "Candidate modification fails";
+            errorMessage = formSubmitted ? "Zmodyfikowano kandydata pomyślnie!" : "Nie udało się zmodyfikować kandydata";
+            if(formSubmitted)
+            {
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
+            }
         }
         else
         {
-            errorMessage = "Please fix the validation errors.";
+            errorMessage = "Proszę uzupełnić wszystkie pola zgodnie z ich przeznaczeniem.";
         }
     }
     private void Cancel()

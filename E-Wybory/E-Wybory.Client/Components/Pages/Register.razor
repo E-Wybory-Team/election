@@ -169,6 +169,7 @@
 
         if(formSubmitted)
         {
+            StateHasChanged();
             await Task.Delay(1000);
             NavigationManager.NavigateTo("/login");
         }

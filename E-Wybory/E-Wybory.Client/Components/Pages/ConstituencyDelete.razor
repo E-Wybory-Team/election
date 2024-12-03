@@ -69,6 +69,7 @@
         if (!await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
             errorMessage = "Nie znaleziono okręgu!";
+            StateHasChanged();
             await Task.Delay(1000);
             Cancel();
         }
@@ -85,6 +86,8 @@
         errorMessage = isDeletedConstituency ? "Usunięto okręg pomyślnie!" : "Usuwanie okręgu się nie powiodło!";
         if (isDeletedConstituency)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

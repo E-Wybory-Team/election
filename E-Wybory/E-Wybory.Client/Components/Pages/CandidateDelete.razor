@@ -157,6 +157,8 @@
         if (!await CandidateManagementService.CandidateExists(candidateId))
         {
             errorMessage = "Nie znaleziono takiego kandydata!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -175,9 +177,11 @@
     {
         formSubmitted = await CandidateManagementService.DeleteCandidate(candidateId);
         //formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
-        errorMessage = formSubmitted ? "Kandydat dodany pomyślnie!" : "Nie udało się dodac kandydata!";
+        errorMessage = formSubmitted ? "Kandydat dodany pomyślnie!" : "Nie udało się dodać kandydata!";
         if(formSubmitted)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

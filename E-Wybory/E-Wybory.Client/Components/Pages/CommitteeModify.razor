@@ -93,6 +93,8 @@
         if (!await PartyManagementService.PartyExists(committeeId))
         {
             errorMessage = "Nie znaleziono komitetu!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -105,6 +107,12 @@
     {
         isModifiedCommittee = await PartyManagementService.PutParty(committeeModel);
         errorMessage = isModifiedCommittee ? "Modyfikacja komitetu się udała!" : "Nie powiodła się modyfikacja komitetu!";
+        if(isModifiedCommittee)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

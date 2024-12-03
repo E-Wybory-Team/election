@@ -84,6 +84,7 @@
         if (!await DistrictManagementService.DistrictExists(districtId))
         {
             errorMessage = "Nie znaleziono obwodu!";
+            StateHasChanged();
             await Task.Delay(1000);
             Cancel();
         }
@@ -105,6 +106,8 @@
         errorMessage = isDeletedDistrict ? "Usunięto obwód pomyślnie!" : "Nie można usunąć obwodu gdyż jest powiązany z użytkownikiem/użytkownikami";
         if (isDeletedDistrict)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

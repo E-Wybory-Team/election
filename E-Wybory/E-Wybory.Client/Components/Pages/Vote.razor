@@ -101,13 +101,17 @@
             if (activeElections == null || activeElections.Count() <= 0)
             {
                 errorMessageAtStart = "Nie ma żadnych trwających wyborów.";
-                //NavigationManager.NavigateTo("/");
+                StateHasChanged();
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
         }
         catch(Exception ex)
         {
             errorMessageAtStart = "Nie znaleziono aktualnych wyborów!";
-            //NavigationManager.NavigateTo("/");
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
 
 
@@ -119,12 +123,17 @@
             if(IdVoter == 0 || IdDistrict == 0)
             {
                 errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
+                StateHasChanged();
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
         }
         catch (Exception)
         {
             errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
-            //NavigationManager.NavigateTo("/");
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
 
         try
@@ -133,12 +142,17 @@
             if (!is2faEnabled)
             {
                 errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
-                //NavigationManager.NavigateTo("/");
+                StateHasChanged();
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
         }
         catch(Exception)
         {
             errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
 
         var committees = await PartyManagementService.Parties();
@@ -192,7 +206,9 @@
         if (!activeElections.Any())
         {
             errorMessageAtStart = "Nie ma dostępnych wyborów dla użytkownika.";
-            //NavigationManager.NavigateTo("/");
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
         electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }

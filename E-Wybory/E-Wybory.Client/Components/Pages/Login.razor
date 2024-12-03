@@ -63,6 +63,9 @@
 
         if (!string.IsNullOrEmpty(token))
         {
+            loginInfoMessage = "Pomyślnie zalogowano!";
+            StateHasChanged();
+            await Task.Delay(1000);
             //loginInfoMessage = "Pomyślnie zalogowano!";
 
             // Zapis tokena w localStorage
@@ -88,11 +91,10 @@
             {
                 NavigationManager.NavigateTo("/");
             }
-            loginInfoMessage = "Pomyślnie zalogowano!";
         }
         else
         {
-            loginInfoMessage = "Invalid username or password!";
+            loginInfoMessage = "Niepoprawna e-mail bądź hasło!";
         }
     }
 
