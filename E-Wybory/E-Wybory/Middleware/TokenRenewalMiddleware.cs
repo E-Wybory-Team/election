@@ -9,13 +9,13 @@ namespace E_Wybory.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IJWTService _tokenService;
-        private readonly ElectionDbContext _context;
+        private readonly JsonWebTokenHandler _handler;
 
-
-        public TokenRenewalMiddleware(RequestDelegate next, IJWTService tokenService)
+        public TokenRenewalMiddleware(RequestDelegate next, IJWTService tokenService, JsonWebTokenHandler handler)
         {
             _next = next;
             _tokenService = tokenService;
+            _handler = handler;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -26,10 +26,9 @@ namespace E_Wybory.Middleware
 
             if (!string.IsNullOrEmpty(token))
             {
-                var handler = new JsonWebTokenHandler();
-                if (handler.CanReadToken(token))
+                if (_handler.CanReadToken(token))
                 {
-                    var jwtToken = handler.ReadJsonWebToken(token);
+                    var jwtToken = _handler.ReadJsonWebToken(token);
                     var expirationTime = jwtToken.ValidTo; //Are datetime.min
                     var issuedAtTime = jwtToken.ValidFrom;
 

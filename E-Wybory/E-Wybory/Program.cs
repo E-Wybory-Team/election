@@ -34,6 +34,8 @@ TokenValidationParameters validationParameters = new TokenValidationParameters
     ClockSkew = TimeSpan.Zero,
 };
 
+var handler = new JsonWebTokenHandler();
+
 // Add services to the container.
 builder.Services
     .AddRazorComponents()
@@ -70,6 +72,7 @@ builder.ConfigureEmailServiceSender();
 builder.Services.AddSingleton<RSA>(rsaKey);
 builder.Services.AddSingleton<TokenValidationParameters>(validationParameters);
 builder.Services.AddSingleton<IJWTService,TokenService>();
+builder.Services.AddSingleton<JsonWebTokenHandler>(handler);
 
 
 var app = builder.Build();
