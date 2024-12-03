@@ -415,7 +415,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Candidates
         [HttpGet("CandidatesElectionRegions")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesFromElectionRegions(
             [FromQuery] int? electionId,
             [FromQuery] int? voivodeshipId,
