@@ -169,8 +169,9 @@
         if (!await DistrictManagementService.DistrictExists(districtId))
         {
             errorMessage = "Nie znaleziono obwodu!";
+            StateHasChanged();
             await Task.Delay(1000);
-            NavigationManager.NavigateTo("/districtlist");
+            Cancel();
         }
         else
         {
@@ -188,6 +189,8 @@
         errorMessage = isModifiedDistrict ? "Modyfikacja obwodu sie powiodła!" : "Niepowodzenie w modyfikowaniu obwodu!";
         if(isModifiedDistrict)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

@@ -60,6 +60,8 @@
         if (! await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
             errorMessage = "Nie znaleziono okręgu!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -74,6 +76,8 @@
         errorMessage = isModifiedConstituency ? "Modyfikacja okręgu się powiodła!" : "Podano istniejącą nazwę okręgu!";
         if (isModifiedConstituency)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             NavigationManager.NavigateTo("/constituencylist");
         }
     }

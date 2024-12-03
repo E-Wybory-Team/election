@@ -112,9 +112,11 @@
         {
             electionModel.IdElection = SelectedElectionId;
             isModifiedElection = await ElectionManagementService.PutElection(electionModel);
-            errorMessage = isModifiedElection ? "Modified election successful!" : "Modified election fails";
+            errorMessage = isModifiedElection ? "Zmodyfikowano wybory pomyślnie!" : "Nie udało się zmodyfikować wyborów";
             if (isModifiedElection)
             {
+                StateHasChanged();
+                await Task.Delay(1000);
                 NavigationManager.NavigateTo("/configure-election");
             }
         }

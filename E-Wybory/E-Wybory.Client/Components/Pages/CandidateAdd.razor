@@ -174,7 +174,7 @@
     private async Task HandleAddCandidate()
     {
         int index = await PersonManagementService.GetPersonIdByPeselAsync(candidatePersonModel.personViewModel.PESEL); //check if person exists
-        //Console.WriteLine("Index of person: " + index);
+                                                                                                                       //Console.WriteLine("Index of person: " + index);
 
         if(index == 0) //if person with this PESEL not found
         {
@@ -197,7 +197,13 @@
         }
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);
-        errorMessage = isAddedCandidate ? "Candidate added successful!" : "Adding of candidate fails";
+        errorMessage = isAddedCandidate ? "Dodawanie kandydata sie powiodło!" : "Niepowodzenie w dodawaniu kandydata!";
+        if(isAddedCandidate)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
     private void Cancel()
     {

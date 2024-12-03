@@ -155,6 +155,8 @@
         errorMessage = isAddedDistrict ? "Dodawanie obwodu udało się!" : "Niepowodzenie w dodawaniu obwodu!";
         if(isAddedDistrict)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

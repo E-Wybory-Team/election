@@ -1,47 +1,53 @@
-﻿@page "/cancelvoter"
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
-
-@inject NavigationManager NavManager
-@inject IAuthService AuthService
-@inject IElectionManagementService ElectionManagementService
-@inject IDistrictManagementService DistrictManagementService
-@inject IPersonManagementService PersonManagementService
-@inject IElectionUserManagementService ElectionUserManagementService
-@inject IVoterManagementService VoterManagementService
+﻿@page "/checkstatusresult"
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IElectionUserManagementService ElectionUserManagementService
+@inject IElectionManagementService ElectionManagementService
+@inject IElectionVoterManagementService ElectionVoterManagementService
+@inject IPersonManagementService PersonManagementService
+@inject IVoterManagementService VoterManagementService
+@inject NavigationManager NavigationManager
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Komisja wyborcza, Administratorzy" Context="authContext">
-        <Authorized>
+         <Authorized>
+
 <div class="form-container">
-    <h1>WYPISYWANIE WYBORCY</h1>
+    <h1>SPRAWDŹ STATUS GŁOSOWANIA</h1>
 
-    <form @onsubmit="GoToSubmitCancelVoter">
-        <div class="form-group">
-            <label for="district">OBWÓD WYBORCY</label>
-            <input type="district" id="pesel" value="@district?.DistrictName - @district?.DistrictHeadquarters" class="form-control" placeholder="Obwód wyborcy" readonly />
-        </div>
-
+    <form @onsubmit="CheckStatus">
         <div class="form-group">
             <label for="pesel">PESEL WYBORCY</label>
-            <input type="text" id="pesel" @bind="pesel" class="form-control" placeholder="Nr Pesel wyborcy" />
+            <input type="text" id="pesel" @bind="pesel" />
         </div>
+        <button type="submit" class="btn btn-primary submit-button">SPRAWDŹ</button>
 
-        <div class="form-row">
-            <button type="submit" class="submit-button" @onclick="GoToSubmitCancelVoter">DALEJ</button>
-            <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
-        </div>
+        @if (hasVoted != null && hasVoted == true)
+        {
+            <div class="status-alert status-alert-red">
+                <img src="images/AlertIcon.png" alt="Alert" class="status-icon" />
+                <span class="status-text">WYBORCA ODDAŁ JUŻ SWÓJ GŁOS</span>
+            </div>
+        }
+        else if (hasVoted != null && hasVoted == false)
+        {
+            <div class="status-alert status-alert-blue">
+                <img src="images/TickIcon.png" alt="Tick" class="status-icon" />
+                <span class="status-text">WYBORCA NIE ODDAŁ JESZCZE GŁOSU</span>
+            </div>
+        }
+                <button type="button" class="cancel-button" @onclick="Cancel">COFNIJ</button>
+
     </form>
-
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger mt-3">@errorMessage</div>
     }
 </div>
-                    </Authorized>
+    </Authorized>
         <NotAuthorized>
             <div class="not-authorized-container">
                 <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
@@ -52,49 +58,36 @@
     </AuthorizeView>
 </CascadingAuthenticationState>
 @code {
+    private bool? hasVoted = null; 
     private string pesel { get; set; }
-    private int idDistrict { get; set; } = 0;
+    private string errorMessage = String.Empty;
 
     private List<ElectionViewModel> activeElections = new List<ElectionViewModel>();
-    private DistrictViewModel district = new DistrictViewModel();
+    private List<DistrictViewModel> districts = new List<DistrictViewModel>();
 
     private PersonViewModel personModel = new PersonViewModel();
     private ElectionUserViewModel userModel = new ElectionUserViewModel();
     private VoterViewModel voterModel = new VoterViewModel();
 
-    string errorMessage;
-    bool formSubmitted = false;
-
-
     protected override async Task OnInitializedAsync()
     {
-
         activeElections = await ElectionManagementService.GetActiveElections();
+
         if (activeElections.Count() == 0)
         {
             errorMessage = "Nie ma żadnych trwających wyborów";
             StateHasChanged();
             await Task.Delay(1000);
-        }
-        try
-        {
-            idDistrict = await AuthService.GetCurrentUserIdDistrict();
-            district = await DistrictManagementService.GetDistrictById(idDistrict);
-        }
-        catch(Exception ex)
-        {
-            errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
-            StateHasChanged();
-            await Task.Delay(1000);
+            Cancel();
         }
     }
 
-    // tutaj metoda do przekierowania razem z peselem musi być zaimplementowana
-    private async Task GoToSubmitCancelVoter()
+    private async Task CheckStatus()
     {
-        if (!string.IsNullOrWhiteSpace(pesel))
+        hasVoted = null;
+        if(activeElections.Count() > 0)
         {
-            if (idDistrict != 0)
+            if (!string.IsNullOrWhiteSpace(pesel))
             {
                 int index = await PersonManagementService.GetPersonIdByPeselAsync(pesel);
 
@@ -105,17 +98,27 @@
                         personModel = await PersonManagementService.GetPersonById(index);
                         userModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
                         voterModel = await VoterManagementService.GetVoterByElectionUserId(userModel.IdElectionUser);
-                        if(voterModel.IdDistrict == null)
+                        if (voterModel.IdDistrict == null)
                         {
                             errorMessage = "Wyborca nie ma przypisanego obwodu!";
                         }
-                        else if (idDistrict != voterModel.IdDistrict)
-                        {
-                            errorMessage = "Podany użytkownik nie jest przypisany do tego obwodu!";
-                        }
                         else
                         {
-                            NavManager.NavigateTo($"/submitcancelvoter/{voterModel.IdVoter}");
+                            errorMessage = String.Empty;
+                            if (hasVoted == null)
+                            {
+                                hasVoted = false;    
+                            }
+
+                            foreach(var actualElection in activeElections)
+                            {
+                                var electionVoterExists = await ElectionVoterManagementService.ElectionVoterExists(voterModel.IdVoter, actualElection.IdElection);
+                                if(electionVoterExists)
+                                {
+                                    hasVoted = true;
+                                    return;
+                                }
+                            }
                         }
 
                     }
@@ -128,21 +131,16 @@
                 {
                     errorMessage = "Nie ma takiego człowieka w bazie!";
                 }
+
             }
             else
             {
-                errorMessage = "Proszę podać obwód!";
+                errorMessage = "Proszę podać nr PESEL!";
             }
-
-        }
-        else
-        {
-            errorMessage = "Proszę podać nr PESEL!";
         }
     }
-
     private void Cancel()
-    {
-        NavManager.NavigateTo("/cohome");
-    }
+{
+    NavigationManager.NavigateTo("/cohome");
+}
 }

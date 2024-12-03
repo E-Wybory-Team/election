@@ -108,8 +108,13 @@
         if (SelectedElectionId != 0) //only if selected
         {
             isDeletedElection = await ElectionManagementService.DeleteElection(SelectedElectionId);
-            errorMessage = isDeletedElection ? "Deleted election successful!" : "Deleted election fails";
-            NavigationManager.NavigateTo("/configure-election");
+            errorMessage = isDeletedElection ? "Usunięto wybory pomyślnie!" : "Nie udało się usunąć wyborów";
+            if (isDeletedElection)
+            {
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
+            }
         }
     }
 

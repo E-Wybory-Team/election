@@ -128,7 +128,9 @@
     {
         if (!await VoterManagementService.VoterExists(voterId))
         {
-            errorMessage = "Voter not found";
+            errorMessage = "Nie znaleziono wyborcy!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -143,6 +145,9 @@
             catch(Exception ex)
             {
                 errorMessage = "Nie ma powiązanego użytkownika w bazie!";
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
             }
             await FilterRegions();
         }
@@ -152,8 +157,13 @@
     private async Task HandleAddSubmit()
     {
         isModifiedVoter = await VoterManagementService.PutVoter(voterModel);
-        errorMessage = isModifiedVoter ? "Updating voter successful!" : "Updating voter fails";
-        Cancel();
+        errorMessage = isModifiedVoter ? "Zmodyfikowano wyborcę pomyślnie!" : "Nie udało się zmodyfikować wyborcy!";
+        if (isModifiedVoter)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

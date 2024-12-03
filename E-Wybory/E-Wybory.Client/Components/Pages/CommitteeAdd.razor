@@ -90,6 +90,12 @@
     {
         isAddedCommittee = await PartyManagementService.AddParty(committeeModel);
         errorMessage = isAddedCommittee ? "Dodawanie komitetu udało się!" : "Nie powiodło się dodawanie komitetu!";
+        if(isAddedCommittee)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

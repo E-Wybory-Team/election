@@ -58,6 +58,8 @@
         errorMessage = isAddedConstituency ? "Dodawanie okręgu się udało!" : "Podano istniejącą już nazwę okręgu";
         if(isAddedConstituency)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }
