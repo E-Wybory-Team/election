@@ -10,6 +10,7 @@
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IDistrictManagementService DistrictManagementService
+@inject NavigationManager NavigationManager
 
 <div class="registration-form">
     <div class="icon">
@@ -149,11 +150,12 @@
             var existingPerson = await PersonManagementService.GetPersonById(index);
 
             //check if data in form of person are the same as in database
-            if (existingPerson.Name != registrationModel.FirstName
-            || existingPerson.Surname != registrationModel.LastName
-                || existingPerson.DateOfBirthString != registrationModel.DateOfBirthString)
+            if (existingPerson.Name.Trim() != registrationModel.FirstName.Trim()
+            || existingPerson.Surname.Trim() != registrationModel.LastName.Trim()
+                || existingPerson.DateOfBirthString.Trim() != registrationModel.DateOfBirthString.Trim())
             {
                 errorMessage = "Podane dane dot. kandydata są niespójne z bazą danych(imię, nazwisko bądź data urodzenia). Należy je poprawić na prawidłowe!";
+                return;
             }
 
             if(await ElectionUserManagementService.UserPersonIdExists(existingPerson.IdPerson))
@@ -164,6 +166,12 @@
         }
         formSubmitted = await AuthService.Register(registrationModel);
         errorMessage = formSubmitted ? "Rejestracja udana!" : "Rejestracja nie doszła do skutku!";
+
+        if(formSubmitted)
+        {
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/login");
+        }
         //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
 
     }

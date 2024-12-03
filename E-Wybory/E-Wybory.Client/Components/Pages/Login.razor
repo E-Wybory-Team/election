@@ -54,7 +54,7 @@
 
 @code {
     private LoginViewModel loginModel = new LoginViewModel();
-    private string loginInfoMessage = string.Empty;
+    private string loginInfoMessage = String.Empty;
 
     private async Task HandleLogin()
     {
@@ -63,12 +63,15 @@
 
         if (!string.IsNullOrEmpty(token))
         {
+            //loginInfoMessage = "Pomyślnie zalogowano!";
+
             // Zapis tokena w localStorage
             await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "authToken", token);
 
             // Dekodowanie tokena i przekierowanie na podstawie roli
             var roles = DecodeJwtRoles(token);
 
+            //await Task.Delay(1000);
             if (roles.Contains("Administratorzy") || roles.Contains("Pracownicy PKW"))
             {
                 NavigationManager.NavigateTo("/PKWHome");
@@ -85,8 +88,7 @@
             {
                 NavigationManager.NavigateTo("/");
             }
-
-            loginInfoMessage = "Successfully logged in!";
+            loginInfoMessage = "Pomyślnie zalogowano!";
         }
         else
         {

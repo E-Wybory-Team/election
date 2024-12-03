@@ -83,7 +83,8 @@
     {
         if (!await DistrictManagementService.DistrictExists(districtId))
         {
-            errorMessage = "Constituency not found";
+            errorMessage = "Nie znaleziono obwodu!";
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -98,10 +99,10 @@
         }
     }
 
-    private async void HandleDeleteSubmit()
+    private async Task HandleDeleteSubmit()
     {
         isDeletedDistrict = await DistrictManagementService.DeleteDistrict(districtId);
-        errorMessage = isDeletedDistrict ? "District deleted successful!" : "Nie można usunąć obwodu gdyż jest powiązany z użytkownikiem/użytkownikami";
+        errorMessage = isDeletedDistrict ? "Usunięto obwód pomyślnie!" : "Nie można usunąć obwodu gdyż jest powiązany z użytkownikiem/użytkownikami";
         if (isDeletedDistrict)
         {
             Cancel();

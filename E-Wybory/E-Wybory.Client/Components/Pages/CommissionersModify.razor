@@ -1,71 +1,100 @@
 ﻿@page "/commissionersmodify/{commissionerId:int}"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager NavigationManager
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject IUserTypeManagementService UserTypeManagementService
+@inject IUserTypeSetsManagementService UserTypeSetsManagementService
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
+
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
          <Authorized>
 <div class="form-container">
     <h1>MODYFIKOWANIE CZŁONKA KOMISJI</h1>
-    <EditForm Model="@commissionerModel" OnValidSubmit="HandleModifySubmit">
+    <EditForm Model="@userTypeSetViewModel" OnValidSubmit="HandleModifySubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="form-group-smaller">
             <label for="pesel">PESEL CZŁONKA KOMISJI</label>
-            <InputText @bind-Value="commissionerModel.PESEL" id="pesel" class="form-input" readonly />
+            <InputText @bind-Value="enteredPesel" id="pesel" class="form-input" readonly />
         </div>
         <div class="form-group-smaller">
             <label for="wojewodztwo">WOJEWÓDZTWO</label>
-            <select @bind="commissionerModel.Wojewodztwo" id="wojewodztwo" class="form-input">
+            <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
                 <option value="">Wybierz województwo</option>
-                @foreach (var woj in voivodeships)
+                @foreach (var voivodeship in wrapper.VoivodeshipFilter)
                 {
-                    <option value="@woj">@woj</option>
+                    <option value="@voivodeship.idVoivodeship">
+                        @voivodeship.voivodeshipName
+                    </option>
                 }
             </select>
         </div>
         <div class="form-group-smaller">
             <label for="powiat">POWIAT</label>
-            <select @bind="commissionerModel.Powiat" id="powiat" class="form-input">
-                <option value="">Wybierz powiat</option>
-                @foreach (var pow in counties)
-                {
-                    <option value="@pow">@pow</option>
-                }
-            </select>
+                <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+                    <option value="">Wybierz powiat</option>
+                    @foreach (var county in wrapper.CountyFilter)
+                    {
+                        @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                        {
+                            <option value="@county.IdCounty">
+                                @county.CountyName
+                            </option>
+                        }
+                    }
+                </select>
         </div>
         <div class="form-group-smaller">
             <label for="gmina">GMINA</label>
-            <select @bind="commissionerModel.Gmina" id="gmina" class="form-input">
+            <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
                 <option value="">Wybierz gminę</option>
-                @foreach (var gmina in provinces)
+                @foreach (var province in wrapper.ProvinceFilter)
                 {
-                    <option value="@gmina">@gmina</option>
+                    @if (province.IdCounty == SelectedCountyId)
+                    {
+                        <option value="@province.IdProvince">
+                            @province.ProvinceName
+                        </option>
+                    }
                 }
             </select>
         </div>
         <div class="form-group-smaller">
             <label for="numer-obwodu">NUMER OBWODU</label>
-            <select @bind="commissionerModel.NumerObwodu" id="numer-obwodu" class="form-input">
+            <select @bind="@SelectedDistrictId">
                 <option value="">Wybierz numer obwodu</option>
-                @foreach (var obwod in districtNumbers)
+                @foreach (var district in wrapper.DistrictFilter)
                 {
-                    <option value="@obwod">@obwod</option>
+                    @if (district.IdProvince == SelectedProvinceId)
+                    {
+                        <option value="@district.IdDistrict">
+                            @district.DistrictName - @district.DistrictHeadquarters
+                        </option>
+                    }
                 }
             </select>
         </div>
         <div class="form-group-smaller">
             <label for="stopien">STOPIEŃ</label>
-            <select @bind="commissionerModel.Stopien" id="stopien" class="form-input">
-                <option value="">Wybierz stopień członkostwa w komisji</option>
-                <option value="Przewodniczący">Przewodniczący</option>
-                <option value="Zastępca">Zastępca</option>
-                <option value="Członek">Członek</option>
+            <select @bind="@userTypeSetViewModel.IdUserType">
+                <option value="">Wybierz stopień w komisji wyborczej</option>
+                @foreach (var rank in commissionsRanks)
+                {
+                    <option value="@rank.IdUserType">
+                        @rank.UserTypeName
+                    </option>
+                }
             </select>
         </div>
 
@@ -74,6 +103,10 @@
             <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
 </div>
 
                 </Authorized>
@@ -90,45 +123,72 @@
     [Parameter]
     public int commissionerId { get; set; }
 
-    private CommissionerModel commissionerModel = new CommissionerModel();
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
+    private int? SelectedDistrictId { get; set; } = null;
 
-    private List<string> voivodeships = new() { "Mazowieckie", "Śląskie", "Małopolskie" };
-    private List<string> counties = new() { "Powiat 1", "Powiat 2", "Powiat 3" };
-    private List<string> provinces = new() { "Gmina 1", "Gmina 2", "Gmina 3" };
-    private List<string> districtNumbers = new() { "Obwód 1", "Obwód 2", "Obwód 3" };
+    private int commissionGroupId = 2;
+    private string errorMessage = String.Empty;
+    private string? enteredPesel { get; set; } = null;
 
-    protected override void OnInitialized()
+    private FilterListWrapper wrapper = new FilterListWrapper();
+    private UserTypeSetViewModel userTypeSetViewModel = new UserTypeSetViewModel();
+    private int? oldTypeId { get; set; } = null;
+
+    private List<UserTypeViewModel> commissionsRanks = new List<UserTypeViewModel>();
+
+    protected override async Task OnInitializedAsync()
     {
-        var commissioner = GetCommissionerById(commissionerId);
-        if (commissioner != null)
+        if (!(await ElectionUserManagementService.UserExists(commissionerId)))
         {
-            commissionerModel = new CommissionerModel
-                {
-                    PESEL = commissioner.Person.PESEL.ToString(),
-                    Wojewodztwo = "Mazowieckie",
-                    Powiat = "Powiat 1",
-                    Gmina = "Gmina 1",
-                    NumerObwodu = "Obwód 1",
-                    Stopien = commissioner.Rank
-                };
+            errorMessage = "Not found user with this ID";
+            Cancel();
+            return;
         }
-    }
 
-    private Commissioner? GetCommissionerById(int id)
-    {
-        // Mockowanie danych komisarza
-        var commissioners = new List<Commissioner>
+        userTypeSetViewModel = await UserTypeSetsManagementService.SetWithTypeGroupExists(commissionGroupId, commissionerId);
+        if(userTypeSetViewModel.IdUserTypeSet == 0)
         {
-            new Commissioner { IdCommissioner = 1, Rank = "Przewodniczący", Person = new Person { PESEL = 85293128490 }},
-            new Commissioner { IdCommissioner = 2, Rank = "Członek", Person = new Person { PESEL = 92731028594 }}
-        };
-        return commissioners.FirstOrDefault(c => c.IdCommissioner == id);
+            errorMessage = "Not found user set to this group ID";
+            Cancel();
+            return;
+        }
+        oldTypeId = userTypeSetViewModel.IdUserType;
+
+        var person = await PersonManagementService.GetPersonIdByIdElectionUser(commissionerId);
+        enteredPesel = person.PESEL;
+
+        commissionsRanks = await UserTypeManagementService.GetUserTypesOfGroup(commissionGroupId);
+        wrapper.VoivodeshipFilter = await VoivodeshipManagementService.Voivodeships();
     }
 
-    private void HandleModifySubmit()
+
+    private async Task HandleModifySubmit()
     {
-        Console.WriteLine($"Zmodyfikowano dane komisarza o numerze PESEL: {commissionerModel.PESEL}");
-        NavigationManager.NavigateTo("/commissionerslist");
+        if ((SelectedDistrictId == null || SelectedDistrictId == 0)
+        || userTypeSetViewModel.IdUserType == 0)
+        {
+            errorMessage = "Nie uzupełniono wszystkich pól!";
+            return;
+        }
+
+        Console.WriteLine($"Old rank: {oldTypeId} and current: {userTypeSetViewModel.IdUserType}");
+        var electionUser = await ElectionUserManagementService.GetElectionUserById(commissionerId);
+        if (oldTypeId == userTypeSetViewModel.IdUserType && electionUser.IdDistrict == SelectedDistrictId)
+        {
+            errorMessage = "Nie zmieniono żadnych danych! Proszę je zmodyfikować!"; //update only with different data
+            return;
+        }
+
+        if (electionUser.IdDistrict != SelectedDistrictId) //if district entered by user is different
+        {
+            await ElectionUserManagementService.PutUserDistrict(electionUser, SelectedDistrictId.Value);
+        }
+
+        var isModifiedCommissioner = await UserTypeSetsManagementService.PutUserTypeSet(userTypeSetViewModel);
+        errorMessage = isModifiedCommissioner ? "Zmodyfikowano członka komisji pomyślnie!" : "Modyfikacja członka komisji nie powiodła się";
+        //Cancel();
     }
 
     private void Cancel()
@@ -136,25 +196,39 @@
         NavigationManager.NavigateTo("/commissionerslist");
     }
 
-    public class CommissionerModel
+    private async Task FilterTable()
     {
-        public string PESEL { get; set; }
-        public string Wojewodztwo { get; set; }
-        public string Powiat { get; set; }
-        public string Gmina { get; set; }
-        public string NumerObwodu { get; set; }
-        public string Stopien { get; set; }
+        wrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
     }
 
-    public class Commissioner
+    private async Task OnVoivodeshipChanged()
     {
-        public int IdCommissioner { get; set; }
-        public string Rank { get; set; }
-        public Person Person { get; set; }
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+
+        await FilterTable();
     }
 
-    public class Person
+    private async Task OnCountyChanged()
     {
-        public long PESEL { get; set; }
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+
+        await FilterTable();
     }
+
+    private async Task OnProvinceChanged()
+    {
+        SelectedDistrictId = null;
+
+        await FilterTable();
+    }
+
+    private async Task OnDistrictChanged()
+    {
+        await FilterTable();
+    }
+
+    
 }

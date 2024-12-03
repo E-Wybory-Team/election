@@ -1,4 +1,5 @@
 ﻿using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using System.Net.Http;
 using System.Net.Http.Json;
 
@@ -41,6 +42,17 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
+        public async Task<bool> PutUser(ElectionUserViewModel userModel)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/ElectionUser/{userModel.IdElectionUser}", userModel);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> PutUserDistrict(ElectionUserViewModel userModel, int districtId)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/ElectionUser/district/{userModel.IdElectionUser}/{districtId}", userModel);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
 
     }
 }

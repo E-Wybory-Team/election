@@ -61,7 +61,7 @@
         </div>
 
         <div class="form-row">
-            <button type="submit" class="submit-button">DODAJ</button>
+            <button type="submit" class="submit-button">ZATWIERDŹ</button>
             <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
@@ -86,10 +86,10 @@
     bool isAddedCommittee = false;
     string errorMessage;
 
-    private async void HandleAddSubmit()
+    private async Task HandleAddSubmit()
     {
         isAddedCommittee = await PartyManagementService.AddParty(committeeModel);
-        errorMessage = isAddedCommittee ? "Adding committee successful!" : "Adding committee fails";
+        errorMessage = isAddedCommittee ? "Dodawanie komitetu udało się!" : "Nie powiodło się dodawanie komitetu!";
     }
 
     private void Cancel()

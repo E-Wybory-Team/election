@@ -92,7 +92,7 @@
     {
         if (!await PartyManagementService.PartyExists(committeeId))
         {
-            errorMessage = "Committee not found";
+            errorMessage = "Nie znaleziono komitetu!";
             Cancel();
         }
         else
@@ -101,10 +101,10 @@
         }
     }
 
-    private async void HandleAddSubmit()
+    private async Task HandleAddSubmit()
     {
         isModifiedCommittee = await PartyManagementService.PutParty(committeeModel);
-        errorMessage = isModifiedCommittee ? "Committee edition successful!" : "Committee edition fails";
+        errorMessage = isModifiedCommittee ? "Modyfikacja komitetu się udała!" : "Nie powiodła się modyfikacja komitetu!";
     }
 
     private void Cancel()
