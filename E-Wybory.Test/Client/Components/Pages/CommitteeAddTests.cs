@@ -46,7 +46,7 @@ namespace E_Wybory.Test.Client.Components.Pages
                 Assert.Contains("NR LISTY", cut.Markup);
                 Assert.Contains("NAZWA KOMITETU", cut.Markup);
                 Assert.Contains("PARTIA KOALICYJNA", cut.Markup);
-                Assert.Contains("DODAJ", cut.Markup);
+                Assert.Contains("ZATWIERDŹ", cut.Markup);
                 Assert.Contains("ANULUJ", cut.Markup);
             });
         }
@@ -89,7 +89,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Adding committee successful!", cut.Markup);
+                Assert.Contains("Dodawanie komitetu udało się!", cut.Markup);
             });
         }
 

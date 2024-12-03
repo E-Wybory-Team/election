@@ -7,13 +7,54 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using E_Wybory.Client.Components.Pages;
 using Microsoft.AspNetCore.Components;
+using E_Wybory.Client.Services;
+using Moq;
+using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
     public class CommissionersAddTests : TestContext
     {
+        private readonly Mock<IElectionUserManagementService> _electionUserManagementServiceMock;
+        private readonly Mock<IPersonManagementService> _personManagementServiceMock;
+        private readonly Mock<IFilterWrapperManagementService> _filterWrapperServiceMock;
+        private readonly Mock<IUserTypeSetsManagementService> _userTypeSetsManagementServiceMock;
+        private readonly Mock<IUserTypeManagementService> _userTypeManagementServiceMock;
+        private readonly Mock<IVoivodeshipManagementService> _voivodeshipManagementServiceMock;
+
         public CommissionersAddTests()
         {
+
+            _electionUserManagementServiceMock = new Mock<IElectionUserManagementService>();
+            _personManagementServiceMock = new Mock<IPersonManagementService>();
+            _filterWrapperServiceMock = new Mock<IFilterWrapperManagementService>();
+            _userTypeSetsManagementServiceMock = new Mock<IUserTypeSetsManagementService>();
+            _userTypeManagementServiceMock = new Mock<IUserTypeManagementService>();
+            _userTypeManagementServiceMock
+    .Setup(service => service.GetUserTypesOfGroup(It.IsAny<int>()))
+    .ReturnsAsync(new List<UserTypeViewModel>
+    {
+        new UserTypeViewModel { IdUserType = 1, UserTypeName = "Przewodniczący" },
+        new UserTypeViewModel { IdUserType = 2, UserTypeName = "Sekretarz" }
+    });
+
+
+            Services.AddSingleton(_electionUserManagementServiceMock.Object);
+            Services.AddSingleton(_personManagementServiceMock.Object);
+            Services.AddSingleton(_filterWrapperServiceMock.Object);
+            Services.AddSingleton(_userTypeSetsManagementServiceMock.Object);
+            Services.AddSingleton(_userTypeManagementServiceMock.Object);
+
+            _voivodeshipManagementServiceMock = new Mock<IVoivodeshipManagementService>();
+            _voivodeshipManagementServiceMock
+                .Setup(service => service.Voivodeships())
+                .ReturnsAsync(new List<VoivodeshipViewModel>
+                {
+                    new VoivodeshipViewModel { idVoivodeship = 1, voivodeshipName = "Mazowieckie" }
+                });
+            Services.AddSingleton(_voivodeshipManagementServiceMock.Object);
+
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "Test User"),

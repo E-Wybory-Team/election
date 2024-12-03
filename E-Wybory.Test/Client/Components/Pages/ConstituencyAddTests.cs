@@ -85,7 +85,7 @@ namespace E_Wybory.Test.Client.Components.Pages
                 model => model.constituencyName == "Testowy Okręg")), Times.Once);
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Adding constituency successful!", cut.Markup);
+                Assert.Contains("Dodawanie okręgu się udało", cut.Markup);
             });
         }
 

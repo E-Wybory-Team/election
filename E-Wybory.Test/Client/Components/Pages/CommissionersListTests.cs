@@ -6,13 +6,38 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using E_Wybory.Client.Components.Pages;
+using E_Wybory.Client.Services;
+using Moq;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
     public class CommissionersListTests : TestContext
     {
+        private readonly Mock<IElectionUserManagementService> _electionUserManagementServiceMock;
+        private readonly Mock<IPersonManagementService> _personManagementServiceMock;
+        private readonly Mock<IFilterWrapperManagementService> _filterWrapperServiceMock;
+        private readonly Mock<IUserTypeSetsManagementService> _userTypeSetsManagementServiceMock;
+        private readonly Mock<IUserTypeManagementService> _userTypeManagementServiceMock;
+        private readonly Mock<IVoivodeshipManagementService> _voivodeshipManagementServiceMock;
+
         public CommissionersListTests()
         {
+
+            _electionUserManagementServiceMock = new Mock<IElectionUserManagementService>();
+            _personManagementServiceMock = new Mock<IPersonManagementService>();
+            _filterWrapperServiceMock = new Mock<IFilterWrapperManagementService>();
+            _userTypeSetsManagementServiceMock = new Mock<IUserTypeSetsManagementService>();
+            _userTypeManagementServiceMock = new Mock<IUserTypeManagementService>();
+            _voivodeshipManagementServiceMock = new Mock<IVoivodeshipManagementService>();
+
+
+            Services.AddSingleton(_electionUserManagementServiceMock.Object);
+            Services.AddSingleton(_personManagementServiceMock.Object);
+            Services.AddSingleton(_filterWrapperServiceMock.Object);
+            Services.AddSingleton(_userTypeSetsManagementServiceMock.Object);
+            Services.AddSingleton(_userTypeManagementServiceMock.Object);
+            Services.AddSingleton(_voivodeshipManagementServiceMock.Object);
+
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "Test User"),

@@ -98,7 +98,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             _constituencyManagementServiceMock.Verify(service => service.DeleteConstituency(1), Times.Once);
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Constituency deleted successful!", cut.Markup);
+                Assert.Contains("Usunięto okręg pomyślnie!", cut.Markup);
             });
         }
 

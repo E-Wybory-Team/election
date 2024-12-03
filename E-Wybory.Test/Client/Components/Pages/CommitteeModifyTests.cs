@@ -95,7 +95,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             _partyManagementServiceMock.Verify(service => service.PutParty(It.IsAny<PartyViewModel>()), Times.Once);
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Committee edition successful!", cut.Markup);
+                Assert.Contains("Modyfikacja komitetu się udała!", cut.Markup);
             });
         }
 

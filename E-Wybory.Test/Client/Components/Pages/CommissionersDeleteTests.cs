@@ -7,13 +7,38 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using E_Wybory.Client.Components.Pages;
 using Microsoft.AspNetCore.Components;
+using E_Wybory.Client.Services;
+using Moq;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
     public class CommissionersDeleteTests : TestContext
     {
+        private readonly Mock<IElectionUserManagementService> _electionUserManagementServiceMock;
+        private readonly Mock<IPersonManagementService> _personManagementServiceMock;
+        private readonly Mock<IFilterWrapperManagementService> _filterWrapperServiceMock;
+        private readonly Mock<IUserTypeSetsManagementService> _userTypeSetsManagementServiceMock;
+        private readonly Mock<IUserTypeManagementService> _userTypeManagementServiceMock;
+        private readonly Mock<IVoivodeshipManagementService> _voivodeshipManagementServiceMock;
+
+
         public CommissionersDeleteTests()
         {
+
+            _electionUserManagementServiceMock = new Mock<IElectionUserManagementService>();
+            _personManagementServiceMock = new Mock<IPersonManagementService>();
+            _filterWrapperServiceMock = new Mock<IFilterWrapperManagementService>();
+            _userTypeSetsManagementServiceMock = new Mock<IUserTypeSetsManagementService>();
+            _userTypeManagementServiceMock = new Mock<IUserTypeManagementService>();
+            _voivodeshipManagementServiceMock = new Mock<IVoivodeshipManagementService>();
+
+            Services.AddSingleton(_electionUserManagementServiceMock.Object);
+            Services.AddSingleton(_personManagementServiceMock.Object);
+            Services.AddSingleton(_filterWrapperServiceMock.Object);
+            Services.AddSingleton(_userTypeSetsManagementServiceMock.Object);
+            Services.AddSingleton(_userTypeManagementServiceMock.Object);
+            Services.AddSingleton(_voivodeshipManagementServiceMock.Object);
+
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "Test User"),
@@ -37,7 +62,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             {
                 Assert.Contains("POTWIERDŹ USUNIĘCIE CZŁONKA KOMISJI", cut.Markup);
                 Assert.Contains("PESEL CZŁONKA KOMISJI", cut.Markup);
-                Assert.Contains("85293128490", cut.Markup); // PESEL komisarza o ID 1
+                Assert.Contains("85293128490", cut.Markup); 
                 Assert.Contains("Mazowieckie", cut.Markup);
                 Assert.Contains("Powiat 1", cut.Markup);
                 Assert.Contains("Gmina 1", cut.Markup);
