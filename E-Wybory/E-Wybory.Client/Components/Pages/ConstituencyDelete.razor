@@ -68,7 +68,9 @@
     {
         if (!await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
-            errorMessage = "Constituency not found";
+            errorMessage = "Nie znaleziono okręgu!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -78,12 +80,14 @@
         }
     }
 
-    private async void HandleDeleteSubmit()
+    private async Task HandleDeleteSubmit()
     {
         isDeletedConstituency = await ConstituencyManagementService.DeleteConstituency(constituencyId);
-        errorMessage = isDeletedConstituency ? "Constituency deleted successful!" : "Constituency deleted fails";
+        errorMessage = isDeletedConstituency ? "Usunięto okręg pomyślnie!" : "Usuwanie okręgu się nie powiodło!";
         if (isDeletedConstituency)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

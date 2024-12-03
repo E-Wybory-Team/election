@@ -138,7 +138,13 @@
                 userViewModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
                 voterModel.IdElectionUser = userViewModel.IdElectionUser;
                 isAddedVoter = await VoterManagementService.AddVoter(voterModel);
-                errorMessage = isAddedVoter ? "Adding voter successful!" : "Adding voter fails";
+                errorMessage = isAddedVoter ? "Dodano wyborcę pomyślnie!" : "Nie dodano wyborcy!";
+                if(isAddedVoter)
+                {
+                    StateHasChanged();
+                    await Task.Delay(1000);
+                    Cancel();
+                }
             }
             catch(Exception ex)
             {

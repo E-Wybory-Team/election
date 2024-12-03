@@ -168,8 +168,10 @@
     {
         if (!await DistrictManagementService.DistrictExists(districtId))
         {
-            errorMessage = "District not found";
-            NavigationManager.NavigateTo("/districtlist");
+            errorMessage = "Nie znaleziono obwodu!";
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
         }
         else
         {
@@ -180,11 +182,17 @@
         }
     }
 
-    private async void HandleSubmit()
+    private async Task HandleSubmit()
     {
         districtModel.IdProvince = SelectedProvinceId;
         isModifiedDistrict = await DistrictManagementService.PutDistrict(districtModel);
-        errorMessage = isModifiedDistrict ? "District edition successful!" : "District edition fails";
+        errorMessage = isModifiedDistrict ? "Modyfikacja obwodu sie powiodła!" : "Niepowodzenie w modyfikowaniu obwodu!";
+        if(isModifiedDistrict)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private async Task FilterRegions()

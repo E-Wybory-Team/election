@@ -13,55 +13,67 @@
 
 
 <CascadingAuthenticationState>
-    <div class="account-form-container">
-        <h1>Twoje Konto</h1>
+    <AuthorizeView>
+        <Authorized>
+            <div class="account-form-container">
+                <h1>Twoje Konto</h1>
 
 
-        <div class="form-group">
-            <label>Imię</label>
-            <InputText @bind-Value="person.Name" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>Imię</label>
+                    <InputText @bind-Value="person.Name" readonly class="form-input" />
+                </div>
 
-        <div class="form-group">
-            <label>Nazwisko</label>
-            <InputText @bind-Value="person.Surname" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>Nazwisko</label>
+                    <InputText @bind-Value="person.Surname" readonly class="form-input" />
+                </div>
 
-        <div class="form-group">
-            <label>PESEL</label>
-            <InputText @bind-Value="person.PESEL" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>PESEL</label>
+                    <InputText @bind-Value="person.PESEL" readonly class="form-input" />
+                </div>
 
-        <div class="form-group">
-            <label>Data urodzenia</label>
-            <InputText @bind-Value="person.DateOfBirthString" readonly class="form-input" />
-        </div>
-
-
-        <div class="form-group">
-            <label>Email</label>
-            <InputText @bind-Value="user.Email" readonly class="form-input" />
-        </div>
-
-        <div class="form-group">
-            <label>Numer telefonu</label>
-            <InputText @bind-Value="user.PhoneNumber" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>Data urodzenia</label>
+                    <InputText @bind-Value="person.DateOfBirthString" readonly class="form-input" />
+                </div>
 
 
-        <div class="two-factor-section">
-            <label>Weryfikacja dwuetapowa</label>
-            <span class="two-factor-status @VerificationClass">@VerificationMessage</span>
-            <button class="submit-button" @onclick="NavigateTo2FA">Weryfikuj</button>
-        </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <InputText @bind-Value="user.Email" readonly class="form-input" />
+                </div>
+
+                <div class="form-group">
+                    <label>Numer telefonu</label>
+                    <InputText @bind-Value="user.PhoneNumber" readonly class="form-input" />
+                </div>
 
 
-        <div class="password-section">
-            <label>Hasło</label>
-            <button class="change-password-button" @onclick="NavigateToChangePassword">Zmień hasło</button>
-        </div>
-    </div>
+                <div class="two-factor-section">
+                    <label>Weryfikacja dwuetapowa</label>
+                    <span class="two-factor-status @VerificationClass">@VerificationMessage</span>
+                    <button class="submit-button" @onclick="NavigateTo2FA">Weryfikuj</button>
+                </div>
+
+
+                <div class="password-section">
+                    <label>Hasło</label>
+                    <button class="change-password-button" @onclick="NavigateToChangePassword">Zmień hasło</button>
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
 </CascadingAuthenticationState>
+
 
 @code {
     private PersonViewModel person = new();

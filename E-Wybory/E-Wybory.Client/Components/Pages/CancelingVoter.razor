@@ -73,6 +73,8 @@
         if (activeElections.Count() == 0)
         {
             errorMessage = "Nie ma żadnych trwających wyborów";
+            StateHasChanged();
+            await Task.Delay(1000);
         }
         try
         {
@@ -82,6 +84,8 @@
         catch(Exception ex)
         {
             errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+            StateHasChanged();
+            await Task.Delay(1000);
         }
     }
 

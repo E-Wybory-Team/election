@@ -2,7 +2,7 @@ using E_Wybory.Client.Validators;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
 
-namespace E_Wybory.Test.Client.Policies
+namespace E_Wybory.Test.Client.Validators
 {
     public class ElectionPasswordPolicyAttributeTests
     {

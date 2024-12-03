@@ -55,6 +55,11 @@ namespace E_Wybory.Controllers
                 return Conflict("Incorrect id");
             }
 
+            if (ConstituencyNameExists(constituencyModel.constituencyName))
+            {
+                return Conflict("Constituency with this name already exists");
+            }
+
             var constituency = await _context.Constituences.FindAsync(id);
 
             if (constituency == null)
@@ -86,6 +91,13 @@ namespace E_Wybory.Controllers
                 return BadRequest("Not entered data to all required fields");
             }
 
+            if(ConstituencyNameExists(constituencyModel.constituencyName))
+            {
+                return Conflict("Constituency with this name already exists");
+            }
+
+
+
             var constituency = new Constituence();
 
             constituency.ConstituencyName = constituencyModel.constituencyName;
@@ -115,6 +127,11 @@ namespace E_Wybory.Controllers
         private bool ConstituencyExists(int id)
         {
             return _context.Constituences.Any(e => e.IdConstituency == id);
+        }
+
+        private bool ConstituencyNameExists(string name)
+        {
+            return _context.Constituences.Any(e => e.ConstituencyName == name);
         }
 
         // GET: api/Constituency/exist/5
@@ -152,6 +169,7 @@ namespace E_Wybory.Controllers
 
             return relatedCounties;
         }
+
 
     }
 }

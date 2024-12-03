@@ -83,6 +83,8 @@
         if (activeElections.Count == 0)
         {
             errorMessage = "Aktualnie brak trwających wyborów!";
+            StateHasChanged();
+            await Task.Delay(1000);
             NavManager.NavigateTo("/cancelvoter");
             return;
         }
@@ -95,6 +97,8 @@
         catch (Exception ex)
         {
             errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
+            StateHasChanged();
+            await Task.Delay(1000);
             NavManager.NavigateTo("/cancelvoter");
             return;
         }
@@ -105,6 +109,8 @@
             if (!voterExists)
             {
                 errorMessage = "Nie znaleziono wyborcy!";
+                StateHasChanged();
+                await Task.Delay(1000);
                 NavManager.NavigateTo("/cancelvoter");
                 return;
             }
@@ -116,6 +122,8 @@
             if(idDistrict != voterModel.IdDistrict)
             {
                 errorMessage = "Wyborca nie jest przypisany do tego obwodu!";
+                StateHasChanged();
+                await Task.Delay(1000);
                 NavManager.NavigateTo("/cancelvoter");
                 return;
             }
@@ -123,6 +131,8 @@
         catch (Exception ex)
         {
             errorMessage = "Wyborca o podanym ID nie istnieje!";
+            StateHasChanged();
+            await Task.Delay(1000);
             NavManager.NavigateTo("/cancelvoter");
         }
 
@@ -156,6 +166,12 @@
 
             formSubmitted = await ElectionVoterManagementService.AddElectionVoter(electionVoterViewModel);
             errorMessage = formSubmitted ? "Zablokowano możliwość głosowania użytkownikowi!" : "Blokada głosowania użytkownikowi nie powiodła się!";
+            if(formSubmitted)
+            {
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
+            }
         }
     }
 

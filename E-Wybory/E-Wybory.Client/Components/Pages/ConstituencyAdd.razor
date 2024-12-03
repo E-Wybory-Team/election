@@ -52,10 +52,16 @@
     string errorMessage;
 
 
-    private async void HandleSubmit()
+    private async Task HandleSubmit()
     {
         isAddedConstituency = await ConstituencyManagementService.AddConstituency(constituencyModel);
-        errorMessage = isAddedConstituency ? "Adding constituency successful!" : "Adding constituency fails";
+        errorMessage = isAddedConstituency ? "Dodawanie okręgu się udało!" : "Podano istniejącą już nazwę okręgu";
+        if(isAddedConstituency)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

@@ -27,7 +27,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="wojewodztwo">WOJEWÓDZTWO</label>
-            <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+            <select @bind="@SelectedVoivodeshipId" id="wojewodztwo" @bind:after="@OnVoivodeshipChanged">
                 <option value="">Wybierz województwo</option>
                 @foreach (var voivodeship in wrapper.VoivodeshipFilter)
                 {
@@ -39,7 +39,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="powiat">POWIAT</label>
-            <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+            <select @bind="@SelectedCountyId" id="powiat" @bind:after="@OnCountyChanged">
                 <option value="">Wybierz powiat</option>
                 @foreach (var county in wrapper.CountyFilter)
                 {
@@ -54,7 +54,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="gmina">GMINA</label>
-            <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+            <select @bind="@SelectedProvinceId" id="gmina" @bind:after="@OnProvinceChanged">
                 <option value="">Wybierz gminę</option>
                 @foreach (var province in wrapper.ProvinceFilter)
                 {
@@ -69,7 +69,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="numer-obwodu">NUMER OBWODU</label>
-            <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+            <select @bind="@SelectedDistrictId" id="obwod" @bind:after="@OnDistrictChanged">
                 <option value="">Wybierz obwód wyborczy</option>
                 @foreach (var district in wrapper.DistrictFilter)
                 {
@@ -128,7 +128,9 @@
     {
         if (!await VoterManagementService.VoterExists(voterId))
         {
-            errorMessage = "Voter not found";
+            errorMessage = "Nie znaleziono wyborcy!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -143,6 +145,9 @@
             catch(Exception ex)
             {
                 errorMessage = "Nie ma powiązanego użytkownika w bazie!";
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
             }
             await FilterRegions();
         }
@@ -152,8 +157,13 @@
     private async Task HandleAddSubmit()
     {
         isModifiedVoter = await VoterManagementService.PutVoter(voterModel);
-        errorMessage = isModifiedVoter ? "Updating voter successful!" : "Updating voter fails";
-        Cancel();
+        errorMessage = isModifiedVoter ? "Zmodyfikowano wyborcę pomyślnie!" : "Nie udało się zmodyfikować wyborcy!";
+        if (isModifiedVoter)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

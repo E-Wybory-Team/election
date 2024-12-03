@@ -176,6 +176,12 @@
         userTypeSetViewModel.IdElectionUser = electionUser.IdElectionUser;
         var isAddedCommissioner = await UserTypeSetsManagementService.AddUserTypeSet(userTypeSetViewModel);
         errorMessage = isAddedCommissioner ? "Dodano członka komisji pomyślnie!" : "Dodawanie członka komisji się nie powiodło";
+        if(isAddedCommissioner)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()
