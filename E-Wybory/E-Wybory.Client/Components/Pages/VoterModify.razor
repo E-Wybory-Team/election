@@ -27,7 +27,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="wojewodztwo">WOJEWÓDZTWO</label>
-            <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+            <select @bind="@SelectedVoivodeshipId" id="wojewodztwo" @bind:after="@OnVoivodeshipChanged">
                 <option value="">Wybierz województwo</option>
                 @foreach (var voivodeship in wrapper.VoivodeshipFilter)
                 {
@@ -39,7 +39,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="powiat">POWIAT</label>
-            <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+            <select @bind="@SelectedCountyId" id="powiat" @bind:after="@OnCountyChanged">
                 <option value="">Wybierz powiat</option>
                 @foreach (var county in wrapper.CountyFilter)
                 {
@@ -54,7 +54,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="gmina">GMINA</label>
-            <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+            <select @bind="@SelectedProvinceId" id="gmina" @bind:after="@OnProvinceChanged">
                 <option value="">Wybierz gminę</option>
                 @foreach (var province in wrapper.ProvinceFilter)
                 {
@@ -69,7 +69,7 @@
         </div>
         <div class="form-group-smaller">
             <label for="numer-obwodu">NUMER OBWODU</label>
-            <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+            <select @bind="@SelectedDistrictId" id="obwod" @bind:after="@OnDistrictChanged">
                 <option value="">Wybierz obwód wyborczy</option>
                 @foreach (var district in wrapper.DistrictFilter)
                 {

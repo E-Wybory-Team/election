@@ -5,59 +5,61 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using E_Wybory.Client.Components.Pages;
+using E_Wybory.Client.Services;
+using E_Wybory.Client.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Moq;
-using E_Wybory.Client.Components.Pages;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
-    public class CheckVoteStatusTests : TestContext
+    public class CommitteeAddTests : TestContext
     {
-        public CheckVoteStatusTests()
+        public CommitteeAddTests()
         {
-            // Add fake authentication state provider
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "Test User"),
-                new Claim(ClaimTypes.Role, "Komisja wyborcza"),
+                new Claim(ClaimTypes.Role, "Pracownicy PKW"),
             }, "test"))));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
 
-            // Add authorization services
             Services.AddAuthorizationCore();
             Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
             Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
 
-            // Services.AddSingleton<NavigationManager, FakeNavigationManager>();
+            var partyServiceMock = new Mock<IPartyManagementService>();
+            partyServiceMock.Setup(service => service.AddParty(It.IsAny<PartyViewModel>())).ReturnsAsync(true);
+            Services.AddSingleton(partyServiceMock.Object);
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Render_Correctly_For_Authorized_User()
+        public void CommitteeAdd_Should_Render_Correctly_For_Authorized_User()
         {
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommitteeAdd>();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("SPRAWDŹ STATUS GŁOSOWANIA", cut.Markup);
-                Assert.Contains("OBWÓD GŁOSOWANIA", cut.Markup);
-                Assert.Contains("OKW 1 Kędzierzyn Koźle", cut.Markup);
-                Assert.Contains("PESEL WYBORCY", cut.Markup);
-                Assert.Contains("SPRAWDŹ STATUS", cut.Markup);
+                Assert.Contains("DODAWANIE KOMITETU WYBORCZEGO", cut.Markup);
+                Assert.Contains("NR LISTY", cut.Markup);
+                Assert.Contains("NAZWA KOMITETU", cut.Markup);
+                Assert.Contains("PARTIA KOALICYJNA", cut.Markup);
+                Assert.Contains("DODAJ", cut.Markup);
                 Assert.Contains("ANULUJ", cut.Markup);
             });
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Render_NotAuthorized_For_Unauthorized_User()
+        public void CommitteeAdd_Should_Render_NotAuthorized_For_Unauthorized_User()
         {
             // Arrange
             var unauthorizedAuthState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(unauthorizedAuthState));
 
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommitteeAdd>();
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -68,41 +70,44 @@ namespace E_Wybory.Test.Client.Components.Pages
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Navigate_To_CheckStatusResult_On_CheckStatus()
+        public void CommitteeAdd_Should_Call_HandleAddSubmit_On_Submit()
         {
             // Arrange
-            var navigationManager = Services.GetRequiredService<NavigationManager>();
+            var cut = RenderComponent<CommitteeAdd>();
+
+            cut.Find("input#nr-listy").Change("1");
+            cut.Find("input#nazwa").Change("Nowa Partia");
+            cut.Find("input#skrot").Change("NP");
+            cut.Find("input#adres").Change("Warszawa");
+            cut.Find("input#type").Change("Polityczna");
+            cut.Find("input#website").Change("www.nowapartia.pl");
 
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
-            var checkStatusButton = cut.Find("button.submit-button");
-
-            Assert.Contains("SPRAWDŹ STATUS GŁOSOWANIA", cut.Markup); 
-            checkStatusButton.Click();
+            var submitButton = cut.Find("button.submit-button");
+            submitButton.Click();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Console.WriteLine($"Current URI: {navigationManager.Uri}");
-                Assert.EndsWith("/checkstatusresult", navigationManager.Uri);
+                Assert.Contains("Adding committee successful!", cut.Markup);
             });
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Navigate_To_CoHome_On_Cancel()
+        public void CommitteeAdd_Should_Navigate_To_CommitteeList_On_Cancel()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
 
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommitteeAdd>();
             var cancelButton = cut.Find("button.cancel-button");
             cancelButton.Click();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.EndsWith("/cohome", navigationManager.Uri);
+                Assert.EndsWith("/committeelist", navigationManager.Uri);
             });
         }
 

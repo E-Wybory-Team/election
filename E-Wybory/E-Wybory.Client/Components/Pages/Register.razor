@@ -259,5 +259,8 @@
             .Where(d => d.DistrictName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
-
+    public RegisterViewModel GetRegisterModel()
+    {
+        return registrationModel;
+    }
 }

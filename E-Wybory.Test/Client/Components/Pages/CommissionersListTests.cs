@@ -5,59 +5,56 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
-using Moq;
 using E_Wybory.Client.Components.Pages;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
-    public class CheckVoteStatusTests : TestContext
+    public class CommissionersListTests : TestContext
     {
-        public CheckVoteStatusTests()
+        public CommissionersListTests()
         {
-            // Add fake authentication state provider
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "Test User"),
-                new Claim(ClaimTypes.Role, "Komisja wyborcza"),
+                new Claim(ClaimTypes.Role, "Administratorzy"),
             }, "test"))));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
 
-            // Add authorization services
             Services.AddAuthorizationCore();
             Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
             Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
-
-            // Services.AddSingleton<NavigationManager, FakeNavigationManager>();
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Render_Correctly_For_Authorized_User()
+        public void CommissionersList_Should_Render_Correctly_For_Authorized_User()
         {
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommissionersList>();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("SPRAWDŹ STATUS GŁOSOWANIA", cut.Markup);
-                Assert.Contains("OBWÓD GŁOSOWANIA", cut.Markup);
-                Assert.Contains("OKW 1 Kędzierzyn Koźle", cut.Markup);
-                Assert.Contains("PESEL WYBORCY", cut.Markup);
-                Assert.Contains("SPRAWDŹ STATUS", cut.Markup);
-                Assert.Contains("ANULUJ", cut.Markup);
+                Assert.Contains("SPIS KOMISJI", cut.Markup);
+                Assert.Contains("Dodaj członka", cut.Markup);
+                Assert.Contains("Imię", cut.Markup);
+                Assert.Contains("Nazwisko", cut.Markup);
+                Assert.Contains("PESEL", cut.Markup);
+                Assert.Contains("Telefon", cut.Markup);
+                Assert.Contains("Adres email", cut.Markup);
+                Assert.Contains("Stopień", cut.Markup);
+                Assert.Contains("Opcje konfiguracji", cut.Markup);
             });
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Render_NotAuthorized_For_Unauthorized_User()
+        public void CommissionersList_Should_Render_NotAuthorized_For_Unauthorized_User()
         {
             // Arrange
             var unauthorizedAuthState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(unauthorizedAuthState));
 
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommissionersList>();
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -68,41 +65,21 @@ namespace E_Wybory.Test.Client.Components.Pages
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Navigate_To_CheckStatusResult_On_CheckStatus()
+        public void CommissionersList_Should_Display_Filtered_Commissioners()
         {
-            // Arrange
-            var navigationManager = Services.GetRequiredService<NavigationManager>();
-
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
-            var checkStatusButton = cut.Find("button.submit-button");
-
-            Assert.Contains("SPRAWDŹ STATUS GŁOSOWANIA", cut.Markup); 
-            checkStatusButton.Click();
+            var cut = RenderComponent<CommissionersList>();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Console.WriteLine($"Current URI: {navigationManager.Uri}");
-                Assert.EndsWith("/checkstatusresult", navigationManager.Uri);
-            });
-        }
-
-        [Fact]
-        public void CheckVoteStatus_Should_Navigate_To_CoHome_On_Cancel()
-        {
-            // Arrange
-            var navigationManager = Services.GetRequiredService<NavigationManager>();
-
-            // Act
-            var cut = RenderComponent<CheckVoteStatus>();
-            var cancelButton = cut.Find("button.cancel-button");
-            cancelButton.Click();
-
-            // Assert
-            cut.WaitForAssertion(() =>
-            {
-                Assert.EndsWith("/cohome", navigationManager.Uri);
+                Assert.Contains("Jan", cut.Markup);
+                Assert.Contains("Kowalski", cut.Markup);
+                Assert.Contains("jan.komisarz@gmail.com", cut.Markup);
+                Assert.Contains("+48 9827319823", cut.Markup);
+                Assert.Contains("Przewodniczący", cut.Markup);
+                Assert.Contains("Modyfikuj", cut.Markup);
+                Assert.Contains("Usuń", cut.Markup);
             });
         }
 

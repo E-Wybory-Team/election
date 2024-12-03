@@ -5,59 +5,57 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
-using Moq;
 using E_Wybory.Client.Components.Pages;
+using Microsoft.AspNetCore.Components;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
-    public class CheckVoteStatusTests : TestContext
+    public class CommissionersAddTests : TestContext
     {
-        public CheckVoteStatusTests()
+        public CommissionersAddTests()
         {
-            // Add fake authentication state provider
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "Test User"),
-                new Claim(ClaimTypes.Role, "Komisja wyborcza"),
+                new Claim(ClaimTypes.Role, "Administratorzy"),
             }, "test"))));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
 
-            // Add authorization services
             Services.AddAuthorizationCore();
             Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
             Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
-
-            // Services.AddSingleton<NavigationManager, FakeNavigationManager>();
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Render_Correctly_For_Authorized_User()
+        public void CommissionersAdd_Should_Render_Correctly_For_Authorized_User()
         {
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommissionersAdd>();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("SPRAWDŹ STATUS GŁOSOWANIA", cut.Markup);
-                Assert.Contains("OBWÓD GŁOSOWANIA", cut.Markup);
-                Assert.Contains("OKW 1 Kędzierzyn Koźle", cut.Markup);
-                Assert.Contains("PESEL WYBORCY", cut.Markup);
-                Assert.Contains("SPRAWDŹ STATUS", cut.Markup);
+                Assert.Contains("DODAWANIE CZŁONKÓW KOMISJI DO OBWODU", cut.Markup);
+                Assert.Contains("PESEL CZŁONKA KOMISJI", cut.Markup);
+                Assert.Contains("WOJEWÓDZTWO", cut.Markup);
+                Assert.Contains("POWIAT", cut.Markup);
+                Assert.Contains("GMINA", cut.Markup);
+                Assert.Contains("NUMER OBWODU", cut.Markup);
+                Assert.Contains("STOPIEŃ", cut.Markup);
+                Assert.Contains("DODAJ", cut.Markup);
                 Assert.Contains("ANULUJ", cut.Markup);
             });
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Render_NotAuthorized_For_Unauthorized_User()
+        public void CommissionersAdd_Should_Render_NotAuthorized_For_Unauthorized_User()
         {
             // Arrange
             var unauthorizedAuthState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(unauthorizedAuthState));
 
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommissionersAdd>();
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -68,41 +66,40 @@ namespace E_Wybory.Test.Client.Components.Pages
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Navigate_To_CheckStatusResult_On_CheckStatus()
+        public void CommissionersAdd_Should_Display_Validation_Errors_On_Invalid_Form_Submission()
         {
-            // Arrange
-            var navigationManager = Services.GetRequiredService<NavigationManager>();
-
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
-            var checkStatusButton = cut.Find("button.submit-button");
-
-            Assert.Contains("SPRAWDŹ STATUS GŁOSOWANIA", cut.Markup); 
-            checkStatusButton.Click();
+            var cut = RenderComponent<CommissionersAdd>();
+            var submitButton = cut.Find("button.submit-button");
+            submitButton.Click();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Console.WriteLine($"Current URI: {navigationManager.Uri}");
-                Assert.EndsWith("/checkstatusresult", navigationManager.Uri);
+                Assert.Contains("Numer PESEL jest wymagany.", cut.Markup);
+                Assert.Contains("Województwo jest wymagane.", cut.Markup);
+                Assert.Contains("Powiat jest wymagany.", cut.Markup);
+                Assert.Contains("Gmina jest wymagana.", cut.Markup);
+                Assert.Contains("Numer obwodu jest wymagany.", cut.Markup);
+                Assert.Contains("Stopień członkostwa jest wymagany.", cut.Markup);
             });
         }
 
         [Fact]
-        public void CheckVoteStatus_Should_Navigate_To_CoHome_On_Cancel()
+        public void CommissionersAdd_Should_Navigate_To_CommissionersList_On_Cancel()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
 
             // Act
-            var cut = RenderComponent<CheckVoteStatus>();
+            var cut = RenderComponent<CommissionersAdd>();
             var cancelButton = cut.Find("button.cancel-button");
             cancelButton.Click();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.EndsWith("/cohome", navigationManager.Uri);
+                Assert.EndsWith("/commissionerslist", navigationManager.Uri);
             });
         }
 
