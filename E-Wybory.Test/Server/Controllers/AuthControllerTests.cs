@@ -623,7 +623,7 @@ namespace E_Wybory.Test.Server.Controllers
             var resetModel = new ResetPasswordViewModel()
             {
                 Email = "existinguser@example.com",
-                ResetCode = GenerateTotpCode(userSecret, timeWindow: 60),
+                ResetCode = GenerateTotpCode(userSecret, timeWindow: 120),
                 NewPassword = newPassword,
                 NewConfirmPassword = newPassword
             };

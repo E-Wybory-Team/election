@@ -322,8 +322,8 @@ namespace E_Wybory.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 60);
-            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez jedną minutę.";
+            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 120);
+            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez dwie minuty.";
 
             var emailOperationResult =  await _emailSenderService.SendEmailAsync(user.Email, "E-wybory: Reset hasła", emailMessage);
 
