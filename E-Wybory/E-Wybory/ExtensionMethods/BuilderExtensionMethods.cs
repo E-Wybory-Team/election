@@ -47,8 +47,8 @@ namespace E_Wybory.ExtensionMethods {
                         var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
 
 
-                        var httpsEndpointConfig = context.Configuration.GetSection("Kestrel:Endpoints:Https");
-                        var url = httpsEndpointConfig.GetValue<string>("Url");
+                        //var httpsEndpointConfig = context.Configuration.GetSection("Kestrel:Endpoints:Https");
+                        var url = "https://10.90.50.21:443";//httpsEndpointConfig.GetValue<string>("Url");
 
                         if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
                         {
