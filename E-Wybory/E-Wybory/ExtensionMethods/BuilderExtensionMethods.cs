@@ -31,8 +31,6 @@ namespace E_Wybory.ExtensionMethods {
 
                     var kestrelConfig = context.Configuration.GetSection("Kestrel");
 
-                    var kestrelConfigLoader = options.Configure(kestrelConfig);
-
                     var certPath = Environment.GetEnvironmentVariable("CERTIFICATE_PATH_VOTING");
                     var certKeyPath = Environment.GetEnvironmentVariable("CERTIFICATE_KEY_PATH_VOTING");
 
@@ -47,25 +45,11 @@ namespace E_Wybory.ExtensionMethods {
                         var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
 
 
-                        //var httpsEndpointConfig = context.Configuration.GetSection("Kestrel:Endpoints:Https");
-                        var url = "https://10.90.50.21:443";//httpsEndpointConfig.GetValue<string>("Url");
-
-                        if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                        options.Configure(kestrelConfig).Endpoint("Https", listenOptions =>
                         {
-                            var ipAddress = System.Net.IPAddress.Parse(uri.Host);
-                            var port = uri.Port;
-
-                            kestrelConfigLoader.Options.Listen(ipAddress, port, listenOptions =>
-                            {
-                                listenOptions.UseHttps(certWithKey);
-                            });
-                        }
-                        else
-                        {
-                            throw new Exception($"Invalid URL in Kestrel HTTPS configuration: {url}");
-                        }
+                            listenOptions.HttpsOptions.ServerCertificate = certWithKey;
+                        });
                     }
-
 
                 });
             }
