@@ -43,12 +43,26 @@ namespace E_Wybory.Services
             return emailSendOperation;
         }
 
+        private int getUserIdFromFileName(string fileName)
+        {
+
+            int underscoreIndex = fileName.IndexOf('_');
+            int dotIndex = fileName.IndexOf('.');
+
+            string numberPart = fileName.Substring(underscoreIndex + 1, dotIndex - underscoreIndex - 1);
+            int number = int.Parse(numberPart);
+
+            Console.WriteLine($"Extracted number: {number}");
+            return number;
+        }
+
         public async Task<EmailSendOperation> SendEmailWithPdfAttachmentAsync(string email, string subject, string message, string pdfFilePath)
         {
             BinaryData pdfContent = BinaryData.FromBytes(await File.ReadAllBytesAsync(pdfFilePath));
+            var userId = getUserIdFromFileName(pdfFilePath);
 
             EmailAttachment pdfAttachment = new EmailAttachment(
-                name: "generatedDocument.pdf",
+                name: $"generatedDocument_{userId}.pdf",
                 contentType: "application/pdf", 
                 content: pdfContent 
             );

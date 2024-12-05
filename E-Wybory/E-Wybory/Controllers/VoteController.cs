@@ -1,10 +1,12 @@
-﻿using E_Wybory.Client.Components.Pages;
+﻿using E_Wybory.Application.Wrappers;
+using E_Wybory.Client.Components.Pages;
 using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
 using static E_Wybory.Client.Components.Pages.Statistics;
 
@@ -56,6 +58,22 @@ namespace E_Wybory.Controllers
             {
                 return BadRequest("Not entered data to all required fields");
             }
+
+            UserWrapper user = new UserWrapper(User);
+            var voterId = 0;
+            var voter = await _context.Voters.Where(voter => voter.IdElectionUser == user.Id).FirstOrDefaultAsync();
+
+            if (voter == null)
+            {
+                return BadRequest("this user does not have set a voter row!");
+            }
+
+            var electionVoter = await _context.ElectionVoters.Where(elVoter => elVoter.IdVoter == voter.IdVoter && elVoter.IdElection == VoteModel.IdElection).FirstOrDefaultAsync();
+            if (electionVoter != null)
+            {
+                return Conflict("This user already voted in this election!");
+            }
+
 
             var Vote = new Domain.Entities.Vote();
             Vote.IdVote = VoteModel.IdVote;

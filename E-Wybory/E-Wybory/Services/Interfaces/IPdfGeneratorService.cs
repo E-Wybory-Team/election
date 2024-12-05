@@ -2,6 +2,6 @@
 {
     public interface IPdfGeneratorService
     {
-        Task<string> GeneratePdfWithImage_Syncfusion(string title, string content);
+        Task<string> GeneratePdfWithImage_Syncfusion(string title, string content, string fileName);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using E_Wybory.Application.Wrappers;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Services.Interfaces;
 using Google.Protobuf.WellKnownTypes;
@@ -11,7 +12,7 @@ namespace E_Wybory.Services
 {
     public class PdfGenerateService : IPdfGeneratorService
     {
-        public async Task<string> GeneratePdfWithImage_Syncfusion(string title, string content)
+        public async Task<string> GeneratePdfWithImage_Syncfusion(string title, string content, string fileName)
         {
             var currentPath = Directory.GetCurrentDirectory();
             var imagePath = currentPath + "\\wwwroot\\logo_ewybory.png";
@@ -60,7 +61,8 @@ namespace E_Wybory.Services
                     }
 
                 }
-                var pdfPath = currentPath + "\\PdfElements\\generatedDocument.pdf";
+
+                var pdfPath = currentPath + $"\\PdfElements\\{fileName}";
                 await File.WriteAllBytesAsync(pdfPath, memoryStream.ToArray());
 
                 return pdfPath;

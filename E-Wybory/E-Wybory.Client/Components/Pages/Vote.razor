@@ -240,7 +240,8 @@
                         IdVoter = IdVoter,
                         VoteTime = DateTime.Now
                     };
-                var votingResult1 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
+                voteModel.IsValid = !voteModel.IsValid; //because user chose invalid vote(or did not choose)
+                var votingResult1 = await VoteManagementService.AddVote(voteModel);
                 errorMessage = "Głosowanie się nie powiodło!";
                 if (sentConfirmation)
                 {
@@ -248,8 +249,7 @@
                 }
                 if (votingResult1)
                 {
-                    voteModel.IsValid = !voteModel.IsValid; //because user chose invalid vote(or did not choose)
-                    var votingResult2 = await VoteManagementService.AddVote(voteModel);
+                    var votingResult2 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
                     if (votingResult1 && votingResult2)
                     {
                         errorMessage = "Głosowanie się powiodło!";
