@@ -29,8 +29,6 @@ namespace E_Wybory.ExtensionMethods {
                 builder.WebHost.ConfigureKestrel((context, options) =>
                 {
 
-
-
                     var kestrelConfig = context.Configuration.GetSection("Kestrel");
 
                     options.Configure(kestrelConfig);
@@ -49,10 +47,23 @@ namespace E_Wybory.ExtensionMethods {
                         var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
 
 
-                        options.ListenAnyIP(8443, listenOptions =>
+                        var httpsEndpointConfig = context.Configuration.GetSection("Kestrel:Endpoints:Https");
+                        var url = httpsEndpointConfig.GetValue<string>("Url");
+
+                        if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
                         {
-                            listenOptions.UseHttps(certWithKey);
-                        });
+                            var ipAddress = System.Net.IPAddress.Parse(uri.Host);
+                            var port = uri.Port;
+
+                            options.Listen(ipAddress, port, listenOptions =>
+                            {
+                                listenOptions.UseHttps(certWithKey);
+                            });
+                        }
+                        else
+                        {
+                            throw new Exception($"Invalid URL in Kestrel HTTPS configuration: {url}");
+                        }
                     }
 
 
