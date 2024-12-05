@@ -26,12 +26,12 @@ namespace E_Wybory.ExtensionMethods {
             if (environment.IsProduction())
             {
 
-                builder.WebHost.ConfigureKestrel((context, options) =>
+                builder.WebHost.UseKestrel((context, options) =>
                 {
 
                     var kestrelConfig = context.Configuration.GetSection("Kestrel");
 
-                    options.Configure(kestrelConfig);
+                    var kestrelConfigLoader = options.Configure(kestrelConfig);
 
                     var certPath = Environment.GetEnvironmentVariable("CERTIFICATE_PATH_VOTING");
                     var certKeyPath = Environment.GetEnvironmentVariable("CERTIFICATE_KEY_PATH_VOTING");
@@ -55,7 +55,7 @@ namespace E_Wybory.ExtensionMethods {
                             var ipAddress = System.Net.IPAddress.Parse(uri.Host);
                             var port = uri.Port;
 
-                            options.Listen(ipAddress, port, listenOptions =>
+                            kestrelConfigLoader.Options.Listen(ipAddress, port, listenOptions =>
                             {
                                 listenOptions.UseHttps(certWithKey);
                             });
