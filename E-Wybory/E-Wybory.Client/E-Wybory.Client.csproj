@@ -8,6 +8,7 @@
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
     <RootNamespace>E_Wybory.Client</RootNamespace>
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+	  <BlazorCacheBootResources>false</BlazorCacheBootResources>
   </PropertyGroup>
 
   <ItemGroup>
