@@ -36,6 +36,13 @@ TokenValidationParameters validationParameters = new TokenValidationParameters
 
 var handler = new JsonWebTokenHandler();
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+if (!builder.Environment.IsProduction())
+    builder.Logging.AddDebug();
+
+
 // Add services to the container.
 builder.Services
     .AddRazorComponents()

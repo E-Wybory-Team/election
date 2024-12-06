@@ -42,7 +42,6 @@ else
             </li>
             <li>
                 <p>Zeskanuj kod QR lub wprowadź ten klucz <kbd>@sharedKey</kbd> do swojej aplikacji uwierzytelniającej. Spacje i wielkość liter nie mają znaczenia.</p>
-                <div class="alert alert-info">Dowiedz się, jak <a href="https://go.microsoft.com/fwlink/?Linkid=852423">włączyć generowanie kodu QR</a>.</div>
                 @if (authenticatorUri is not null)
                 {
                     <QrCode authenticatorUri="@authenticatorUri" />

@@ -47,6 +47,16 @@ namespace E_Wybory.Application.Wrappers
             get => Convert.ToBoolean(_user?.IsInRole("2FAveryfiedUser"));
         }
 
+        public bool IsInRole(string role)
+        {
+            return _user?.IsInRole(role) ?? false;
+        }
+
+        public bool IsAuthenticated
+        {
+            get =>  _user?.Identity?.IsAuthenticated ?? false;
+        }
+
         public bool IsValid()
         {
             if (_user is null || _user.Claims is null || _user.Claims.Count() == 0) return false;

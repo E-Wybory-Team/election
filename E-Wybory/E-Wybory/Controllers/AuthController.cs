@@ -39,14 +39,16 @@ namespace E_Wybory.Controllers
         private readonly ElectionDbContext _context;
         private readonly IJWTService _tokenService;
         private readonly IEmailSenderService _emailSenderService;
+        private readonly ILogger<AuthController> _logger;
         private IPdfGeneratorService pdfGeneratorService = new PdfGenerateService();
         private static readonly ElectionPasswordPolicyAttribute _policyAttribute = new ElectionPasswordPolicyAttribute();
 
-        public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService)
+        public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService, ILogger<AuthController> logger)
         {
             this._context = context;
             this._tokenService = tokenService;
-            this._emailSenderService = emailSenderService; 
+            this._emailSenderService = emailSenderService;
+            _logger = logger;   
         }
 
 
@@ -62,6 +64,7 @@ namespace E_Wybory.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginViewModel request)
         {
+            _logger.LogInformation("Login attempt with username: {0}", request.Username);
             if (request.Username == String.Empty || request.Password == String.Empty)
                 return BadRequest("Not entered data to all required fields");
 
@@ -322,8 +325,8 @@ namespace E_Wybory.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 60);
-            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez jedną minutę.";
+            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 120);
+            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez dwie minuty.";
 
             var emailOperationResult =  await _emailSenderService.SendEmailAsync(user.Email, "E-wybory: Reset hasła", emailMessage);
 
@@ -354,7 +357,7 @@ namespace E_Wybory.Controllers
                 return BadRequest("User has not requested password reset code");
             }
 
-            var isCodeValid = VerifyTotpCode(user.UserSecret, request.ResetCode, timeWindow: 60);
+            var isCodeValid = VerifyTotpCode(user.UserSecret, request.ResetCode, timeWindow: 120);
             if (!isCodeValid)
             {
                 return BadRequest("Invalid reset code");
