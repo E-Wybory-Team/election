@@ -60,7 +60,9 @@ namespace E_Wybory.Test.Client.Components.Pages
             cut.WaitForAssertion(() =>
             {
                 Assert.Contains("POTWIERDŹ USUNIĘCIE OKRĘGU WYBORCZEGO", cut.Markup);
+                Assert.Contains("NAZWA OKRĘGU", cut.Markup);
                 Assert.Contains("Test Okręg", cut.Markup);
+                Assert.Contains("ZASIĘG (POWIATY)", cut.Markup);
                 Assert.Contains("Powiat 1", cut.Markup);
                 Assert.Contains("Powiat 2", cut.Markup);
                 Assert.Contains("USUŃ", cut.Markup);

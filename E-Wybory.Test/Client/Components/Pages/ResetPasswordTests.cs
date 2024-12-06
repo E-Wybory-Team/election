@@ -14,7 +14,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             var cut = RenderComponent<ResetPassword>();
 
             // Act
-            var submitButton = cut.Find("button[type='submit']");
+            var submitButton = cut.Find("button.submit-button");
             submitButton.Click();
 
             // Assert

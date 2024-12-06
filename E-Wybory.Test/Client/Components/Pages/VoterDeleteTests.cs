@@ -40,15 +40,9 @@ namespace E_Wybory.Test.Client.Components.Pages
             }, "test"))));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
 
-            var authorizationPolicyProvider = new Mock<IAuthorizationPolicyProvider>();
-            authorizationPolicyProvider.Setup(x => x.GetPolicyAsync(It.IsAny<string>()))
-                .ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
-            Services.AddSingleton(authorizationPolicyProvider.Object);
-
-            var authorizationServiceMock = new Mock<IAuthorizationService>();
-            authorizationServiceMock.Setup(x => x.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<IEnumerable<IAuthorizationRequirement>>()))
-                .ReturnsAsync(AuthorizationResult.Success());
-            Services.AddSingleton(authorizationServiceMock.Object);
+            Services.AddAuthorizationCore();
+            Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
+            Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
         }
 
         [Fact]
@@ -60,9 +54,11 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.Write(cut.Markup);
                 Assert.Contains("USUWANIE WYBORCY Z OBWODU", cut.Markup);
                 Assert.Contains("PESEL WYBORCY", cut.Markup);
                 Assert.Contains("NUMER OBWODU", cut.Markup);
+                Assert.Contains("USUŃ", cut.Markup);
             });
         }
 
@@ -95,7 +91,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Updating voter successful!", cut.Markup);
+                Assert.Contains("Usunięto wyborcę pomyślnie!", cut.Markup);
             });
         }
 

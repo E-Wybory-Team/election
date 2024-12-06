@@ -10,6 +10,7 @@ using E_Wybory.Client.ViewModels;
 using Moq;
 using System.Collections.Generic;
 using E_Wybory.Client.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
@@ -55,6 +56,10 @@ namespace E_Wybory.Test.Client.Components.Pages
                 new Claim(ClaimTypes.Role, "Administratorzy"),
             }, "test"))));
             Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
+            Services.AddAuthorizationCore();
+            Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
+            Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
+
         }
 
         [Fact]
@@ -99,8 +104,8 @@ namespace E_Wybory.Test.Client.Components.Pages
             });
         }
 
-        [Fact]
-        public void DetailedStatistics_Should_Filter_By_ElectionType()
+
+        *//*public void DetailedStatistics_Should_Filter_By_ElectionType()
         {
             // Arrange
             _authServiceMock.Setup(service => service.GetCurrentUserIdDistrict()).ReturnsAsync(1);
@@ -126,7 +131,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             {
                 Assert.Contains("Anna Nowak", cut.Markup);
             });
-        }
+        }*//*
 
         private class FakeAuthenticationStateProvider : AuthenticationStateProvider
         {

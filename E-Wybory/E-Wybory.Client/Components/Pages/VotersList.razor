@@ -8,6 +8,7 @@
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IVoterManagementService VoterManagementService
+@inject NavigationManager NavigationManager
 
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
@@ -18,7 +19,7 @@
          <Authorized>
             <div class="header-container">
                 <h2 class="title">SPIS WYBORCÓW</h2>
-                <a href="/addvoter" class="add-button">Dodaj Wyborcę</a>
+                <button class="add-button" @onclick="AddVoter">DODAJ WYBORCĘ</button>
             </div>
             
             <div class="filters">
@@ -182,6 +183,11 @@
     private async Task OnDistrictChanged()
     {
         await FilterTable();
+    }
+
+    private void AddVoter()
+    {
+        NavigationManager.NavigateTo("/addvoter");
     }
 
 }

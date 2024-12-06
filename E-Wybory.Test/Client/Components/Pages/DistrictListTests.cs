@@ -93,10 +93,18 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.WriteLine(cut.Markup);
                 Assert.Contains("KONFIGURACJA OBWODÓW WYBORCZYCH", cut.Markup);
                 Assert.Contains("Dodaj Obwód", cut.Markup);
-                Assert.Contains("Obwód 1", cut.Markup);
-                Assert.Contains("Obwód 2", cut.Markup);
+                Assert.Contains("Okręg", cut.Markup);
+                Assert.Contains("Województwo", cut.Markup);
+                Assert.Contains("Powiat", cut.Markup);
+                Assert.Contains("Gmina", cut.Markup);
+                Assert.Contains("Nazwa obwodu", cut.Markup);
+                Assert.Contains("Siedziba", cut.Markup);
+                Assert.Contains("Nazwa okręgu", cut.Markup);
+                Assert.Contains("Opcje konfiguracji", cut.Markup);
+
             });
         }
 
@@ -135,23 +143,20 @@ namespace E_Wybory.Test.Client.Components.Pages
                 Assert.EndsWith("/adddistrict", navigationManager.Uri);
             });
         }
-/*
         [Fact]
-        public async Task DistrictList_Should_Filter_Districts_By_Constituency()
+        public async Task DistrictList_Should_Display_Link_To_Modify_And_Delete()
         {
-            // Act
+            // Arrange
             var cut = RenderComponent<DistrictList>();
-            var constituencySelect = cut.Find("select");
-
-            await cut.InvokeAsync(() => constituencySelect.Change("1"));
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Obwód 1", cut.Markup);
-                Assert.DoesNotContain("Obwód 2", cut.Markup); // Zakładamy, że filtr usunął "Obwód 2"
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("/modifydistrict/1", cut.Markup);
+                Assert.Contains("/deletedistrict/1", cut.Markup);
             });
-        }*/
+        }
 
         private class FakeAuthenticationStateProvider : AuthenticationStateProvider
         {

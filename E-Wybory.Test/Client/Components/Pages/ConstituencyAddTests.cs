@@ -46,7 +46,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             cut.WaitForAssertion(() =>
             {
                 Assert.Contains("DODAWANIE OKRĘGU WYBORCZEGO", cut.Markup);
-                Assert.Contains("Nazwa okręgu wyborczego", cut.Markup);
+                Assert.Contains("NAZWA OKRĘGU", cut.Markup);
                 Assert.Contains("DODAJ", cut.Markup);
                 Assert.Contains("ANULUJ", cut.Markup);
             });

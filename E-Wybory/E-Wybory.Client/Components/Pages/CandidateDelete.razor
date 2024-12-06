@@ -177,7 +177,7 @@
     {
         formSubmitted = await CandidateManagementService.DeleteCandidate(candidateId);
         //formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
-        errorMessage = formSubmitted ? "Kandydat dodany pomyślnie!" : "Nie udało się dodać kandydata!";
+        errorMessage = formSubmitted ? "Kandydat usunięty pomyślnie!" : "Nie udało się usunąć kandydata!";
         if(formSubmitted)
         {
             StateHasChanged();
