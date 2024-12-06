@@ -5,24 +5,118 @@
 <div class="info-body">
     @foreach (var item in faqItems)
     {
-            <details class="faq-item">
-                <summary class="faq-question"> @item.Question</summary>
-                <p class="faq-answer"> @item.Answer</p>
-            
-            </details>
-       
+        <details class="faq-item">
+            <summary class="faq-question"> @item.Question</summary>
+            <p class="faq-answer">@((MarkupString)item.Answer)</p>
+        </details>
     }
 </div>
 
 @code {
     private List<FaqItem> faqItems = new List<FaqItem>
     {
-        new FaqItem { Question = "Faq Question 1?", Answer = "Answer 1 lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum " },
-        new FaqItem { Question = "Faq Question 2?", Answer = "Answer 2" },
-        new FaqItem { Question = "Faq Question 3?", Answer = "Answer 3" },
-        new FaqItem { Question = "Faq Question 4?", Answer = "Answer 4" },
-        new FaqItem { Question = "Faq Question 5?", Answer = "Answer 5" },
-        
+        new FaqItem
+        {
+            Question = "1. Jak zweryfikować swoją tożsamość za pomocą aplikacji uwierzytelniającej?",
+            Answer = @"Weryfikacja po raz pierwszy:<br>
+                        1. Aby rozpocząć weryfikację, należy:<br>
+                        - Zalogować się na swoje konto w aplikacji i kliknąć przycisk „Weryfikuj” w sekcji Konto, lub<br>
+                        - Na stronie głównej wybrać zakładkę „Głosuj”, a następnie panel „Microsoft Authenticator”.<br>
+                        2. Postępuj według następujących kroków:<br>
+                        - Pobierz aplikację uwierzytelniającą, np. Microsoft Authenticator lub Google Authenticator, na swoje urządzenie mobilne.<br>
+                        - Zeskanuj kod QR lub wprowadź ręcznie klucz, który pojawi się na ekranie w aplikacji.<br>
+                        - Aplikacja wygeneruje unikalny kod, który należy wpisać w polu weryfikacyjnym w aplikacji.<br><br>
+                        Weryfikacja przy kolejnych logowaniach:<br>
+                        - Uruchom aplikację uwierzytelniającą na swoim telefonie, odczytaj kod i wprowadź go w aplikacji wyborczej. Po pomyślnym wprowadzeniu kodu użytkownik zostanie przekierowany bezpośrednio do strony wyborów.<br><br>
+                        Resetowanie weryfikacji w przypadku utraty dostępu do aplikacji:<br>
+                        1. Zaloguj się na swoje konto w aplikacji i kliknij przycisk „Resetuj weryfikację” w sekcji Konto.<br>
+                        2. Powtórz proces weryfikacji opisany powyżej, aby skonfigurować nową aplikację uwierzytelniającą."
+        },
+        new FaqItem
+        {
+            Question = "2. Jak głosować w aplikacji?",
+            Answer = @"Wybory parlamentarne:<br>
+                        - Sejm: Wybierz jednego kandydata z interesującej Cię listy wyborczej.<br>
+                        - Senat: Zaznacz jednego kandydata.<br><br>
+                        Wybory prezydenckie:<br>
+                        - Wybierz jednego kandydata spośród dostępnych opcji.<br><br>
+                        Wybory samorządowe:<br>
+                        - Zaznacz jednego kandydata na burmistrza/prezydenta miasta/wójta.<br>
+                        - Zaznacz jednego kandydata do rady gminy/miasta.<br>
+                        - Zaznacz jednego kandydata do rady powiatu.<br><br>
+                        Wybory do Parlamentu Europejskiego:<br>
+                        - Zaznacz jednego kandydata z interesującej Cię listy wyborczej.<br><br>
+                        Głos nieważny:<br>
+                        - Jeśli nie chcesz oddać ważnego głosu, możesz zaznaczyć opcję „Głos nieważny”.<br><br>
+                        Proces w aplikacji:<br>
+                        1. Wybierz odpowiedniego kandydata lub kandydatów zgodnie z typem wyborów.<br>
+                        2. Kliknij przycisk „Głosuj”, aby potwierdzić swój wybór. Po pomyślnym oddaniu głosu system wyświetli potwierdzenie."
+        },
+        new FaqItem
+        {
+            Question = "3. Co można zobaczyć na ekranie statystyk?",
+            Answer = @"Na ekranie statystyk użytkownik może:<br>
+                        - Śledzić bieżącą frekwencję wyborczą w czasie rzeczywistym.<br>
+                        - Skorzystać z przycisku w prawym górnym rogu, aby przejść do szczegółowych statystyk wyborów.<br>
+                        - Szczegółowe statystyki zawierają dane dotyczące liczby głosów oddanych na poszczególnych kandydatów w każdym obwodzie wyborczym.<br>
+                        - Uwaga: Dane szczegółowe są dostępne wyłącznie dla wyborów, które już się zakończyły."
+        },
+        new FaqItem
+        {
+            Question = "4. Jak przypomnieć lub zmienić hasło do konta?",
+            Answer = @"1. Zaloguj się na swoje konto i przejdź do sekcji Konto.<br>
+                        2. Kliknij przycisk „Zmień hasło”.<br>
+                        3. Wprowadź adres e-mail powiązany z Twoim kontem. Na ten adres zostanie wysłany kod weryfikacyjny.<br>
+                        4. Otwórz swoją skrzynkę e-mail, skopiuj kod i wprowadź go w aplikacji.<br>
+                        5. Ustaw nowe hasło zgodnie z zasadami polityki haseł:<br>
+                        - Hasło musi zawierać co najmniej jedną wielką literę, jedną małą literę, jeden znak specjalny i jedną cyfrę.<br>
+                        6. Potwierdź zmianę hasła."
+        },
+        new FaqItem
+        {
+            Question = "5. Jakie informacje znajdują się w sekcji Kandydaci?",
+            Answer = @"Informator wyborczy zawiera:<br>
+                        - Szczegółowe informacje o wszystkich kandydatach, w tym ich programach wyborczych i komitetach wyborczych.<br>
+                        - Zasady dotyczące danego typu wyborów.<br>
+                        - Możliwość przeglądania list kandydatów w poszczególnych obwodach wyborczych."
+        },
+        new FaqItem
+        {
+            Question = "6. Jakie dane są przechowywane w aplikacji?",
+            Answer = @"W aplikacji przechowywane są dane niezbędne do realizacji procesu głosowania, takie jak:<br>
+                        - Twoje dane osobowe wprowadzone podczas rejestracji.<br>
+                        - Informacje o oddanych głosach (anonimowo).<br>
+                        - Dane statystyczne dotyczące frekwencji i wyników wyborów."
+        },
+        new FaqItem
+        {
+            Question = "7. Jak działa zabezpieczenie aplikacji?",
+            Answer = @"Aplikacja korzysta z zaawansowanych mechanizmów zabezpieczeń, takich jak:<br>
+                        - Weryfikacja dwuetapowa (2FA).<br>
+                        - Szyfrowanie danych przesyłanych między użytkownikiem a serwerem.<br>
+                        - Regularne aktualizacje bezpieczeństwa zgodnie z najlepszymi praktykami branżowymi."
+        },
+        new FaqItem
+        {
+            Question = "8. Czy mogę anulować swój głos po jego oddaniu?",
+            Answer = @"Niestety, zgodnie z obowiązującymi przepisami prawa, głos oddany w wyborach jest ostateczny i nie może zostać anulowany ani zmieniony."
+        },
+        new FaqItem
+        {
+            Question = "9. Jak mogę zgłosić problem techniczny?",
+            Answer = @"W przypadku napotkania problemu technicznego:<br>
+                        1. Skontaktuj się z pomocą techniczną wysyłając wiadomość mailową na adres pomoc@e-wybory.pl.<br>
+                        2. Opisz dokładnie problem, podając szczegóły, takie jak rodzaj urządzenia i przeglądarki, której używasz.<br>
+                        3. Oczekuj odpowiedzi od zespołu wsparcia w ciągu 24 godzin."
+        },
+        new FaqItem
+        {
+            Question = "10. Jak zapewniana jest anonimowość głosów?",
+            Answer = @"Aplikacja gwarantuje anonimowość głosów dzięki:<br>
+                        - Oddzieleniu danych osobowych użytkownika od danych o oddanych głosach.<br>
+                        - Szyfrowaniu wszystkich informacji przesyłanych do serwera.<br>
+                        - Przechowywaniu danych w sposób uniemożliwiający identyfikację użytkownika z jego głosem."
+        }
     };
 
     private class FaqItem

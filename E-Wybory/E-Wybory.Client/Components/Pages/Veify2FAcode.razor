@@ -6,29 +6,49 @@
 @inject IAuthService AuthService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILogger<Veify2FAcode> Logger
+@inject NavigationManager NavigationManager
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
+<link href="forms.css" rel="stylesheet" />
 
-<h3>Zweryfikuj kod 2FA</h3>
-
-<div class="row">
-    <div class="col-xl-6">
-        <EditForm Model="Input" FormName="verify-code" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Wprowadź kod" />
-                <label for="Input.Code" class="control-label form-label">Kod weryfikacyjny</label>
-                <ValidationMessage For="() => Input.Code" class="text-danger" />
+<CascadingAuthenticationState>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <div class="center-content">
+                <h3>Zweryfikuj kod 2FA</h3>
+                <div class="row">
+                    <div class="form-container">
+                        <EditForm Model="Input" FormName="verify-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                            <DataAnnotationsValidator />
+                            <div class="form-group">
+                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control input-field" autocomplete="off" placeholder="Wprowadź kod" />
+                                <ValidationMessage For="() => Input.Code" class="text-danger" />
+                            </div>
+                            <button type="submit" class="btn submit-button">Zweryfikuj</button>
+                        </EditForm>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="status-message @messageClass">@message</div>
+                }
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Zweryfikuj</button>
-        </EditForm>
-    </div>
-</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
-<StatusMessage Message="@message" />
+
 
 @code {
     private string? message;
+    private string messageClass = string.Empty;
     private UserWrapper user = default!;
     bool isValidUser = false;
 
@@ -48,7 +68,7 @@
         if(!isValidUser)
         {
             message = "Nie znaleziono użytkownika";
-            //StateHasChanged();
+            messageClass = "error";
             return;
         }
 
@@ -58,10 +78,13 @@
         if (!is2faTokenValid)
         {
             message = "Błędny kod weryfikacyjny";
+            messageClass = "error";
             return;
         }
 
         Logger.LogInformation("Użytkownik o ID '{UserId}' zweryfikował kod 2FA.", user.Id);
         message = "Kod 2FA został zweryfikowany pomyślnie";
+        messageClass = "success";
+        NavigationManager.NavigateTo("/vote");
     }
 }

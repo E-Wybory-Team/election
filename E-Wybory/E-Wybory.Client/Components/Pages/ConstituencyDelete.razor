@@ -6,6 +6,8 @@
 @inject NavigationManager NavigationManager
 @inject ICountyManagementService CountyManagementService
 @inject IConstituencyManagementService ConstituencyManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Pracownicy PKW, Administratorzy" Context="authContext">
@@ -66,6 +68,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         if (!await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
             errorMessage = "Nie znaleziono okręgu!";

@@ -8,6 +8,7 @@
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IVoterManagementService VoterManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
@@ -149,6 +150,15 @@
 
     protected async override Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Urzędnicy wyborczy") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         await FilterTable();
         foreach (var filteredUser in filteredUsers)
         {

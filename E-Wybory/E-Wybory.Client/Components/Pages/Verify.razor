@@ -1,4 +1,12 @@
 ﻿@page "/verify"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@using E_Wybory.Client.ViewModels
+@inject IPersonManagementService PersonManagementService
+@inject IElectionUserManagementService ElectionUserManagementService
 
 <div class="page-content">
     <h1>UWIEŻYTELNIENIE TOŻSAMOŚCI</h1>
@@ -7,12 +15,52 @@
         PRZED ODDANIEM GŁOSU ZAPOZNAJ SIĘ Z INFORMATOREM WYBORCZYM
     </div>
 
-    <a href="/verify/2fa-code" class="auth-option">
+    <a @onclick="NavigateToAuthenticator" class="auth-option">
         <img src="/images/microsoftAuth.png" alt="Microsoft Authenticator" />
         Microsoft Authenticator
     </a>
-    <a href="#" class="auth-option">
+    <a  class="auth-option hover-mode">
         <img src="/images/hardwareKey.png" alt="Klucz sprzętowy" />
         Klucz sprzętowy
     </a>
 </div>
+
+@code {
+    private ElectionUserViewModel user = new();
+    private bool Is2FAEnabled = false;
+    private PersonViewModel person = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var userIdClaim = user.FindFirst("IdElectionUser")?.Value;
+
+        if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+        {
+            this.user = await ElectionUserManagementService.GetElectionUserById(userId);
+            person = await PersonManagementService.GetPersonById(this.user.IdPerson);
+
+            Is2FAEnabled = user.HasClaim(c => c.Type == "2FAenabled" && c.Value == "true");
+        }
+    }
+
+    private void NavigateToAuthenticator()
+    {
+        if (Is2FAEnabled)
+        {
+            NavigationManager.NavigateTo("/verify/2fa-code");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/account/enable-2fa");
+        }
+    }
+}

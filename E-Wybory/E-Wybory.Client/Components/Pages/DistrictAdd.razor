@@ -11,6 +11,7 @@
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IDistrictManagementService DistrictManagementService
 @inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
@@ -143,6 +144,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated || (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         wrapper.VoivodeshipFilter = await VoivodeshipManagementService.Voivodeships();
         constituencies = await ConstituencyManagementService.Constituences();
     }
