@@ -92,6 +92,11 @@ namespace E_Wybory.Controllers
                 return BadRequest("Not entered data to all required fields");
             }
 
+            if(await ElectionOfTypeAtTimeExists(electionModel.IdElectionType, electionModel.ElectionStartDate, electionModel.ElectionEndDate))
+            {
+                return Conflict("Election of this type in this time already exists!");
+            }
+
             var election = new Election();
             election.ElectionStartDate = electionModel.ElectionStartDate;
             election.ElectionEndDate = electionModel.ElectionEndDate;
@@ -181,6 +186,30 @@ namespace E_Wybory.Controllers
         private bool ElectionExists(int id)
         {
             return _context.Elections.Any(e => e.IdElection == id);
+        }
+
+
+        private async Task<bool> ElectionOfTypeAtTimeExists(int electionTypeId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.Elections.AnyAsync(e =>
+                        e.IdElectionType == electionTypeId && 
+                        ((startDate >= e.ElectionStartDate && startDate <= e.ElectionEndDate) || 
+                         (endDate >= e.ElectionStartDate && endDate <= e.ElectionEndDate) || 
+                         (startDate <= e.ElectionStartDate && endDate >= e.ElectionEndDate)));
+        }
+
+        [HttpPut("typeTime")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        public async Task<ActionResult<bool>> ElectionOfTypeAtTimeAlreadyExists(ElectionViewModel election)
+        {
+            if(!(await ElectionOfTypeAtTimeExists(election.IdElectionType, election.ElectionStartDate, election.ElectionEndDate)))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound("Not found election in this time of this type");
+            }
         }
 
         private bool EnteredRequiredData(ElectionViewModel electionModel)
@@ -304,5 +333,6 @@ namespace E_Wybory.Controllers
                 return NotFound("Not found elections of this type which were started");
             }
         }
+
     }
 }

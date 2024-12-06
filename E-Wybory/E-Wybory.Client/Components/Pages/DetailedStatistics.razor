@@ -176,6 +176,7 @@ else
     private async Task FilterCandidate()
     {
         newestElectionOfType = await ElectionManagementService.GetNewestElectionOfElectionType(SelectedElectionTypeId.Value);
+        Console.WriteLine($"End date of newest election of this type: {newestElectionOfType.ElectionEndDate}");
         if (newestElectionOfType.IdElection != 0) //only if was found
         {
             newestElectionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(SelectedElectionTypeId.Value, wrapper.ElectionFilter);

@@ -1,4 +1,5 @@
 ﻿using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using System.Net.Http.Json;
 
 namespace E_Wybory.Client.Services
@@ -115,6 +116,12 @@ namespace E_Wybory.Client.Services
                 }
             }
             return new ElectionViewModel();
+        }
+
+        public async Task<bool> ElectionOfTypeAtTimeExist(ElectionViewModel electionModel)
+        {
+            var response = await _httpClient.PutAsJsonAsync<ElectionViewModel>($"/api/Election/typeTime", electionModel);
+            return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
 

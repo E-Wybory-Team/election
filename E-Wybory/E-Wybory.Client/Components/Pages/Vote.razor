@@ -37,6 +37,8 @@
 
                 <h2>Wybory @electionTypeName</h2>
 
+                @if(!voteModel.IsValid)
+                {
                 <div class="form-group">
                     <label for="kandydat">Kandydat</label>
                     <select @bind="@voteModel.IdCandidate" id="kandydat" class="form-select">
@@ -53,6 +55,7 @@
                     </select>
                     <ValidationMessage For="@(() => voteModel.IdCandidate)" />
                 </div>
+                }
 
                     <div class="checkbox-group">
                         <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
@@ -196,11 +199,11 @@
                         if (!candidatesData.ContainsKey(candidate.IdCandidate))
                         {
 
-                            var person = await PersonManagementService.GetPersonNameSurnameById(candidate.IdPerson);
+                            var person = await PersonManagementService.GetPersonNameSurnameWithoutAgeById(candidate.IdPerson);
                             if (candidate.IdParty != null)
                             {
                                 var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
-                                Console.WriteLine($"Party name: {partyName}");
+                                //Console.WriteLine($"Party name: {partyName}");
                                 person += " - partia: " + partyName;
                             }
                             if (!string.IsNullOrEmpty(person))
