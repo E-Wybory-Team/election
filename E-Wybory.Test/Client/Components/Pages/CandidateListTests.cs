@@ -11,17 +11,18 @@ using Moq;
 using E_Wybory.Client.FilterData;
 using E_Wybory.Client.ViewModels;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
-    public class CandidateInfoTests : TestContext
+    public class CandidateListTests : TestContext
     {
         private readonly Mock<IFilterWrapperManagementService> _filterWrapperServiceMock;
         private readonly Mock<IPartyManagementService> _partyManagementServiceMock;
         private readonly Mock<IElectionTypeManagementService> _electionTypeManagementServiceMock;
         private readonly Mock<IPersonManagementService> _personManagementServiceMock;
 
-        public CandidateInfoTests()
+        public CandidateListTests()
         {
             _filterWrapperServiceMock = new Mock<IFilterWrapperManagementService>();
             _partyManagementServiceMock = new Mock<IPartyManagementService>();
@@ -97,37 +98,63 @@ namespace E_Wybory.Test.Client.Components.Pages
             Services.AddSingleton(_electionTypeManagementServiceMock.Object);
             Services.AddSingleton(_personManagementServiceMock.Object);
 
-           }
+            var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "Test User"),
+                new Claim(ClaimTypes.Role, "Administratorzy"),
+            }, "test"))));
+            Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
+
+            Services.AddAuthorizationCore();
+            Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
+            Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
+        }
 
         [Fact]
-        public void CandidateInfo_Should_Render_Correctly_For_Authorized_User()
+        public void CandidateList_Should_Render_Correctly_For_Authorized_User()
         {
             // Act
-            var cut = RenderComponent<CandidateInfo>();
+            var cut = RenderComponent<CandidateList>();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("SPIS KANDYDATÓW", cut.Markup);
-                Assert.Contains("Rodzaj wyborów", cut.Markup);
-                Assert.Contains("Województwo", cut.Markup);
-                Assert.Contains("Powiat", cut.Markup);
-                Assert.Contains("Gmina", cut.Markup);
-                Assert.Contains("Numer obwodu", cut.Markup);
+                Assert.Contains("KONFIGURACJA KANDYDATÓW", cut.Markup);
+                Assert.Contains("DODAJ KANDYDATA", cut.Markup);
                 Assert.Contains("Nazwisko i imiona", cut.Markup);
+                Assert.Contains("Zawód", cut.Markup);
+                Assert.Contains("Miejsce (zakład) pracy", cut.Markup);
+                Assert.Contains("Miejscowość zamieszkania", cut.Markup);
+                Assert.Contains("Wykształcenie", cut.Markup);
+                Assert.Contains("Wiek", cut.Markup);
+                Assert.Contains("Przynależność do partii politycznej", cut.Markup);
+                Assert.Contains("Numer na liście", cut.Markup);
+                Assert.Contains("Operacje konfiguracji", cut.Markup);
             });
         }
-
         [Fact]
-        public async Task CandidateInfo_Should_Display_Filtered_Candidates()
+        public async Task CandidateList_Should_Display_Link_To_Modify_And_Delete()
         {
-            // Act
-            var cut = RenderComponent<CandidateInfo>();
+            // Arrange
+            var cut = RenderComponent<CandidateList>();
 
             // Assert
             cut.WaitForAssertion(() =>
             {
                 Console.WriteLine(cut.Markup);
+                Assert.Contains("/modifycandidate/0", cut.Markup);
+                Assert.Contains("/deletecandidate/0", cut.Markup);
+            });
+        }
+        [Fact]
+        public async Task CandidateList_Should_Display_Filtered_Candidates()
+        {
+            // Act
+            var cut = RenderComponent<CandidateList>();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
                 Assert.Contains("Kowalski Jan", cut.Markup);
                 Assert.Contains("Inżynier", cut.Markup);
                 Assert.Contains("Firma A", cut.Markup);
@@ -143,6 +170,54 @@ namespace E_Wybory.Test.Client.Components.Pages
             });
         }
 
-     
+        [Fact]
+        public void CandidateList_Should_Render_NotAuthorized_For_Unauthorized_User()
+        {
+            // Arrange
+            var unauthorizedAuthState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+            Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(unauthorizedAuthState));
+
+            // Act
+            var cut = RenderComponent<CandidateList>();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.Contains("Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony", cut.Markup);
+                Assert.Contains("WarningIcon.png", cut.Markup);
+            });
+        }
+        [Fact]
+        public void CandidateList_Should_Navigate_To_AddCandidate_On_AddButton_Click()
+        {
+            // Arrange
+            var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+            // Act
+            var cut = RenderComponent<CandidateList>();
+            var addButton = cut.Find("button.add-button");
+            addButton.Click();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.EndsWith("/addcandidate", navigationManager.Uri);
+            });
+        }
+
+        private class FakeAuthenticationStateProvider : AuthenticationStateProvider
+        {
+            private readonly Task<AuthenticationState> _authenticationState;
+
+            public FakeAuthenticationStateProvider(Task<AuthenticationState> authenticationState)
+            {
+                _authenticationState = authenticationState;
+            }
+
+            public override Task<AuthenticationState> GetAuthenticationStateAsync()
+            {
+                return _authenticationState;
+            }
+        }
     }
 }

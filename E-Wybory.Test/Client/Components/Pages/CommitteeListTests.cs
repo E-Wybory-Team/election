@@ -96,6 +96,13 @@ namespace E_Wybory.Test.Client.Components.Pages
                 Assert.Contains("Komitet Testowy", cut.Markup);
                 Assert.Contains("Komitet Przykładowy", cut.Markup);
                 Assert.Contains("Dodaj komitet", cut.Markup);
+                Assert.Contains("Nazwa", cut.Markup);
+                Assert.Contains("Skrót", cut.Markup);
+                Assert.Contains("Adres", cut.Markup);
+                Assert.Contains("Rodzaj partii", cut.Markup);
+                Assert.Contains("Partia koalicyjna", cut.Markup);
+                Assert.Contains("Strona WWW", cut.Markup);
+                Assert.Contains("Opcje konfiguracji", cut.Markup);
             });
         }
 
@@ -149,6 +156,20 @@ namespace E_Wybory.Test.Client.Components.Pages
             cut.WaitForAssertion(() =>
             {
                 Assert.EndsWith("/addcommittee", navigationManager.Uri);
+            });
+        }
+        [Fact]
+        public async Task CommitteeList_Should_Display_Link_To_Modify_And_Delete()
+        {
+            // Arrange
+            var cut = RenderComponent<CommitteeList>();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("/modifycommittee/1", cut.Markup);
+                Assert.Contains("/deletecommittee/1", cut.Markup);
             });
         }
 

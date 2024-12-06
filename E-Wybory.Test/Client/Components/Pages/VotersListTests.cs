@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
@@ -94,8 +95,19 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Act & Assert
             cut.WaitForAssertion(() =>
             {
+                Console.Write(cut.Markup);
                 Assert.Contains("SPIS WYBORCÓW", cut.Markup);
-                Assert.Contains("Dodaj Wyborcę", cut.Markup);
+                Assert.Contains("DODAJ WYBORCĘ", cut.Markup);
+                Assert.Contains("Województwo", cut.Markup);
+                Assert.Contains("Powiat", cut.Markup);
+                Assert.Contains("Gmina", cut.Markup);
+                Assert.Contains("Numer obwodu", cut.Markup);
+                Assert.Contains("Imię", cut.Markup);
+                Assert.Contains("Nazwisko", cut.Markup);
+                Assert.Contains("PESEL", cut.Markup);
+                Assert.Contains("Telefon", cut.Markup);
+                Assert.Contains("Adres email", cut.Markup);
+                Assert.Contains("Opcje konfiguracji", cut.Markup);
             });
         }
 
@@ -118,7 +130,8 @@ namespace E_Wybory.Test.Client.Components.Pages
             });
         }
 
-        /*[Fact]
+
+        [Fact]
         public async Task VotersList_Should_Filter_Regions_On_Change()
         {
             // Arrange
@@ -129,9 +142,9 @@ namespace E_Wybory.Test.Client.Components.Pages
             await cut.InvokeAsync(() => voivodeshipSelect.Change("1"));
 
             // Assert
-            _filterWrapperServiceMock.Verify(service => service.GetFilteredListsWrapper(It.IsAny<int?>(), null, null), Times.Once);
-            _filterWrapperServiceMock.Verify(service => service.GetFilteredUsers(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>()), Times.Once);
-        }*/
+            _filterWrapperServiceMock.Verify(service => service.GetFilteredListsWrapper(It.Is<int?>(id => id == 1), null, null), Times.Once);
+        }
+
 
         [Fact]
         public async Task VotersList_Should_Display_Link_To_Modify_And_Delete()
@@ -144,6 +157,24 @@ namespace E_Wybory.Test.Client.Components.Pages
             {
                 Assert.Contains("/modifyvoter/1", cut.Markup);
                 Assert.Contains("/voterdelete/1", cut.Markup);
+            });
+        }
+
+        [Fact]
+        public async Task VotersListAdd_Should_Navigate_To_CommissionersList_On_Add()
+        {
+            // Arrange
+            var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+            // Act
+            var cut = RenderComponent<VotersList>();
+            var cancelButton = cut.Find("button.add-button");
+            cancelButton.Click();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.EndsWith("/addvoter", navigationManager.Uri);
             });
         }
 

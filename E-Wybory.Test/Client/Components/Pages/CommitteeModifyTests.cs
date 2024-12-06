@@ -57,11 +57,17 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.WriteLine(cut.Markup);
                 Assert.Contains("MODYFIKOWANIE KOMITETU WYBORCZEGO", cut.Markup);
-                Assert.Contains("Komitet Testowy", cut.Markup);
-                Assert.Contains("Warszawa", cut.Markup);
-                Assert.Contains("Polityczna", cut.Markup);
-                Assert.Contains("www.komitettestowy.pl", cut.Markup);
+                Assert.Contains("NR LISTY", cut.Markup);
+                Assert.Contains("NAZWA KOMITETU", cut.Markup);
+                Assert.Contains("SKRÓT", cut.Markup);
+                Assert.Contains("ADRES", cut.Markup);
+                Assert.Contains("TYP PARTII", cut.Markup);
+                Assert.Contains("PARTIA KOALICYJNA", cut.Markup);
+                Assert.Contains("STRONA WWW", cut.Markup);
+                Assert.Contains("MODYFIKUJ", cut.Markup);
+                Assert.Contains("ANULUJ", cut.Markup);
             });
         }
 

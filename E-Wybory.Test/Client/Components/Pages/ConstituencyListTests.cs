@@ -74,12 +74,15 @@ namespace E_Wybory.Test.Client.Components.Pages
             cut.WaitForAssertion(() =>
             {
                 Assert.Contains("KONFIGURACJA OKRĘGÓW WYBORCZYCH", cut.Markup);
+                Assert.Contains("Nazwa okręgu", cut.Markup);
                 Assert.Contains("Okręg 1", cut.Markup);
                 Assert.Contains("Okręg 2", cut.Markup);
+                Assert.Contains("Zasięg (powiaty)", cut.Markup);
                 Assert.Contains("Powiat 1", cut.Markup);
                 Assert.Contains("Powiat 2", cut.Markup);
                 Assert.Contains("Powiat 3", cut.Markup);
                 Assert.Contains("Dodaj okręg", cut.Markup);
+                Assert.Contains("Opcje konfiguracji", cut.Markup);
             });
         }
 
@@ -118,7 +121,20 @@ namespace E_Wybory.Test.Client.Components.Pages
                 Assert.EndsWith("/addconstituency", navigationManager.Uri);
             });
         }
+        [Fact]
+        public async Task ConstituencyList_Should_Display_Link_To_Modify_And_Delete()
+        {
+            // Arrange
+            var cut = RenderComponent<ConstituencyList>();
 
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("/modifyconstituency/1", cut.Markup);
+                Assert.Contains("/deleteconstituency/1", cut.Markup);
+            });
+        }
         private class FakeAuthenticationStateProvider : AuthenticationStateProvider
         {
             private readonly Task<AuthenticationState> _authenticationState;

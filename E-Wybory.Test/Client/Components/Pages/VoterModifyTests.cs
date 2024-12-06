@@ -10,6 +10,7 @@ using E_Wybory.Client.FilterData;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
@@ -26,29 +27,6 @@ namespace E_Wybory.Test.Client.Components.Pages
             _personManagementServiceMock = new Mock<IPersonManagementService>();
             _electionUserManagementServiceMock = new Mock<IElectionUserManagementService>();
             _voterManagementServiceMock = new Mock<IVoterManagementService>();
-
-            Services.AddSingleton(_filterWrapperServiceMock.Object);
-            Services.AddSingleton(_personManagementServiceMock.Object);
-            Services.AddSingleton(_electionUserManagementServiceMock.Object);
-            Services.AddSingleton(_voterManagementServiceMock.Object);
-
-            var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, "Test User"),
-                new Claim(ClaimTypes.Role, "Urzędnicy wyborczy"),
-            }, "test"))));
-            Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
-
-            var authorizationPolicyProvider = new Mock<IAuthorizationPolicyProvider>();
-            authorizationPolicyProvider.Setup(x => x.GetPolicyAsync(It.IsAny<string>()))
-                .ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
-            Services.AddSingleton(authorizationPolicyProvider.Object);
-
-            var authorizationServiceMock = new Mock<IAuthorizationService>();
-            authorizationServiceMock.Setup(x => x.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<IEnumerable<IAuthorizationRequirement>>()))
-                .ReturnsAsync(AuthorizationResult.Success());
-            Services.AddSingleton(authorizationServiceMock.Object);
-
 
             _filterWrapperServiceMock.Setup(service => service.GetFilteredListsWrapper(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>()))
                 .ReturnsAsync(new FilterListWrapper
@@ -74,6 +52,23 @@ namespace E_Wybory.Test.Client.Components.Pages
                         new DistrictViewModel { IdDistrict = 2, DistrictName = "Obwód 2", DistrictHeadquarters = "Siedziba 2", IdProvince = 2 }
                     }
                 });
+
+            Services.AddSingleton(_filterWrapperServiceMock.Object);
+            Services.AddSingleton(_personManagementServiceMock.Object);
+            Services.AddSingleton(_electionUserManagementServiceMock.Object);
+            Services.AddSingleton(_voterManagementServiceMock.Object);
+
+            var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "Test User"),
+                new Claim(ClaimTypes.Role, "Urzędnicy wyborczy"),
+            }, "test"))));
+            Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(authState));
+
+            Services.AddAuthorizationCore();
+            Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
+            Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
+
         }
 
         [Fact]
@@ -85,9 +80,15 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.Write(cut.Markup);
                 Assert.Contains("ZMIANA OBWODU WYBORCY", cut.Markup);
                 Assert.Contains("PESEL WYBORCY", cut.Markup);
                 Assert.Contains("WOJEWÓDZTWO", cut.Markup);
+                Assert.Contains("POWIAT", cut.Markup);
+                Assert.Contains("GMINA", cut.Markup);
+                Assert.Contains("NUMER OBWODU", cut.Markup);
+                Assert.Contains("ZATWIERDŹ ZMIANY", cut.Markup);
+                Assert.Contains("ANULUJ", cut.Markup);
             });
         }
 
@@ -123,7 +124,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Updating voter successful!", cut.Markup);
+                Assert.Contains("Zmodyfikowano wyborcę pomyślnie!", cut.Markup);
             });
         }
 
@@ -141,6 +142,23 @@ namespace E_Wybory.Test.Client.Components.Pages
             _filterWrapperServiceMock.Verify(service => service.GetFilteredListsWrapper(1, null, null), Times.Once);
         }
 
+        [Fact]
+        public async Task VoterModify_Should_Navigate_To_VotersList_On_Cancel()
+        {
+            // Arrange
+            var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+            // Act
+            var cut = RenderComponent<VoterModify>(parameters => parameters.Add(p => p.voterId, 1));
+            var cancelButton = cut.Find("button.cancel-button");
+            cancelButton.Click();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.EndsWith("/voterslist", navigationManager.Uri);
+            });
+        }
         private class FakeAuthenticationStateProvider : AuthenticationStateProvider
         {
             private readonly Task<AuthenticationState> _authenticationState;

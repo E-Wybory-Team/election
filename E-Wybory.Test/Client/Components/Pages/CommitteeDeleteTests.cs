@@ -96,7 +96,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             _partyManagementServiceMock.Verify(service => service.DeleteParty(1), Times.Once);
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Committee deleted successful!", cut.Markup);
+                Assert.Contains("Usunięto komitet pomyślnie!", cut.Markup);
             });
         }
 
