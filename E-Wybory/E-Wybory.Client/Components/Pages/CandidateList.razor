@@ -169,7 +169,7 @@
     protected override async Task OnInitializedAsync()
     {
         //it must be executed here because every parameters at the beginning are null
-        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        //filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
         wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
         parties = await PartyManagementService.Parties();
     }
@@ -180,10 +180,14 @@
     }
 
 
-    private async Task FilterCandidate()
+    private async Task FilterCandidate(bool toFilterCandidates)
     {
         wrapper = await FilterWrapperService.GetFilteredLists(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-        filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        filteredCandidates.Clear();
+        if (toFilterCandidates)
+        {
+            filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        }
     }
 
     private async Task OnElectionTypeChanged()
@@ -193,7 +197,7 @@
         SelectedProvinceId = null;
         SelectedDistrictId = null;
 
-        await FilterCandidate();
+        await FilterCandidate(false);
     }
 
     private async Task OnVoivodeshipChanged()
@@ -202,7 +206,7 @@
         SelectedProvinceId = null;
         SelectedDistrictId = null;
 
-        await FilterCandidate();
+        await FilterCandidate(false);
     }
 
     private async Task OnCountyChanged()
@@ -210,18 +214,18 @@
         SelectedProvinceId = null;
         SelectedDistrictId = null;
 
-        await FilterCandidate();
+        await FilterCandidate(false);
     }
 
     private async Task OnProvinceChanged()
     {
         SelectedDistrictId = null;
 
-        await FilterCandidate();
+        await FilterCandidate(false);
     }
 
     private async Task OnDistrictChanged()
     {
-        await FilterCandidate();
+        await FilterCandidate(true);
     }
 }

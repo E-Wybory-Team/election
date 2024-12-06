@@ -213,6 +213,20 @@ namespace E_Wybory.Controllers
             }
         }
 
+        [HttpGet("userOfVoterExist/{userId}")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        public async Task<ActionResult<bool>> VoterOfElectionUserExists(int userId)
+        {
+            if(await _context.Voters.AnyAsync(voter => voter.IdElectionUser == userId))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
 
         [HttpGet("votersDistrict/{districtId}")]
         [AllowAnonymous]

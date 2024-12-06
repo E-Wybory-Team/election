@@ -135,7 +135,17 @@
             try
             {
                 personModel = await PersonManagementService.GetPersonById(index);
+                if(!(await ElectionUserManagementService.UserPersonIdExists(personModel.IdPerson)))
+                {
+                    errorMessage = "Nie można dodać wyborcy dla osoby o podanym nr PESEL, gdyż nie ma założonego konta!";
+                    return;
+                }
                 userViewModel = await ElectionUserManagementService.GetElectionUserByPersonId(index);
+                if(await VoterManagementService.VoterOfUserExists(userViewModel.IdElectionUser))
+                {
+                    errorMessage = "Wyborca o podanym nr PESEl już istnieje. Aby zmienić jego obwód wyborczy, proszę skorzystać z funkcji zmiany obwodu wyborcy!";
+                    return;
+                }
                 voterModel.IdElectionUser = userViewModel.IdElectionUser;
                 isAddedVoter = await VoterManagementService.AddVoter(voterModel);
                 errorMessage = isAddedVoter ? "Dodano wyborcę pomyślnie!" : "Nie dodano wyborcy!";
@@ -153,7 +163,7 @@
         }
         else
         {
-            errorMessage = "Nie ma takiego człowieka w bazie!";
+            errorMessage = "Nie ma takiego człowieka w ewidencji ludności w systemie!";
         }
        
     }
