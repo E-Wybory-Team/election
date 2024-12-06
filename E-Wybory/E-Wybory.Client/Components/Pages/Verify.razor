@@ -28,24 +28,27 @@
 @code {
     private ElectionUserViewModel user = new();
     private bool Is2FAEnabled = false;
+    private PersonViewModel person = new();
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var userIdentity = authState.User;
+        var user = authState.User;
 
-        if (!userIdentity.Identity.IsAuthenticated)
+        if (!user.Identity.IsAuthenticated)
         {
             NavigationManager.NavigateTo("/login");
             return;
         }
 
-        var userIdClaim = userIdentity.FindFirst("IdElectionUser")?.Value;
+        var userIdClaim = user.FindFirst("IdElectionUser")?.Value;
 
         if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
         {
-            user = await ElectionUserManagementService.GetElectionUserById(userId);
-            Is2FAEnabled = !string.IsNullOrEmpty(user.UserSecret);
+            this.user = await ElectionUserManagementService.GetElectionUserById(userId);
+            person = await PersonManagementService.GetPersonById(this.user.IdPerson);
+
+            Is2FAEnabled = user.HasClaim(c => c.Type == "2FAenabled" && c.Value == "true");
         }
     }
 

@@ -111,7 +111,8 @@
             this.user = await ElectionUserManagementService.GetElectionUserById(userId);
             person = await PersonManagementService.GetPersonById(this.user.IdPerson);
 
-            UpdateVerificationMessage(!string.IsNullOrEmpty(this.user.UserSecret));
+            var is2FAEnabled = user.HasClaim(c => c.Type == "2FAenabled" && c.Value == "true");
+            UpdateVerificationMessage(is2FAEnabled);
         }
     }
 
@@ -123,7 +124,6 @@
             VerificationClass = "status-message success";
             ButtonClass = "active-button";
             ButtonLabel = "Resetuj weryfikację";
-            IsButtonDisabled = false;
         }
         else
         {
@@ -131,7 +131,6 @@
             VerificationClass = "status-message error";
             ButtonClass = "active-button";
             ButtonLabel = "Weryfikuj";
-            IsButtonDisabled = false; 
         }
     }
 
