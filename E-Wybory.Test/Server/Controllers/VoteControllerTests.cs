@@ -81,6 +81,7 @@ namespace E_Wybory.Test.Server.Controllers
         [Fact]
         public async Task PostVote_AddsNewVote()
         {
+            //Add user identity to test
             // Arrange
             var voteModel = new VoteViewModel { IdElection = 1, IdCandidate = 1, IdDistrict = 1, IdVote = 1, IsValid = true };
             var votes = new List<Vote>().AsQueryable();
