@@ -391,3 +391,129 @@ input, select {
     cursor: not-allowed;
 }
 
+.authenticator-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.authenticator-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0px;
+}
+
+.authenticator-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.authenticator-steps {
+    background-color: transparent;
+    list-style: none;
+    padding: 0;
+    margin: 0px 0;
+    font-size: 16px;
+    color: #333;
+    border: none;
+    text-align: left;
+}
+
+    .authenticator-steps li {
+        margin-bottom: 15px;
+        font-weight: normal;
+        line-height: 1.5;
+    }
+
+.authenticator-header {
+    font-size: 28px;
+    color: #000000;
+    text-align: center;
+    font-weight: bold;
+}
+
+.authenticator-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #1E5899;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+    align-items:center;
+}
+
+    .authenticator-button:hover {
+        background-color: #164f7c;
+    }
+
+.authenticator-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.authenticator-instructions {
+    background: none;
+    color: #333;
+    font-size: 16px;
+    border: none;
+    margin-left: 50px;
+}
+
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.reset-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 400px;
+}
+
+.wide-password-button {
+    width: calc(100% - 20px); 
+    padding: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #1E5899;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+    .wide-password-button:hover {
+        background-color: #ffffff;
+        color: #1E5899;
+        border: 1px solid #1E5899;
+    }
+
+.label-left {
+    text-align:left;
+}
+

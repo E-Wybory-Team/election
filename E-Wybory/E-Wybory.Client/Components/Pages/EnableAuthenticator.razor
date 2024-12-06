@@ -13,6 +13,7 @@
 @inject IAuthService AuthService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject UrlEncoder UrlEncoder
+@inject NavigationManager NavigationManager
 @* @inject IdentityRedirectManager RedirectManager
  *@
  @inject ILogger<EnableAuthenticator> Logger
@@ -27,54 +28,53 @@
             @if(is2faEnabled) @* (recoveryCodes is not null) *@
             {
                 @*     <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" /> *@
-                <button @onclick="OnReset2FAClick" class="btn btn-primary">Zresetuj konto na aplikacji 2FA</button>
+                <div class="reset-button-container">
+                    <button @onclick="OnReset2FAClick" class="btn btn-primary">Zresetuj konto na aplikacji 2FA</button>
+                </div>
             
             }
             else
             {
-                <h3>Skonfiguruj aplikację uwierzytelniającą</h3>
-                <div>
-                    <p>Aby używać aplikacji uwierzytelniającej, wykonaj następujące kroki:</p>
-                    <ol class="list">
-                        <li>
-                            <p>
-                                Pobierz aplikację uwierzytelniającą, taką jak Microsoft Authenticator dla
+                <div class="authenticator-form-container">
+                    <h3 class="authenticator-header">Skonfiguruj aplikację uwierzytelniającą</h3>
+                     <div class="authenticator-content">
+                    <p class="authenticator-instructions">
+                        Aby używać aplikacji uwierzytelniającej, wykonaj następujące kroki:
+                    </p>
+                    <ol>
+                            <p class="authenticator-steps">
+                                1. Pobierz aplikację uwierzytelniającą, taką jak Microsoft Authenticator dla
                                 <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> i
                                 <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> lub
                                 Google Authenticator dla
                                 <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> i
                                 <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
                             </p>
-                        </li>
-                        <li>
-                            <p>Zeskanuj kod QR lub wprowadź ten klucz <kbd>@sharedKey</kbd> do swojej aplikacji uwierzytelniającej. Spacje i wielkość liter nie mają znaczenia.</p>
-                            <div class="alert alert-info">Dowiedz się, jak <a href="https://go.microsoft.com/fwlink/?Linkid=852423">włączyć generowanie kodu QR</a>.</div>
-                            @if (authenticatorUri is not null)
-                            {
-                                <QrCode authenticatorUri="@authenticatorUri" />
-                            }
-            
-                        </li>
-                        <li>
-                            <p>
-                                Po zeskanowaniu kodu QR lub wprowadzeniu powyższego klucza, Twoja aplikacja uwierzytelniająca wygeneruje unikalny kod. Wprowadź kod w poniższym polu potwierdzenia.
-                            </p>
-                            <div class="row">
-                                <div class="col-xl-6">
-                                    <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
-                                        <DataAnnotationsValidator />
-                                        <div class="form-floating mb-3">
-                                            <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Wprowadź kod" />
-                                            <label for="Input.Code" class="control-label form-label">Kod weryfikacyjny</label>
-                                            <ValidationMessage For="() => Input.Code" class="text-danger" />
-                                        </div>
-                                        <button type="submit" class="w-100 btn btn-lg btn-primary">Zweryfikuj</button>
-                                    </EditForm>
-                                </div>
-                            </div>
-                        </li>
+                        <p class="authenticator-steps">2. Zeskanuj kod QR lub wprowadź ten klucz <kbd>@sharedKey</kbd> do aplikacji.</p>
                     </ol>
+                        @if (authenticatorUri is not null)
+                        {
+                            <div class="qr-code-container">
+                                <QrCode authenticatorUri="@authenticatorUri" />
+                            </div>
+                        }
+                    <ol>
+                        <p class="authenticator-steps">3. Po zeskanowaniu kodu QR lub wprowadzeniu powyższego klucza, Twoja aplikacja uwierzytelniająca wygeneruje unikalny kod. Wprowadź kod w poniższym polu potwierdzenia a następnij wciśnij przycisk "Zweryfikuj".</p>
+                    </ol>
+                    <div class="authenticator-input-container">
+                        <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                            <DataAnnotationsValidator />
+                            <div class="form-floating mb-3">
+                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" placeholder="Kod weryfikacyjny" />
+                                <label for="Input.Code" class="control-label form-label">Kod weryfikacyjny</label>
+                                <ValidationMessage For="() => Input.Code" class="text-danger" />
+                            </div>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Zweryfikuj</button>
+                        </EditForm>
+                    </div>
                 </div>
+                </div>
+
             }
             <StatusMessage Message="@message" />
         </Authorized>
@@ -110,6 +110,8 @@
 
         if(result)
             StateHasChanged();
+
+        NavigationManager.NavigateTo("/account");
     }
 
     protected override async Task OnInitializedAsync()
@@ -147,7 +149,7 @@
         Logger.LogInformation("Użytkownik o ID '{UserId}' włączył 2FA za pomocą aplikacji uwierzytelniającej.", user.Id);
 
         message = "Twoja aplikacja MFA została dodana";
-
+        NavigationManager.NavigateTo("/account");
         // if (await AuthService.CountRecoveryCodesAsync(user.Id) == 0)
         // {
         //     recoveryCodes = await AuthService.GenerateNewTwoFactorRecoveryCodesAsync(user.Id)!;
@@ -156,6 +158,8 @@
         // {
         //     //RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
         // }
+
+
     }
 
     private async ValueTask LoadSharedKeyAndQrCodeUriAsync(UserWrapper user)
