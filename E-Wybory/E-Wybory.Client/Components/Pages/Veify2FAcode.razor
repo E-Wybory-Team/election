@@ -51,6 +51,8 @@
     private string messageClass = string.Empty;
     private UserWrapper user = default!;
     bool isValidUser = false;
+    bool is2faEnabled = false;
+    bool is2faVeryfied = false;
 
     [SupplyParameterFromForm]
     private TwoFactorAuthVerifyRequest Input { get; set; } = new();
@@ -59,6 +61,26 @@
     {
         var result = await AuthStateProvider.GetAuthenticationStateAsync();
         user = new UserWrapper(result.User);
+
+        if(user.TwoFAenabled)
+        {
+            is2faEnabled = true;
+        }
+        else
+        {
+            message = "Użytkownik nie ma umożliwionej weryfikacji 2FA!";
+            return;
+        }
+
+        if(user.TwoFAveryfied)
+        {
+            is2faVeryfied = true;
+            message = "Użytkownik już przeszedł dwuskładnikową weryfikację. Zapraszamy do głosowania!";
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/vote");
+            return;
+        }
     }
 
     private async Task OnValidSubmitAsync()
@@ -71,6 +93,7 @@
             messageClass = "error";
             return;
         }
+        
 
         Input.UserId = user.Id;
         var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsync(Input);
@@ -84,7 +107,9 @@
 
         Logger.LogInformation("Użytkownik o ID '{UserId}' zweryfikował kod 2FA.", user.Id);
         message = "Kod 2FA został zweryfikowany pomyślnie";
-        messageClass = "success";
+        messageClass = "success";    
+        StateHasChanged();
+        await Task.Delay(1000);
         NavigationManager.NavigateTo("/vote");
     }
 }

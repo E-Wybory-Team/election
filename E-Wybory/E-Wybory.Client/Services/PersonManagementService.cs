@@ -54,7 +54,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult($"{person.Name} {person.Surname} - wiek: {CountPersonAge(person.BirthDate)}");
         }
 
-        
+        public async Task<String> GetPersonNameSurnameWithoutAgeById(int id)
+        {
+            var person = await GetPersonById(id);
+            return await Task.FromResult($"{person.Name} {person.Surname}");
+        }
+
 
         public async Task<PersonViewModel> GetPersonIdByIdElectionUser(int electionUserId)
         {

@@ -93,6 +93,11 @@
 
     private async Task HandleValidSubmit()
     {
+        if(!(await ElectionManagementService.ElectionOfTypeAtTimeExist(electionModel)))
+        {
+            errorMessage = "Wybory tego typu w podanym czasie już istnieją!";
+            return;
+        }
         isAddedElection = await ElectionManagementService.AddElection(electionModel);
         errorMessage = isAddedElection ? "Dodano wybory pomyślnie!" : "Nie udało sie dodać wyborów";
         if(isAddedElection)

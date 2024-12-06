@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using E_Wybory.Client.Components.Pages;
 
 namespace E_Wybory.Controllers
 {
@@ -309,13 +310,23 @@ namespace E_Wybory.Controllers
                 var candidateProvinceId = candidate.IdDistrictNavigation?.IdProvince;
 
                 // Filter conditions
-                if ((electionTypeId != null && candidateElectionTypeId != electionTypeId) ||
-                    (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
-                    (countyId != null && candidateCountyId != countyId) ||
-                    (provinceId != null && candidateProvinceId != provinceId) ||
-                    (districtId != null && candidate.IdDistrict != districtId))
+                if (candidate.IdDistrict == null)
                 {
-                    continue; // Skip this candidate if it doesn't match the filter conditions
+                    if (electionTypeId != null && candidateElectionTypeId != electionTypeId)
+                    {
+                        continue; // Skip this candidate only if electionId doesn't match
+                    }
+                }
+                else
+                {
+                    if ((electionTypeId != null && candidateElectionTypeId != electionTypeId) ||
+                        (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
+                        (countyId != null && candidateCountyId != countyId) ||
+                        (provinceId != null && candidateProvinceId != provinceId) ||
+                        (districtId != null && candidate.IdDistrict != districtId))
+                    {
+                        continue; // Skip this candidate if it doesn't match the filter conditions
+                    }
                 }
 
                 // Retrieve person data for the current candidate

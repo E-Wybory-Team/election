@@ -143,10 +143,23 @@
     private FilterListWrapper wrapper = new FilterListWrapper();
     private Dictionary<int, int> votersIds = new Dictionary<int, int>();
 
-    private async Task FilterTable()
+    private async Task FilterTable(bool toFilterUsers)
     {
         wrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
-        filteredUsers = await FilterWrapperService.GetFilteredUsers(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+        filteredUsers.Clear();
+        if (toFilterUsers)
+        {
+            filteredUsers = await FilterWrapperService.GetFilteredUsers(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
+            foreach (var filteredUser in filteredUsers)
+            {
+                int voterId = await VoterManagementService.GetVoterIdByElectionUserId(filteredUser.userViewModel.IdElectionUser);
+                if (!votersIds.ContainsKey(filteredUser.userViewModel.IdElectionUser))
+                {
+                    votersIds[filteredUser.userViewModel.IdElectionUser] = voterId;
+                }
+            }
+        
+        }
     }
 
     protected async override Task OnInitializedAsync()
@@ -160,12 +173,7 @@
             return;
         }
 
-        await FilterTable();
-        foreach (var filteredUser in filteredUsers)
-        {
-            int voterId = await VoterManagementService.GetVoterIdByElectionUserId(filteredUser.userViewModel.IdElectionUser);
-            votersIds[filteredUser.userViewModel.IdElectionUser] = voterId;
-        }
+            await FilterTable(false);
     }
 
     private async Task OnVoivodeshipChanged()
@@ -173,7 +181,7 @@
         SelectedCountyId = null;
         SelectedProvinceId = null;
         SelectedDistrictId = null;
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnCountyChanged()
@@ -181,18 +189,18 @@
        
         SelectedProvinceId = null;
         SelectedDistrictId = null;
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnProvinceChanged()
     {
         SelectedDistrictId = null;
-        await FilterTable();
+        await FilterTable(false);
     }
 
     private async Task OnDistrictChanged()
     {
-        await FilterTable();
+        await FilterTable(true);
     }
 
     private void AddVoter()

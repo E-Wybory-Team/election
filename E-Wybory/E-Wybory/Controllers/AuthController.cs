@@ -565,7 +565,7 @@ namespace E_Wybory.Controllers
                 var pdfPath = await pdfGeneratorService.GeneratePdfWithImage_Syncfusion("Zaświadczenie o głosowaniu", $"Potwierdzamy oddanie " +
                     $"głosu przez użytkownika " + $"{person.Name} {person.Surname} posługującego się numerem PESEL: {person.Pesel} \n " +
                     $"Pozdrawiamy, \n" +
-                    $"Twórcy aplikacji E-Wybory");
+                    $"Twórcy aplikacji E-Wybory", $"generatedDocument_{user.Id}.pdf");
 
                 var emailOperationResult = await _emailSenderService.SendEmailWithPdfAttachmentAsync(electionUser.Email, "E-wybory: Potwierdzenie głosowania", "Dzień dobry,\n " +
                                                                     "W załączeniu przesyłamy zaświadczenie potwierdzające uczestnictwo w wyborach na platformie E-Wybory. \n " +

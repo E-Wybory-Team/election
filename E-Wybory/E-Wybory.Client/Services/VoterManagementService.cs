@@ -1,4 +1,5 @@
-﻿using E_Wybory.Client.ViewModels;
+﻿using E_Wybory.Client.Components.Pages;
+using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using System.Net.Http.Json;
 
@@ -48,6 +49,12 @@ namespace E_Wybory.Client.Services
         public async Task<bool> VoterExists(int voterId)
         {
             var response = await _httpClient.GetAsync($"/api/Voter/exist/{voterId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> VoterOfUserExists(int userId)
+        {
+            var response = await _httpClient.GetAsync($"/api/Voter/userOfVoterExist/{userId}");
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
