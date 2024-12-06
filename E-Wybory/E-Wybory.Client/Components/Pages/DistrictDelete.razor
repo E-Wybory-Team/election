@@ -5,6 +5,7 @@
 @inject IProvinceManagementService ProvinceManagementService
 @inject ICountyManagementService CountyManagementService
 @inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -81,6 +82,16 @@
 
     protected async override Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
+
         if (!await DistrictManagementService.DistrictExists(districtId))
         {
             errorMessage = "Nie znaleziono obwodu!";

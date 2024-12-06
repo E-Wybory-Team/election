@@ -7,6 +7,12 @@
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+
 
 
 <link href="forms.css" rel="stylesheet" />
@@ -53,8 +59,8 @@
 
                 <div class="two-factor-section">
                     <label>Weryfikacja dwuetapowa</label>
-                    <span class="two-factor-status @VerificationClass">@VerificationMessage</span>
-                    <button class="submit-button" @onclick="NavigateTo2FA">Weryfikuj</button>
+                    <div class="status-message-blue">@VerificationMessage</div>
+                    <button class="submit-button @ButtonClass" @onclick="NavigateTo2FA" disabled="@IsButtonDisabled">Weryfikuj</button>
                 </div>
 
 
@@ -80,19 +86,29 @@
     private ElectionUserViewModel user = new();
     private string VerificationMessage;
     private string VerificationClass;
+    private string ButtonClass = "active-button";
+    private bool IsButtonDisabled = false;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var userIdClaim = authState.User.FindFirst("IdElectionUser")?.Value;
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var userIdClaim = user.FindFirst("IdElectionUser")?.Value;
+
 
         if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
         {
-            
-            user = await ElectionUserManagementService.GetElectionUserById(userId);
-            person = await PersonManagementService.GetPersonById(user.IdPerson);
- 
-            UpdateVerificationMessage(!string.IsNullOrEmpty(user.UserSecret));
+            this.user = await ElectionUserManagementService.GetElectionUserById(userId);
+            person = await PersonManagementService.GetPersonById(this.user.IdPerson);
+
+            UpdateVerificationMessage(!string.IsNullOrEmpty(this.user.UserSecret));
         }
     }
 
@@ -101,18 +117,25 @@
         if (is2FAEnabled)
         {
             VerificationMessage = "Użytkownik zweryfikowany";
-            VerificationClass = "status-alert-blue";
+            VerificationClass = "status-message success"; 
+            ButtonClass = "disabled-button";
+            IsButtonDisabled = true;
         }
         else
         {
             VerificationMessage = "Użytkownik niezweryfikowany";
-            VerificationClass = "status-alert-red";
+            VerificationClass = "status-message error"; 
+            ButtonClass = "active-button";
+            IsButtonDisabled = false;
         }
     }
 
     private void NavigateTo2FA()
     {
-        NavigationManager.NavigateTo("/verify/2fa-code");
+        if (!IsButtonDisabled)
+        {
+            NavigationManager.NavigateTo("/account/enable-2fa");
+        }
     }
 
     private void NavigateToChangePassword()

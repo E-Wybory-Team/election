@@ -7,6 +7,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
@@ -51,6 +53,18 @@
     bool isAddedConstituency = false;
     string errorMessage;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Sprawdzenie autoryzacji
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+    }
 
     private async Task HandleSubmit()
     {

@@ -85,3 +85,13 @@ p {
     text-align: center; 
     min-width: 50px;
 }
+
+p-notauthorized {
+    display: inline-block;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    min-width: 50px;
+}

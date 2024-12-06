@@ -10,9 +10,16 @@
 @inject IVoterManagementService VoterManagementService
 @inject IDistrictManagementService DistrictManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
+@inject NavigationManager NavigationManager
 <link href="tables.css" rel="stylesheet" />
 
-<h2 class="title">STATYSTYKI WYBORCZE</h2>
+<div class="header-container">
+    <h2 class="title">STATYSTYKI WYBORCZE</h2>
+    @if (allElections.Any(e => e.ElectionEndDate < DateTime.Now))
+    {
+        <button class="add-button" @onclick="GoToDetailedStatistics">SZCZEGÓŁOWE STATYSTYKI</button>
+    }
+</div>
 
 <div class="filters">
     <div class="filter-group">
@@ -268,6 +275,13 @@ else if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
 
         return -1;
     }
+
+    private void GoToDetailedStatistics()
+    {
+        NavigationManager.NavigateTo("/detailedstats");
+    }
+
+
 
 
     /*

@@ -10,6 +10,8 @@
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IVoterManagementService VoterManagementService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
@@ -123,6 +125,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Urzędnicy wyborczy") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         await FilterRegions();
     }
 

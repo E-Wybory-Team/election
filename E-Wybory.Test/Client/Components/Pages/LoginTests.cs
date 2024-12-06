@@ -78,7 +78,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Invalid username or password!", cut.Markup);
+                Assert.Contains("Invalid useasdrname or password!", cut.Markup);
             });
         }
 

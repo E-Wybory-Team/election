@@ -9,6 +9,8 @@
 @inject IVoterManagementService VoterManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
@@ -67,6 +69,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Urzędnicy wyborczy") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         if (!await VoterManagementService.VoterExists(voterId))
         {
             errorMessage = "Nie znaleziono wyborcy!";
