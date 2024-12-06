@@ -1,4 +1,5 @@
 ﻿using Azure.Communication.Email;
+using Castle.Core.Logging;
 using E_Wybory.Application.DTOs;
 using E_Wybory.Client.ViewModels;
 using E_Wybory.Controllers;
@@ -15,6 +16,8 @@ using OtpNet;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
+
 
 namespace E_Wybory.Test.Server.Controllers
 {
@@ -24,6 +27,7 @@ namespace E_Wybory.Test.Server.Controllers
         private readonly Mock<IJWTService> _mockTokenService;
         private readonly Mock<IEmailSenderService> _mockEmailSenderService;
         private readonly AuthController _controller;
+        private readonly Mock<ILogger<AuthController>> _mockLogger;
 
         private static string HashPassword(string password)
         {
@@ -46,7 +50,8 @@ namespace E_Wybory.Test.Server.Controllers
             _mockContext = new Mock<ElectionDbContext>();
             _mockTokenService = new Mock<IJWTService>();
             _mockEmailSenderService = new Mock<IEmailSenderService>();
-            _controller = new AuthController(_mockContext.Object, _mockTokenService.Object, _mockEmailSenderService.Object);
+            _mockLogger = new Mock<ILogger<AuthController>>();
+            _controller = new AuthController(_mockContext.Object, _mockTokenService.Object, _mockEmailSenderService.Object, _mockLogger.Object);
         }
 
         [Fact]
@@ -668,7 +673,7 @@ namespace E_Wybory.Test.Server.Controllers
             var resetModel = new ResetPasswordViewModel()
             {
                 Email = "existinguser@example.com",
-                ResetCode = GenerateTotpCode(userSecret, timeWindow: 60),
+                ResetCode = GenerateTotpCode(userSecret, timeWindow: 120),
                 NewPassword = newPassword,
                 NewConfirmPassword = newPassword
             };
