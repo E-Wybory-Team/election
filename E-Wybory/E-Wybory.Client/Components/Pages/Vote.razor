@@ -256,6 +256,9 @@
                     if (votingResult1 && votingResult2)
                     {
                         errorMessage = "Głosowanie się powiodło!";
+                        StateHasChanged();
+                        await Task.Delay(1000);
+                        NavigationManager.NavigateTo("/");
                     }
                 }
                 else

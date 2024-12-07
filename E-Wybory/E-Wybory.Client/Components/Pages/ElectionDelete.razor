@@ -107,6 +107,11 @@
     {
         if (SelectedElectionId != 0) //only if selected
         {
+            if(!(await ElectionManagementService.ElectionIsNotSetToCandidate(SelectedElectionId))) //check if election are not set to candidates
+            {
+                errorMessage = "Podane wybory są przypisane do min. 1 kandydata. Należy najpierw zmienić im przypisane wybory!";
+                return;
+            }
             isDeletedElection = await ElectionManagementService.DeleteElection(SelectedElectionId);
             errorMessage = isDeletedElection ? "Usunięto wybory pomyślnie!" : "Nie udało się usunąć wyborów";
             if (isDeletedElection)
