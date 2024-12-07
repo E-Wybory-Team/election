@@ -65,11 +65,10 @@
                         <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                             <DataAnnotationsValidator />
                             <div class="form-floating mb-3">
-                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" placeholder="Kod weryfikacyjny" />
-                                <label for="Input.Code" class="control-label form-label">Kod weryfikacyjny</label>
+                                <InputText @bind-Value="Input.Code" id="Input.Code" class="centered-input" placeholder="Kod weryfikacyjny" />
                                 <ValidationMessage For="() => Input.Code" class="text-danger" />
                             </div>
-                            <button type="submit" class="w-100 btn btn-lg btn-primary">Zweryfikuj</button>
+                            <button type="submit" class="centered-button">Zweryfikuj</button>
                         </EditForm>
                     </div>
                 </div>
