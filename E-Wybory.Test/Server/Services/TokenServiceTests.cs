@@ -30,6 +30,7 @@ namespace E_Wybory.Test.Server.Services
             _mockDbContext = new Mock<ElectionDbContext>();
             _mockValidationParameters = new Mock<TokenValidationParameters>();
             _rsaKey = RSA.Create();
+            _rsaKey.ImportRSAPrivateKey(System.IO.File.ReadAllBytes("key"), out _);
             _tokenService = new TokenService(_rsaKey, _mockValidationParameters.Object);
 
         }
