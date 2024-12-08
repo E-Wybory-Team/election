@@ -162,7 +162,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/type
         [HttpGet("type/{electionTypeId}")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
 
         public async Task<ActionResult<List<ElectionViewModel>>> GetElectionsOfType(int electionTypeId)
         {
@@ -230,7 +230,7 @@ namespace E_Wybory.Controllers
         }
 
         [HttpPut("typeTime")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<bool>> ElectionOfTypeAtTimeAlreadyExists(ElectionViewModel election)
         {
             if(!(await ElectionOfTypeAtTimeExists(election.IdElection, election.IdElectionType, election.ElectionStartDate, election.ElectionEndDate)))

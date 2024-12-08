@@ -11,7 +11,7 @@ namespace E_Wybory.Client.Services
         private readonly IServiceProvider _serviceProvider;
         private const string TokenKey = "authToken";
 
-        private readonly static bool shouldRedirect = true;
+        private readonly static bool shouldRedirect = false;
 
         public AuthHttpMessageHandler(IJSRuntime jsRuntime, IServiceProvider serviceProvider)
         {

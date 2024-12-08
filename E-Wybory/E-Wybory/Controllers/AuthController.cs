@@ -167,7 +167,7 @@ namespace E_Wybory.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return verResult ? Ok("") : Unauthorized("Wrong TOTP code");
+            return verResult ? Ok("") : BadRequest("Wrong TOTP code");
         }
 
         [HttpPost]

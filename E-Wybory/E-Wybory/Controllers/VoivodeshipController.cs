@@ -13,7 +13,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+    [Authorize(Roles = "Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
     public class VoivodeshipController : ControllerBase
     {
         private readonly ElectionDbContext _context;

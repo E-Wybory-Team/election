@@ -438,7 +438,7 @@ namespace E_Wybory.Test.Server.Controllers
         }
 
         [Fact]
-        public async Task Verify2fa_ReturnsUnauthorized_WhenBadCode()
+        public async Task Verify2fa_ReturnsBadRequest_WhenBadCode()
         {
             // Arrange
             var userSecret = NewUserSecret;
@@ -467,8 +467,8 @@ namespace E_Wybory.Test.Server.Controllers
             var result = await _controller.Verify2fa(verReq);
 
             // Assert
-            var unauthorizedObjResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal("Wrong TOTP code", unauthorizedObjResult.Value);
+            var badRequestObjResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Wrong TOTP code", badRequestObjResult.Value);
         }
 
         [Fact]
