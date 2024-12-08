@@ -108,6 +108,12 @@
 
     private async Task HandleValidSubmit()
     {
+        if(electionModel.IdElectionType == 0)
+        {
+            errorMessage = "Proszę wybrać typ wyborów!";
+            return;
+        }
+
         if (SelectedElectionId != 0) //only if selected
         {
             electionModel.IdElection = SelectedElectionId;

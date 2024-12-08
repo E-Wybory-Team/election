@@ -92,7 +92,7 @@ namespace E_Wybory.Controllers
                 return BadRequest("Not entered data to all required fields");
             }
 
-            if(await ElectionOfTypeAtTimeExists(electionModel.IdElectionType, electionModel.ElectionStartDate, electionModel.ElectionEndDate))
+            if(await ElectionOfTypeAtTimeExists(electionModel.IdElection, electionModel.IdElectionType, electionModel.ElectionStartDate, electionModel.ElectionEndDate))
             {
                 return Conflict("Election of this type in this time already exists!");
             }
@@ -118,6 +118,11 @@ namespace E_Wybory.Controllers
             if (election == null)
             {
                 return NotFound();
+            }
+
+            if(await ElectionHasCandidate(id))
+            {
+                return Conflict("Cannot delete this election because at least one candidate is set to it!");
             }
 
             _context.Elections.Remove(election);
@@ -188,10 +193,36 @@ namespace E_Wybory.Controllers
             return _context.Elections.Any(e => e.IdElection == id);
         }
 
+        private async Task<bool> ElectionHasCandidate(int electionId)
+        {
+            if(await  _context.Candidates.AnyAsync(candidate => candidate.IdElection == electionId))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-        private async Task<bool> ElectionOfTypeAtTimeExists(int electionTypeId, DateTime startDate, DateTime endDate)
+        [HttpGet("candidateNotSet/{electionId}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+        public async Task<ActionResult> ElectionIsNotSetToCandidate(int electionId)
+        {
+            if(await ElectionHasCandidate(electionId))
+            {
+                return Conflict();
+            }
+            else
+            {
+                return Ok();
+            }
+        }
+
+        private async Task<bool> ElectionOfTypeAtTimeExists(int electionId, int electionTypeId, DateTime startDate, DateTime endDate)
         {
             return await _context.Elections.AnyAsync(e =>
+                        e.IdElection != electionId &&
                         e.IdElectionType == electionTypeId && 
                         ((startDate >= e.ElectionStartDate && startDate <= e.ElectionEndDate) || 
                          (endDate >= e.ElectionStartDate && endDate <= e.ElectionEndDate) || 
@@ -202,7 +233,7 @@ namespace E_Wybory.Controllers
         [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         public async Task<ActionResult<bool>> ElectionOfTypeAtTimeAlreadyExists(ElectionViewModel election)
         {
-            if(!(await ElectionOfTypeAtTimeExists(election.IdElectionType, election.ElectionStartDate, election.ElectionEndDate)))
+            if(!(await ElectionOfTypeAtTimeExists(election.IdElection, election.IdElectionType, election.ElectionStartDate, election.ElectionEndDate)))
             {
                 return Ok();
             }

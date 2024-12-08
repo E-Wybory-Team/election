@@ -124,6 +124,11 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
+        public async Task<bool> ElectionIsNotSetToCandidate(int electionId)
+        {
+            var response = await _httpClient.GetAsync($"/api/Election/candidateNotSet/{electionId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
 
 
     }
