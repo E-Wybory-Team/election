@@ -20,6 +20,7 @@ namespace E_Wybory.Test.Client.Components.Pages
         private readonly Mock<IDistrictManagementService> _districtManagementServiceMock;
         private readonly Mock<IPartyManagementService> _partyManagementServiceMock;
         private readonly Mock<IElectionManagementService> _electionManagementServiceMock;
+        private readonly Mock<IElectionTypeManagementService> _electionTypeManagementServiceMock;
 
         public CandidateModifyTests()
         {
@@ -28,6 +29,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             _districtManagementServiceMock = new Mock<IDistrictManagementService>();
             _partyManagementServiceMock = new Mock<IPartyManagementService>();
             _electionManagementServiceMock = new Mock<IElectionManagementService>();
+            _electionTypeManagementServiceMock = new Mock<IElectionTypeManagementService>();
 
             _districtManagementServiceMock.Setup(s => s.Districts()).ReturnsAsync(new List<DistrictViewModel>
             {
@@ -70,6 +72,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             Services.AddSingleton(_districtManagementServiceMock.Object);
             Services.AddSingleton(_partyManagementServiceMock.Object);
             Services.AddSingleton(_electionManagementServiceMock.Object);
+            Services.AddSingleton(_electionTypeManagementServiceMock.Object);
 
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {

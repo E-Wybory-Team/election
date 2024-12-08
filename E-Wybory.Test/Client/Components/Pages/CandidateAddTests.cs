@@ -21,6 +21,7 @@ namespace E_Wybory.Test.Client.Components.Pages
         private readonly Mock<IDistrictManagementService> _districtManagementServiceMock;
         private readonly Mock<IPartyManagementService> _partyManagementServiceMock;
         private readonly Mock<IElectionManagementService> _electionManagementServiceMock;
+        private readonly Mock<IElectionTypeManagementService> _electionTypeManagementServiceMock;
 
         public CandidateAddTests()
         {
@@ -29,7 +30,13 @@ namespace E_Wybory.Test.Client.Components.Pages
             _districtManagementServiceMock = new Mock<IDistrictManagementService>();
             _partyManagementServiceMock = new Mock<IPartyManagementService>();
             _electionManagementServiceMock = new Mock<IElectionManagementService>();
+            _electionTypeManagementServiceMock = new Mock<IElectionTypeManagementService>();
 
+
+            _electionTypeManagementServiceMock.Setup(s => s.ElectionTypes()).ReturnsAsync(new List<ElectionTypeViewModel>
+            {
+                new ElectionTypeViewModel { IdElectionType = 1, ElectionTypeName = "Prezydenckie" }
+            });
             _districtManagementServiceMock.Setup(s => s.Districts()).ReturnsAsync(new List<DistrictViewModel>
             {
                 new DistrictViewModel { IdDistrict = 1, DistrictName = "Obwód 1", DistrictHeadquarters = "Siedziba 1" }
@@ -56,6 +63,7 @@ namespace E_Wybory.Test.Client.Components.Pages
             Services.AddSingleton(_districtManagementServiceMock.Object);
             Services.AddSingleton(_partyManagementServiceMock.Object);
             Services.AddSingleton(_electionManagementServiceMock.Object);
+            Services.AddSingleton(_electionTypeManagementServiceMock.Object);
 
             var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
