@@ -12,6 +12,7 @@
 @inject ICandidateManagementService CandidateManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 
 
 <link href="forms.css" rel="stylesheet" />
@@ -100,8 +101,9 @@
                                 <option value="">Wybierz instancję wyborów</option>
                                 @foreach (var election in elections)
                                 {
+                                    var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
                                     <option value="@election.IdElection">
-                                        Od:  @election.ElectionStartDate  do:  @election.ElectionEndDate
+                                       @electionTypeName - @election.ElectionStartDate
                                     </option>
                                 }
                             </InputSelect>
@@ -160,6 +162,7 @@
     private List<PartyViewModel> parties = new List<PartyViewModel>();
     private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
     private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
     private Dictionary<int, string> candidateNames = new();
     string errorMessage;
     bool formSubmitted = false;
@@ -177,6 +180,7 @@
         }
         else
         {
+            electionTypes = await ElectionTypeManagementService.ElectionTypes();
             candidateModel.candidateViewModel = await CandidateManagementService.GetCandidateById(candidateId);
             candidateModel.personViewModel = await PersonManagementService.GetPersonById(candidateModel.candidateViewModel.IdPerson);
             districts = await DistrictManagementService.Districts();

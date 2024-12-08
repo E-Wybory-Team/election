@@ -12,6 +12,7 @@
 @inject IDistrictManagementService DistrictManagementService
 @inject IPartyManagementService PartyManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 @inject NavigationManager NavigationManager
 
 <link href="forms.css" rel="stylesheet" />
@@ -101,8 +102,9 @@
                     <option value="">Wybierz wybory</option>
                     @foreach (var election in elections)
                     {
+                        var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
                         <option value="@election.IdElection">
-                            @election.ElectionStartDate - @election.ElectionEndDate;
+                            @electionTypeName - @election.ElectionStartDate;
                         </option>
                     }
                 </InputSelect>
@@ -155,6 +157,7 @@
     private List<DistrictViewModel> districts = new List<DistrictViewModel>();
     private List<PartyViewModel> parties = new List<PartyViewModel>();
     private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
 
     private CandidatePersonViewModel candidatePersonModel = new CandidatePersonViewModel();
 
@@ -168,6 +171,7 @@
         districts = await DistrictManagementService.Districts();
         parties = await PartyManagementService.Parties();
         elections = await ElectionManagementService.Elections();
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }
 
 
