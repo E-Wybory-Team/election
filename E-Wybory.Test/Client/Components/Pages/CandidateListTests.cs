@@ -70,6 +70,23 @@ namespace E_Wybory.Test.Client.Components.Pages
                     }
                 });
 
+            _filterWrapperServiceMock.Setup(service => service.GetFilteredLists(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>()))
+                .ReturnsAsync(new FilterListWrapperFull
+                {
+                    ElectionFilter = new List<ElectionTypeViewModel>
+                    {
+                        new ElectionTypeViewModel { IdElectionType = 1, ElectionTypeName = "Parlamentarne" },
+                        new ElectionTypeViewModel { IdElectionType = 2, ElectionTypeName = "Samorządowe" }
+                    },
+                    FilterListWrapper = new FilterListWrapper
+                    {
+                        VoivodeshipFilter = new List<VoivodeshipViewModel>(),
+                        CountyFilter = new List<CountyViewModel>(),
+                        ProvinceFilter = new List<ProvinceViewModel>(),
+                        DistrictFilter = new List<DistrictViewModel>()
+                    }
+                });
+
             _partyManagementServiceMock.Setup(service => service.Parties())
                 .ReturnsAsync(new List<PartyViewModel>
                 {
@@ -138,6 +155,20 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Arrange
             var cut = RenderComponent<CandidateList>();
 
+            var electionSelect = cut.Find("select#rodzaj-wyborow");
+            await cut.InvokeAsync(() => electionSelect.Change("1"));
+
+            var voivodeshipSelect = cut.Find("select#wojewodztwo");
+            await cut.InvokeAsync(() => voivodeshipSelect.Change("1"));
+
+            var countySelect = cut.Find("select#powiat");
+            await cut.InvokeAsync(() => countySelect.Change("1"));
+
+            var provinceSelect = cut.Find("select#gmina");
+            await cut.InvokeAsync(() => provinceSelect.Change("1"));
+
+            var districtSelect = cut.Find("select#numer-obwodu");
+            await cut.InvokeAsync(() => districtSelect.Change("1"));
             // Assert
             cut.WaitForAssertion(() =>
             {
@@ -151,10 +182,25 @@ namespace E_Wybory.Test.Client.Components.Pages
         {
             // Act
             var cut = RenderComponent<CandidateList>();
+            // arrange
+            var electionSelect = cut.Find("select#rodzaj-wyborow");
+            await cut.InvokeAsync(() => electionSelect.Change("1"));
 
+            var voivodeshipSelect = cut.Find("select#wojewodztwo");
+            await cut.InvokeAsync(() => voivodeshipSelect.Change("1"));
+
+            var countySelect = cut.Find("select#powiat");
+            await cut.InvokeAsync(() => countySelect.Change("1"));
+
+            var provinceSelect = cut.Find("select#gmina");
+            await cut.InvokeAsync(() => provinceSelect.Change("1"));
+
+            var districtSelect = cut.Find("select#numer-obwodu");
+            await cut.InvokeAsync(() => districtSelect.Change("1"));
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.WriteLine(cut.Markup);
                 Assert.Contains("Kowalski Jan", cut.Markup);
                 Assert.Contains("Inżynier", cut.Markup);
                 Assert.Contains("Firma A", cut.Markup);

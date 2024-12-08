@@ -27,7 +27,7 @@
             <div class="filters">
                 <div class="filter-group">
                     <label>Rodzaj wyborów</label>
-                    <select @bind="@SelectedElectionTypeId" @bind:after="@OnElectionTypeChanged">
+                    <select @bind="@SelectedElectionTypeId" id="rodzaj-wyborow" @bind:after="@OnElectionTypeChanged">
                         <option value="">Wybierz rodzaj wyborów</option>
                         @foreach (var electionType in wrapper.ElectionFilter)
                         {
@@ -39,7 +39,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Województwo</label>
-                    <select @bind="@SelectedVoivodeshipId" @bind:after="@OnVoivodeshipChanged">
+                    <select @bind="@SelectedVoivodeshipId" id="wojewodztwo" @bind:after="@OnVoivodeshipChanged">
                         <option value="">Wybierz województwo</option>
                         @foreach (var voivodeship in wrapper.FilterListWrapper.VoivodeshipFilter)
                         {
@@ -51,7 +51,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Powiat</label>
-                    <select @bind="@SelectedCountyId" @bind:after="@OnCountyChanged">
+                    <select @bind="@SelectedCountyId" id="powiat" @bind:after="@OnCountyChanged">
                         <option value="">Wybierz powiat</option>
                         @foreach (var county in wrapper.FilterListWrapper.CountyFilter)
                         {
@@ -66,7 +66,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Gmina</label>
-                    <select @bind="@SelectedProvinceId" @bind:after="@OnProvinceChanged">
+                    <select @bind="@SelectedProvinceId" id="gmina" @bind:after="@OnProvinceChanged">
                         <option value="">Wybierz gminę</option>
                         @foreach (var province in wrapper.FilterListWrapper.ProvinceFilter)
                         {
@@ -81,7 +81,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Numer obwodu</label>
-                    <select @bind="@SelectedDistrictId" @bind:after="@OnDistrictChanged">
+                    <select @bind="@SelectedDistrictId" id="numer-obwodu" @bind:after="@OnDistrictChanged">
                         <option value="">Wybierz numer obwodu</option>
                         @foreach (var district in wrapper.FilterListWrapper.DistrictFilter)
                         {
