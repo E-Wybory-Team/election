@@ -78,6 +78,10 @@ namespace E_Wybory.Test.Client.Components.Pages
             {
                 Assert.Contains("MODYFIKOWANIE WYBORÓW", cut.Markup);
                 Assert.Contains("WYBORY DO EDYCJI", cut.Markup);
+                Assert.Contains("RODZAJ", cut.Markup);
+                Assert.Contains("ROZPOCZĘCIE WYBORÓW", cut.Markup);
+                Assert.Contains("KONIEC WYBORÓW", cut.Markup);
+                Assert.Contains("TURA WYBORÓW", cut.Markup);
                 Assert.Contains("MODYFIKUJ WYBORY", cut.Markup);
                 Assert.Contains("ANULUJ", cut.Markup);
             });
@@ -106,27 +110,34 @@ namespace E_Wybory.Test.Client.Components.Pages
         {
             // Arrange
             var cut = RenderComponent<ElectionModify>();
-            var select = cut.Find("select#currentElection");
+            _electionManagementServiceMock
+               .Setup(service => service.ElectionOfTypeAtTimeExist(It.IsAny<ElectionViewModel>()))
+               .ReturnsAsync(true);
 
             // Act
-            select.Change("1");
-            cut.WaitForState(() => cut.Instance.GetSelectedElectionId() == 1);
-
             var startDateInput = cut.Find("input#dzien-wyborow");
             var endDateInput = cut.Find("input#dzien-wyborow-koniec");
             var tourInput = cut.Find("input#tura");
+            var select = cut.Find("select#currentElection");
+            var selectElectionType = cut.Find("select#rodzaj");
 
+            select.Change("1");
+            selectElectionType.Change("1");
             startDateInput.Change("2023-01-01T10:00");
             endDateInput.Change("2023-01-02T18:00");
             tourInput.Change("2");
 
-            var form = cut.Find("form");
-            form.Submit(); 
+            var submitButton = cut.Find("button.submit-button");
+            submitButton.Click();
 
             // Assert
-            _electionManagementServiceMock.Verify(service => service.PutElection(It.IsAny<ElectionViewModel>()), Times.Once);
-        }
+            cut.WaitForAssertion(() =>
+            {
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("Zmodyfikowano wybory pomyślnie!", cut.Markup);
 
+            });
+        }
 
         [Fact]
         public void ElectionModify_Should_Navigate_To_ConfigureElection_On_Cancel()

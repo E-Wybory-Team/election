@@ -21,7 +21,7 @@
 
         <div class="form-group">
             <label for="rodzaj">RODZAJ</label>
-            <InputSelect @bind-Value="electionModel.IdElectionType">
+            <InputSelect @bind-Value="electionModel.IdElectionType" id="rodzaj-wyborow">
                 <option value="">Wybierz rodzaj</option>
                 @foreach (var electionType in electionTypes)
                 {

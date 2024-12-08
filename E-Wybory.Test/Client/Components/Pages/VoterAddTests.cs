@@ -113,6 +113,9 @@ namespace E_Wybory.Test.Client.Components.Pages
         public async Task VoterAdd_Should_Add_Voter_With_Valid_Data()
         {
             // Arrange
+            _electionUserManagementServiceMock
+        .Setup(service => service.UserPersonIdExists(It.IsAny<int>()))
+        .ReturnsAsync(true);
             var cut = RenderComponent<VoterAdd>();
 
             // Act
@@ -149,7 +152,8 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Contains("Nie ma takiego człowieka w bazie!", cut.Markup);
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("Nie ma takiego człowieka w ewidencji ludności w systemie!", cut.Markup);
             });
         }
 

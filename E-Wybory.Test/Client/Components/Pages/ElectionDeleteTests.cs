@@ -115,18 +115,53 @@ namespace E_Wybory.Test.Client.Components.Pages
             cut.WaitForAssertion(() =>
             {
                 Assert.Contains("Prezydenckie", cut.Markup);
-                Assert.Contains("2023-01-01", cut.Markup); // Data rozpoczęcia wyborów
-                Assert.Contains("2023-01-02", cut.Markup); // Data zakończenia wyborów
+                Assert.Contains("2023-01-01", cut.Markup);
+                Assert.Contains("2023-01-02", cut.Markup);
                 Assert.Contains("Tura: 1", cut.Markup);
             });
         }
 
         [Fact]
-        public void ElectionDelete_Should_Call_DeleteElection_On_ValidSubmission()
+        public void ElectionDelete_Should_Display_Error_When_Candidates_Assigned()
         {
             // Arrange
+            _electionManagementServiceMock
+                .Setup(service => service.ElectionIsNotSetToCandidate(It.IsAny<int>()))
+                .ReturnsAsync(false); 
+
             var cut = RenderComponent<ElectionDelete>();
-            var select = cut.Find("select");
+            var select = cut.Find("select#currentElection");
+            var form = cut.Find("form");
+
+            // Act
+            select.Change("1");
+            form.Submit(); 
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("Podane wybory są przypisane do min. 1 kandydata. Należy najpierw zmienić im przypisane wybory!", cut.Markup);
+            });
+
+            _electionManagementServiceMock.Verify(service => service.ElectionIsNotSetToCandidate(It.IsAny<int>()), Times.Once);
+            _electionManagementServiceMock.Verify(service => service.DeleteElection(It.IsAny<int>()), Times.Never); 
+        }
+
+        [Fact]
+        public void ElectionDelete_Should_Call_DeleteElection_When_No_Candidates_Assigned()
+        {
+            // Arrange
+            _electionManagementServiceMock
+                .Setup(service => service.ElectionIsNotSetToCandidate(It.IsAny<int>()))
+                .ReturnsAsync(true);
+
+            _electionManagementServiceMock
+                .Setup(service => service.DeleteElection(It.IsAny<int>()))
+                .ReturnsAsync(true);
+
+            var cut = RenderComponent<ElectionDelete>();
+            var select = cut.Find("select#currentElection");
             var form = cut.Find("form");
 
             // Act
@@ -134,8 +169,17 @@ namespace E_Wybory.Test.Client.Components.Pages
             form.Submit();
 
             // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Console.WriteLine(cut.Markup);
+                Assert.Contains("Usunięto wybory pomyślnie!", cut.Markup);
+            });
+
             _electionManagementServiceMock.Verify(service => service.DeleteElection(It.IsAny<int>()), Times.Once);
+            _electionManagementServiceMock.Verify(service => service.ElectionIsNotSetToCandidate(It.IsAny<int>()), Times.Once);
         }
+
+
 
         [Fact]
         public void ElectionDelete_Should_Navigate_To_ConfigureElection_On_Cancel()

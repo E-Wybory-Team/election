@@ -86,15 +86,26 @@ namespace E_Wybory.Test.Client.Components.Pages
         [Fact]
         public void ElectionAdd_Should_Call_Service_On_ValidSubmission()
         {
-            // Act
+            // Arrange
+            _electionManagementServiceMock
+                .Setup(service => service.ElectionOfTypeAtTimeExist(It.IsAny<ElectionViewModel>()))
+                .ReturnsAsync(true);
+
             var cut = RenderComponent<ElectionAdd>();
+
+            // Act
+            cut.Find("#rodzaj-wyborow").Change("1");
             cut.Find("#dzien-wyborow").Change("2024-12-10T10:00");
             cut.Find("#dzien-wyborow-koniec").Change("2024-12-12T10:00");
             cut.Find("button.submit-button").Click();
 
             // Assert
-            _electionManagementServiceMock.Verify(service => service.AddElection(It.IsAny<ElectionViewModel>()), Times.Once);
+            cut.WaitForAssertion(() =>
+            {
+                _electionManagementServiceMock.Verify(service => service.AddElection(It.IsAny<ElectionViewModel>()), Times.Once);
+            });
         }
+
 
         [Fact]
         public void ElectionAdd_Should_Navigate_To_ConfigureElection_On_Cancel()

@@ -7,6 +7,9 @@ using E_Wybory.Client.ViewModels;
 using E_Wybory.Client.Services;
 using E_Wybory.Client.Components.Pages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace E_Wybory.Test.Client.Components.Pages
 {
@@ -28,9 +31,14 @@ namespace E_Wybory.Test.Client.Components.Pages
             Services.AddSingleton(_personManagementServiceMock.Object);
             Services.AddSingleton(_electionUserManagementServiceMock.Object);
             Services.AddSingleton(_authServiceMock.Object);
-        }
 
-  
+            var notLoggedInAuthState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+            Services.AddSingleton<AuthenticationStateProvider>(new FakeAuthenticationStateProvider(notLoggedInAuthState));
+            Services.AddAuthorizationCore();
+
+            Services.AddSingleton<IAuthorizationPolicyProvider, DefaultAuthorizationPolicyProvider>();
+            Services.AddSingleton<IAuthorizationService, DefaultAuthorizationService>();
+        }
 
         [Theory]
         [InlineData("", "Kowalski", "44051401359", "1944-05-14", "jan.kowalski@example.com", "123456789", "password123", "password123", 1, "Imię jest obowiązkowe!")]
@@ -52,6 +60,8 @@ namespace E_Wybory.Test.Client.Components.Pages
             int selectedDistrictId,
             string expectedErrorMessage)
         {
+
+           
             // Arrange
             var districts = new List<DistrictViewModel>
             {
@@ -74,12 +84,29 @@ namespace E_Wybory.Test.Client.Components.Pages
             await cut.InvokeAsync(() => model.ConfirmPassword = confirmPassword);
             await cut.InvokeAsync(() => model.SelectedDistrictId = selectedDistrictId);
 
-            var form = cut.Find("form");
-            form.Submit();
-            cut.WaitForState(() => cut.Markup.Contains(expectedErrorMessage), TimeSpan.FromSeconds(5));
+            Console.WriteLine(cut.Markup);
+            var submitButton = cut.Find("button.submit-button");
+            submitButton.Click();
+            cut.WaitForAssertion(() => cut.Markup.Contains(expectedErrorMessage), TimeSpan.FromSeconds(5));
 
             // Assert
+            
             Assert.Contains(expectedErrorMessage, cut.Markup);
+        }
+
+        private class FakeAuthenticationStateProvider : AuthenticationStateProvider
+        {
+            private readonly Task<AuthenticationState> _authenticationState;
+
+            public FakeAuthenticationStateProvider(Task<AuthenticationState> authenticationState)
+            {
+                _authenticationState = authenticationState;
+            }
+
+            public override Task<AuthenticationState> GetAuthenticationStateAsync()
+            {
+                return _authenticationState;
+            }
         }
     }
 }

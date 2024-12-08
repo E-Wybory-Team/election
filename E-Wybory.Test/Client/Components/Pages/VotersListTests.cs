@@ -118,12 +118,22 @@ namespace E_Wybory.Test.Client.Components.Pages
             var cut = RenderComponent<VotersList>();
 
             // Act
-            var voivodeshipSelect = cut.Find("select");
+            var voivodeshipSelect = cut.Find("select#wojewodztwo");
             await cut.InvokeAsync(() => voivodeshipSelect.Change("1"));
 
+            var countySelect = cut.Find("select#powiat");
+            await cut.InvokeAsync(() => countySelect.Change("1"));
+
+            var provinceSelect = cut.Find("select#gmina");
+            await cut.InvokeAsync(() => provinceSelect.Change("1"));
+
+            var districtSelect = cut.Find("select#numer-obwodu");
+            await cut.InvokeAsync(() => districtSelect.Change("1"));
+            
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.WriteLine(cut.Markup);
                 Assert.Contains("Jan", cut.Markup);
                 Assert.Contains("Kowalski", cut.Markup);
                 Assert.Contains("12345678901", cut.Markup);
@@ -151,6 +161,19 @@ namespace E_Wybory.Test.Client.Components.Pages
         {
             // Arrange
             var cut = RenderComponent<VotersList>();
+
+            // Act
+            var voivodeshipSelect = cut.Find("select#wojewodztwo");
+            await cut.InvokeAsync(() => voivodeshipSelect.Change("1"));
+
+            var countySelect = cut.Find("select#powiat");
+            await cut.InvokeAsync(() => countySelect.Change("1"));
+
+            var provinceSelect = cut.Find("select#gmina");
+            await cut.InvokeAsync(() => provinceSelect.Change("1"));
+
+            var districtSelect = cut.Find("select#numer-obwodu");
+            await cut.InvokeAsync(() => districtSelect.Change("1"));
 
             // Assert
             cut.WaitForAssertion(() =>

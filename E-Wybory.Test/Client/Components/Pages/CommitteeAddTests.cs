@@ -42,11 +42,15 @@ namespace E_Wybory.Test.Client.Components.Pages
             // Assert
             cut.WaitForAssertion(() =>
             {
+                Console.WriteLine(cut.Markup);
                 Assert.Contains("DODAWANIE KOMITETU WYBORCZEGO", cut.Markup);
                 Assert.Contains("NR LISTY", cut.Markup);
                 Assert.Contains("NAZWA KOMITETU", cut.Markup);
+                Assert.Contains("SKRÓT", cut.Markup);
+                Assert.Contains("ADRES", cut.Markup);
                 Assert.Contains("PARTIA KOALICYJNA", cut.Markup);
-                Assert.Contains("ZATWIERDŹ", cut.Markup);
+                Assert.Contains("STRONA WWW", cut.Markup);
+                Assert.Contains("DODAJ", cut.Markup);
                 Assert.Contains("ANULUJ", cut.Markup);
             });
         }
