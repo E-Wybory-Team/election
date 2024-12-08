@@ -147,7 +147,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/fromUser/3
         [HttpGet("fromUser/{electionUserId}")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Urzędnicy wyborczy")]
 
         public async Task<ActionResult<PersonViewModel>> GetPersonViewModelByPeselAsync(int electionUserId)
         {
@@ -177,7 +177,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/dataFromId/3
         [HttpGet("dataFromId/{idPerson}")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Urzędnicy wyborczy")]
 
         public async Task<ActionResult<string>> GetPersonDataByIdAsync(int idPerson)
         {
