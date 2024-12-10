@@ -55,7 +55,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Sprawdzenie autoryzacji
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 

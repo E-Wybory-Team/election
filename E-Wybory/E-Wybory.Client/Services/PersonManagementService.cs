@@ -13,9 +13,7 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<PersonViewModel>> People()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
-            //register.idDistrict = 1;
+
             var response = await _httpClient.GetFromJsonAsync<List<PersonViewModel>>("/api/Person");
 
             return await Task.FromResult(response);

@@ -11,9 +11,7 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<PartyViewModel>> Parties()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
-            //register.idParty = 1;
+
             var response = await _httpClient.GetFromJsonAsync<List<PartyViewModel>>("/api/Party");
 
             return await Task.FromResult(response);

@@ -97,8 +97,6 @@
     private string? authenticatorUri;
     private IEnumerable<string>? recoveryCodes;
 
-    // [CascadingParameter]
-    //private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private TwoFactorAuthVerifyRequest Input { get; set; } = new();
@@ -133,7 +131,6 @@
 
     private async Task OnValidSubmitAsync()
     {
-        // Usuń spacje i myślniki
         Input.Code = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
         Input.UserId = user.Id;
         var is2faTokenValid = await AuthService.VerifyTwoFactorTokenAsyncFirst(Input);
@@ -144,32 +141,17 @@
             return;
         }
 
-        //await AuthService.SetTwoFactorEnabledAsync(user.Id, true);
         Logger.LogInformation("Użytkownik o ID '{UserId}' włączył 2FA za pomocą aplikacji uwierzytelniającej.", user.Id);
 
         message = "Twoja aplikacja MFA została dodana";
         NavigationManager.NavigateTo("/account");
-        // if (await AuthService.CountRecoveryCodesAsync(user.Id) == 0)
-        // {
-        //     recoveryCodes = await AuthService.GenerateNewTwoFactorRecoveryCodesAsync(user.Id)!;
-        // }
-        // else
-        // {
-        //     //RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
-        // }
-
-
+       
     }
 
     private async ValueTask LoadSharedKeyAndQrCodeUriAsync(UserWrapper user)
     {
         var unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
-        // if (string.IsNullOrEmpty(unformattedKey))
-        // {
-        //     await AuthService.ResetAuthenticatorKeyAsync(user.Id);
-        //     unformattedKey = await AuthService.GetAuthenticatorKeyAsync(user.Id);
-        // }
-
+       
         sharedKey = FormatKey(unformattedKey!);
 
         authenticatorUri = GenerateQrCodeUri(user, unformattedKey!);

@@ -100,7 +100,6 @@ namespace E_Wybory.Services
     }
     public static class BuilderExtensionMethods
     {
-        // Other methods...
 
         public static WebApplicationBuilder ConfigureEmailService(this WebApplicationBuilder builder)
         {

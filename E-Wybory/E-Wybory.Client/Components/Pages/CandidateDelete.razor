@@ -176,7 +176,6 @@
     private async void HandleDeleteCandidate()
     {
         formSubmitted = await CandidateManagementService.DeleteCandidate(candidateId);
-        //formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
         errorMessage = formSubmitted ? "Kandydat usunięty pomyślnie!" : "Nie udało się usunąć kandydata!";
         if(formSubmitted)
         {

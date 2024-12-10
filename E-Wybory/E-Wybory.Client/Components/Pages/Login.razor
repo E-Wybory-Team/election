@@ -58,7 +58,6 @@
 
     private async Task HandleLogin()
     {
-        // Pobierz token z logowania
         var token = await AuthService.Login(loginModel);
 
         if (!string.IsNullOrEmpty(token))
@@ -66,15 +65,11 @@
             loginInfoMessage = "Pomyślnie zalogowano!";
             StateHasChanged();
             await Task.Delay(1000);
-            //loginInfoMessage = "Pomyślnie zalogowano!";
 
-            // Zapis tokena w localStorage
             await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "authToken", token);
 
-            // Dekodowanie tokena i przekierowanie na podstawie roli
             var roles = DecodeJwtRoles(token);
 
-            //await Task.Delay(1000);
             if (roles.Contains("Administratorzy") || roles.Contains("Pracownicy PKW"))
             {
                 NavigationManager.NavigateTo("/PKWHome");
@@ -100,7 +95,6 @@
 
     private List<string> DecodeJwtRoles(string token)
     {
-        // Rozdzielenie tokena JWT na części
         var parts = token.Split('.');
         if (parts.Length != 3)
         {
@@ -111,7 +105,6 @@
         var jsonBytes = Convert.FromBase64String(payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '='));
         var json = System.Text.Json.JsonDocument.Parse(jsonBytes);
 
-        // Wyciąganie ról z pola "Roles"
         if (json.RootElement.TryGetProperty("Roles", out var rolesElement))
         {
             var rolesString = rolesElement.GetString();

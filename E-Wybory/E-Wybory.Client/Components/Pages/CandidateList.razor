@@ -169,7 +169,6 @@
     protected override async Task OnInitializedAsync()
     {
         //it must be executed here because every parameters at the beginning are null
-        //filteredCandidates = await FilterWrapperService.GetFilteredCandidates(SelectedElectionTypeId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId, SelectedDistrictId);
         wrapper.ElectionFilter = await ElectionTypeManagementService.ElectionTypes();
         parties = await PartyManagementService.Parties();
     }

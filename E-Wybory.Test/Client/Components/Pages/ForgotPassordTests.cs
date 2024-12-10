@@ -77,7 +77,6 @@ namespace E_Wybory.Test.Client.Components.Pages
                 Assert.Contains("Kod do resetu hasła został wysłany na podany adres e-mail", cut.Markup);
             });
 
-            // Verify if ForgetPassword was called
             _authServiceMock.Verify(service => service.ForgetPassword(It.IsAny<ForgetPasswordViewModel>()), Times.Once);
         }
     }

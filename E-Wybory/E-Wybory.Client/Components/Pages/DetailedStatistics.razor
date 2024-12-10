@@ -172,7 +172,6 @@
         catch (Exception)
         {
             errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi!";
-            //NavigationManager.NavigateTo("/");
         }
 
         filteredCandidates = await FilterWrapperService.GetFilteredCandidatesFromElection(null, IdDistrict);
@@ -188,7 +187,7 @@
                 }
                 catch (Exception ex)
                 {
-                    //votesNumber = 0;
+                    
                 }
             }
             votesNumberOfCandidates.Add(candidate.candidateViewModel.IdCandidate, votesNumber);

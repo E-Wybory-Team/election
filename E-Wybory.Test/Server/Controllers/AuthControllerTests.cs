@@ -35,7 +35,6 @@ namespace E_Wybory.Test.Server.Controllers
             UTF8Encoding objUtf8 = new UTF8Encoding();
             byte[] hashedPassword = sha.ComputeHash(objUtf8.GetBytes(password));
 
-            //convert hashed password from byte[] to string to store as string in db
             StringBuilder hexString = new StringBuilder(hashedPassword.Length * 2);
             foreach (byte b in hashedPassword)
             {

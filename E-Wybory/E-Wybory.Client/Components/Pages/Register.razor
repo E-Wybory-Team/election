@@ -158,7 +158,6 @@
             errorMessage = "Proszę podać obwód!";
             return;
         }
-        //Maybe it is the better plan to make it return HttpResponse with more verbose payload
         int index = await PersonManagementService.GetPersonIdByPeselAsync(registrationModel.PESEL);
 
         if (index != 0) //if person with this PESEL found
@@ -189,7 +188,6 @@
             await Task.Delay(1000);
             NavigationManager.NavigateTo("/login");
         }
-        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
 
     }
     private void HandlePeselInput(ChangeEventArgs e)

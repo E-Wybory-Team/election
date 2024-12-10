@@ -48,9 +48,7 @@ namespace E_Wybory.Client.ViewModels
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    //The specified value "DaAa Uro24+2enia" does not conform to the required format, "yyyy-MM-dd".
                     DateOfBirth = DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                    //DateOfBirth = new DateTime(2001, 1, 24);
                 }
                 else
                 {

@@ -10,8 +10,7 @@ namespace E_Wybory.Client.Services
 
             public async Task<List<VoivodeshipViewModel>> Voivodeships()
             {
-                //Properly validate model before that 
-                //All properties must be innitialize
+
                 var response = await _httpClient.GetFromJsonAsync<List<VoivodeshipViewModel>>("/api/Voivodeship");
 
                 return await Task.FromResult(response);

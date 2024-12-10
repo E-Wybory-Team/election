@@ -178,7 +178,6 @@
     private async Task HandleAddCandidate()
     {
         int index = await PersonManagementService.GetPersonIdByPeselAsync(candidatePersonModel.personViewModel.PESEL); //check if person exists
-                                                                                                                       //Console.WriteLine("Index of person: " + index);
 
         if(index == 0) //if person with this PESEL not found
         {

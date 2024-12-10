@@ -12,8 +12,7 @@ namespace E_Wybory.Client.Services
 
             public async Task<List<ConstituencyViewModel>> Constituences()
             {
-                //Properly validate model before that 
-                //All properties must be innitialize
+
                 var response = await _httpClient.GetFromJsonAsync<List<ConstituencyViewModel>>("/api/Constituency");
 
                 return await Task.FromResult(response);

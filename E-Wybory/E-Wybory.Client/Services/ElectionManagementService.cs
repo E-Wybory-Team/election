@@ -10,9 +10,6 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<ElectionViewModel>> Elections()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
-            //register.idParty = 1;
             var response = await _httpClient.GetFromJsonAsync<List<ElectionViewModel>>("/api/Election");
 
             return await Task.FromResult(response);

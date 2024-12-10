@@ -187,7 +187,6 @@
                             IdCandidate = 0
                         });
 
-                // Initialize the dictionary entry
                 var candidates = await CandidateManagementService.GetCandidatesByElectionDistrictId(activeElection.IdElection, IdDistrict);
                 if (candidates != null && candidates.Any())
                 {
@@ -203,7 +202,6 @@
                             if (candidate.IdParty != null)
                             {
                                 var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
-                                //Console.WriteLine($"Party name: {partyName}");
                                 person += " - partia: " + partyName;
                             }
                             if (!string.IsNullOrEmpty(person))
@@ -256,9 +254,7 @@
                     if (votingResult1 && votingResult2)
                     {
                         errorMessage = "Głosowanie się powiodło!";
-                        //StateHasChanged();
-                        //await Task.Delay(1000);
-                        //NavigationManager.NavigateTo("/");
+                        
                     }
                 }
                 else

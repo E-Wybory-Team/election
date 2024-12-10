@@ -1,7 +1,6 @@
 ﻿using E_Wybory.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Text.Encodings.Web;
-//using Microsoft.Extensions.Http;
 
 namespace E_Wybory.Client.BuilderClientExtensionMethods
 {
