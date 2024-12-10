@@ -1,0 +1,192 @@
+﻿@page "/commissionerslist"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject IFilterWrapperManagementService FilterWrapperService
+@inject IUserTypeSetsManagementService UserTypeSetsManagementService
+@inject IUserTypeManagementService UserTypeManagementService
+@inject IVoivodeshipManagementService VoivodeshipManagementService
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using E_Wybory.Client.FilterData
+@using E_Wybory.Client.ViewModels
+
+<link href="tables.css" rel="stylesheet" />
+<link href="forms.css" rel="stylesheet" />
+
+<CascadingAuthenticationState>
+    <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
+         <Authorized>
+
+            <div class="header-container">
+                <h2 class="title">SPIS KOMISJI</h2>
+                <a href="/addcommissioner" class="add-button">Dodaj członka</a>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group-4columns">
+                    <label>Województwo</label>
+                    <select @bind="@SelectedVoivodeshipId" id="wojewodztwo"@bind:after="@OnVoivodeshipChanged">
+                        <option value="">Wybierz województwo</option>
+                        @foreach (var voivodeship in wrapper.VoivodeshipFilter)
+                        {
+                            <option value="@voivodeship.idVoivodeship">
+                                @voivodeship.voivodeshipName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group-4columns">
+                    <label>Powiat</label>
+                    <select @bind="@SelectedCountyId" id="powiat" @bind:after="@OnCountyChanged">
+                        <option value="">Wybierz powiat</option>
+                        @foreach (var county in wrapper.CountyFilter)
+                        {
+                            @if (county.IdVoivodeship == SelectedVoivodeshipId)
+                            {
+                                <option value="@county.IdCounty">
+                                    @county.CountyName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group-4columns">
+                    <label>Gmina</label>
+                    <select @bind="@SelectedProvinceId" id="gmina" @bind:after="@OnProvinceChanged">
+                        <option value="">Wybierz gminę</option>
+                        @foreach (var province in wrapper.ProvinceFilter)
+                        {
+                            @if (province.IdCounty == SelectedCountyId)
+                            {
+                                <option value="@province.IdProvince">
+                                    @province.ProvinceName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group-4columns">
+                    <label>Numer obwodu</label>
+                    <select @bind="@SelectedDistrictId" id="numer-obwodu" @bind:after="@OnDistrictChanged">
+                        <option value="">Wybierz numer obwodu</option>
+                        @foreach (var district in wrapper.DistrictFilter)
+                        {
+                            @if (district.IdProvince == SelectedProvinceId)
+                            {
+                                <option value="@district.IdDistrict">
+                                    @district.DistrictName - @district.DistrictHeadquarters
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            
+            <table class="candidate-table">
+                <thead>
+                    <tr>
+                        <th>Lp.</th>
+                        <th>Imię</th>
+                        <th>Nazwisko</th>
+                        <th>PESEL</th>
+                        <th>Telefon</th>
+                        <th>Adres email</th>
+                        <th>Stopień</th>
+                        <th>Opcje konfiguracji</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int index = 1;
+                    }
+                    @foreach (var commissioner in commissioners)
+                    {
+                        <tr>
+                            <td>@index</td>
+                            <td>@commissioner.personViewModel.Name</td>
+                            <td>@commissioner.personViewModel.Surname</td>
+                            <td>@commissioner.personViewModel.PESEL</td>
+                            <td>@commissioner.userViewModel.PhoneNumber</td>
+                            <td>@commissioner.userViewModel.Email</td>
+                            <td>@commissioner.userType.UserTypeName</td>
+                            <td>
+                                <a href="/commissionersmodify/@commissioner.userViewModel.IdElectionUser">
+                                    <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
+                                </a>
+                                <a href="/commissionersdelete/@commissioner.userViewModel.IdElectionUser">
+                                    <img src="images/delete.png" alt="Delete" class="icon" title="Usuń" />
+                                </a>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
+
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+@code {
+    private int? SelectedVoivodeshipId { get; set; } = null;
+    private int? SelectedCountyId { get; set; } = null;
+    private int? SelectedProvinceId { get; set; } = null;
+    private int? SelectedDistrictId { get; set; } = null;
+
+    private FilterListWrapper wrapper = new FilterListWrapper();
+
+    private List<CommissionerViewModel> commissioners = new List<CommissionerViewModel>();
+
+
+    private async Task FilterTable(bool toFilterCommissioners)
+    {
+        wrapper = await FilterWrapperService.GetFilteredListsWrapper(SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
+        commissioners.Clear();
+
+        if(toFilterCommissioners && SelectedDistrictId != null && SelectedDistrictId != 0)
+        {
+            commissioners = await UserTypeSetsManagementService.CommissionersOfDistrict(SelectedDistrictId.Value);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        wrapper.VoivodeshipFilter = await VoivodeshipManagementService.Voivodeships();
+    }
+
+    private async Task OnVoivodeshipChanged()
+    {
+        SelectedCountyId = null;
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+
+        await FilterTable(false);
+    }
+
+    private async Task OnCountyChanged()
+    {
+        SelectedProvinceId = null;
+        SelectedDistrictId = null;
+
+        await FilterTable(false);
+    }
+
+    private async Task OnProvinceChanged()
+    {
+        SelectedDistrictId = null;
+
+        await FilterTable(false);
+    }
+
+    private async Task OnDistrictChanged()
+    {
+        await FilterTable(true);
+    }
+
+}

@@ -20,10 +20,8 @@ namespace E_Wybory.Client.Services
 
             if (response.IsSuccessStatusCode)
             {
-                // Pobierz token z odpowiedzi logowania
                 var token = await response.Content.ReadAsStringAsync();
 
-                // Zapisz token w AuthenticationStateProvider lub w localStorage, jeśli potrzeba
                 if (_stateProvider is not null && !string.IsNullOrEmpty(token))
                 {
                     await _stateProvider.MarkUserAsAuthenticated(token);
@@ -32,7 +30,7 @@ namespace E_Wybory.Client.Services
                 return token;
             }
 
-            return string.Empty; // Zwróć pusty string, jeśli logowanie się nie powiodło
+            return string.Empty;
         }
 
 
@@ -86,13 +84,6 @@ namespace E_Wybory.Client.Services
             
         }
 
-        //https://learn.microsoft.com/en-us/aspnet/core/security/authentication/mfa?view=aspnetcore-8.0
-        //https://learn.microsoft.com/en-us/aspnet/core/blazor/security/server/qrcodes-for-authenticator-apps?view=aspnetcore-8.0
-        //https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-enable-qrcodes?view=aspnetcore-8.0#using-a-different-qr-code-library
-
-        //private readonly Dictionary<int, string> userAuthenticatorKeys = new();
-        //private readonly Dictionary<int, bool> user2faEnabled = new();
-        //private readonly Dictionary<int, List<string>> userRecoveryCodes = new();
 
         public async Task<bool> VerifyTwoFactorTokenAsyncFirst(TwoFactorAuthVerifyRequest req2fa)
         {
@@ -104,8 +95,6 @@ namespace E_Wybory.Client.Services
 
         public async Task<int> CountRecoveryCodesAsync(int userId)
         {
-            // return Task.FromResult(6);
-            //return Task.FromResult(userRecoveryCodes.ContainsKey(userId) ? userRecoveryCodes[userId].Count : 0);
 
             var response = await _httpClient.GetAsync($"api/auth/count-rec-codes/{userId}");
             if (response.IsSuccessStatusCode)
@@ -197,6 +186,12 @@ namespace E_Wybory.Client.Services
         {
             var response = await _httpClient.GetFromJsonAsync<bool>("/api/auth/currentUser2fa");
             return await Task.FromResult(response);
+        }
+
+        public async Task<bool> SendingConfirmation()
+        {
+            var response = await _httpClient.GetAsync("/api/auth/voteConfirmation");
+            return await Task.FromResult(response.IsSuccessStatusCode);
         }
 
     }

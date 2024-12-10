@@ -49,7 +49,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Counties/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCounty(int id, County county)
         {
@@ -80,7 +79,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Counties
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<County>> PostCounty(County county)
         {

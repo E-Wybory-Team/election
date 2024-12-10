@@ -22,7 +22,7 @@
         <div class="form-row">
             <div class="input-group">
                 <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
-                <InputText @bind-Value="loginModel.Username" placeholder="E-MAIL lub TELEFON" class="form-input" />
+                <InputText @bind-Value="loginModel.Username" placeholder="E-MAIL" class="form-input" />
                 <ValidationMessage For="@(() => loginModel.Username)" />
             </div>
 
@@ -54,19 +54,20 @@
 
 @code {
     private LoginViewModel loginModel = new LoginViewModel();
-    private string loginInfoMessage = string.Empty;
+    private string loginInfoMessage = String.Empty;
 
     private async Task HandleLogin()
     {
-        // Pobierz token z logowania
         var token = await AuthService.Login(loginModel);
 
         if (!string.IsNullOrEmpty(token))
         {
-            // Zapis tokena w localStorage
+            loginInfoMessage = "Pomyślnie zalogowano!";
+            StateHasChanged();
+            await Task.Delay(1000);
+
             await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "authToken", token);
 
-            // Dekodowanie tokena i przekierowanie na podstawie roli
             var roles = DecodeJwtRoles(token);
 
             if (roles.Contains("Administratorzy") || roles.Contains("Pracownicy PKW"))
@@ -85,18 +86,15 @@
             {
                 NavigationManager.NavigateTo("/");
             }
-
-            loginInfoMessage = "Successfully logged in!";
         }
         else
         {
-            loginInfoMessage = "Invalid username or password!";
+            loginInfoMessage = "Niepoprawny e-mail bądź hasło!";
         }
     }
 
     private List<string> DecodeJwtRoles(string token)
     {
-        // Rozdzielenie tokena JWT na części
         var parts = token.Split('.');
         if (parts.Length != 3)
         {
@@ -107,7 +105,6 @@
         var jsonBytes = Convert.FromBase64String(payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '='));
         var json = System.Text.Json.JsonDocument.Parse(jsonBytes);
 
-        // Wyciąganie ról z pola "Roles"
         if (json.RootElement.TryGetProperty("Roles", out var rolesElement))
         {
             var rolesString = rolesElement.GetString();

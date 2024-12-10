@@ -103,7 +103,14 @@
 
     private async Task FilterTable()
     {
-        filteredParties = await PartyManagementService.GetFilteredParties(SelectedElectionTypeId);
+        if (SelectedElectionTypeId != null && SelectedElectionTypeId != 0)
+        {
+            filteredParties = await PartyManagementService.GetFilteredParties(SelectedElectionTypeId);
+        }
+        else
+        {
+            filteredParties.Clear();
+        }
     }
 
     private void AddParty()

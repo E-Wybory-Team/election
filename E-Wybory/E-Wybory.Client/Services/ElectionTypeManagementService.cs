@@ -9,8 +9,7 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<ElectionTypeViewModel>> ElectionTypes()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
+
             var response = await _httpClient.GetFromJsonAsync<List<ElectionTypeViewModel>>("/api/ElectionType");
 
             return await Task.FromResult(response);
@@ -18,8 +17,7 @@ namespace E_Wybory.Client.Services
 
         public async Task<string> GetElectionTypeName(int electionTypeId)
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
+
             var response = await _httpClient.GetStringAsync($"/api/ElectionType/name/{electionTypeId}");
 
             return await Task.FromResult(response);

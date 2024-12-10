@@ -7,80 +7,112 @@
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@using E_Wybory.Client.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+
 
 
 <link href="forms.css" rel="stylesheet" />
 
 
 <CascadingAuthenticationState>
-    <div class="account-form-container">
-        <h1>Twoje Konto</h1>
+    <AuthorizeView>
+        <Authorized>
+            <div class="account-form-container">
+                <h1>Twoje Konto</h1>
 
 
-        <div class="form-group">
-            <label>Imię</label>
-            <InputText @bind-Value="person.Name" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>Imię :</label>
+                    <InputText @bind-Value="person.Name" readonly class="form-input" />
+                </div>
 
-        <div class="form-group">
-            <label>Nazwisko</label>
-            <InputText @bind-Value="person.Surname" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>Nazwisko :</label>
+                    <InputText @bind-Value="person.Surname" readonly class="form-input" />
+                </div>
 
-        <div class="form-group">
-            <label>PESEL</label>
-            <InputText @bind-Value="person.PESEL" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>PESEL :</label>
+                    <InputText @bind-Value="person.PESEL" readonly class="form-input" />
+                </div>
 
-        <div class="form-group">
-            <label>Data urodzenia</label>
-            <InputText @bind-Value="person.DateOfBirthString" readonly class="form-input" />
-        </div>
-
-
-        <div class="form-group">
-            <label>Email</label>
-            <InputText @bind-Value="user.Email" readonly class="form-input" />
-        </div>
-
-        <div class="form-group">
-            <label>Numer telefonu</label>
-            <InputText @bind-Value="user.PhoneNumber" readonly class="form-input" />
-        </div>
+                <div class="form-group">
+                    <label>Data urodzenia :</label>
+                    <InputText @bind-Value="person.DateOfBirthString" readonly class="form-input" />
+                </div>
 
 
-        <div class="two-factor-section">
-            <label>Weryfikacja dwuetapowa</label>
-            <span class="two-factor-status @VerificationClass">@VerificationMessage</span>
-            <button class="submit-button" @onclick="NavigateTo2FA">Weryfikuj</button>
-        </div>
+                <div class="form-group">
+                    <label>Email :</label>
+                    <InputText @bind-Value="user.Email" readonly class="form-input" />
+                </div>
+
+                <div class="form-group">
+                    <label>Numer telefonu :</label>
+                    <InputText @bind-Value="user.PhoneNumber" readonly class="form-input" />
+                </div>
 
 
-        <div class="password-section">
-            <label>Hasło</label>
-            <button class="change-password-button" @onclick="NavigateToChangePassword">Zmień hasło</button>
-        </div>
-    </div>
+                <div class="two-factor-section">
+                    <label>Weryfikacja dwuetapowa :</label>
+                    <div class="status-message-blue">@VerificationMessage</div>
+                    <button class="submit-button @ButtonClass" @onclick="NavigateTo2FA">
+                        @ButtonLabel
+                    </button>
+                </div>
+
+
+                <div class="password-section">
+                    <label>Hasło :</label>
+                    <button class="wide-password-button" @onclick="NavigateToChangePassword">Zmień hasło</button>
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="not-authorized-container">
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+                <p class="not-authorized-message">Nie posiadasz odpowiednich uprawnień do wyświetlenia tej strony</p>
+                <img src="images/WarningIcon.png" alt="Alert Icon" class="alert-icon" />
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
 </CascadingAuthenticationState>
+
 
 @code {
     private PersonViewModel person = new();
     private ElectionUserViewModel user = new();
     private string VerificationMessage;
     private string VerificationClass;
+    private string ButtonClass = "active-button";
+    private bool IsButtonDisabled = false;
+    private string ButtonLabel = "Weryfikuj";
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var userIdClaim = authState.User.FindFirst("IdElectionUser")?.Value;
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var userIdClaim = user.FindFirst("IdElectionUser")?.Value;
+
 
         if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
         {
-            
-            user = await ElectionUserManagementService.GetElectionUserById(userId);
-            person = await PersonManagementService.GetPersonById(user.IdPerson);
- 
-            UpdateVerificationMessage(!string.IsNullOrEmpty(user.UserSecret));
+            this.user = await ElectionUserManagementService.GetElectionUserById(userId);
+            person = await PersonManagementService.GetPersonById(this.user.IdPerson);
+
+            var is2FAEnabled = user.HasClaim(c => c.Type == "2FAenabled" && c.Value == "true");
+            UpdateVerificationMessage(is2FAEnabled);
         }
     }
 
@@ -89,18 +121,25 @@
         if (is2FAEnabled)
         {
             VerificationMessage = "Użytkownik zweryfikowany";
-            VerificationClass = "status-alert-blue";
+            VerificationClass = "status-message success";
+            ButtonClass = "active-button";
+            ButtonLabel = "Resetuj weryfikację";
         }
         else
         {
             VerificationMessage = "Użytkownik niezweryfikowany";
-            VerificationClass = "status-alert-red";
+            VerificationClass = "status-message error";
+            ButtonClass = "active-button";
+            ButtonLabel = "Weryfikuj";
         }
     }
 
     private void NavigateTo2FA()
     {
-        NavigationManager.NavigateTo("/verify/2fa-code");
+        if (!IsButtonDisabled)
+        {
+            NavigationManager.NavigateTo("/account/enable-2fa");
+        }
     }
 
     private void NavigateToChangePassword()

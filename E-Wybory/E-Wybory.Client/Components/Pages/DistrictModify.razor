@@ -11,6 +11,7 @@
 @inject IFilterWrapperManagementService FilterWrapperService
 @inject IDistrictManagementService DistrictManagementService
 @inject IVoivodeshipManagementService VoivodeshipManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
@@ -166,10 +167,22 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
+
         if (!await DistrictManagementService.DistrictExists(districtId))
         {
-            errorMessage = "District not found";
-            NavigationManager.NavigateTo("/districtlist");
+            errorMessage = "Nie znaleziono obwodu!";
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
         }
         else
         {
@@ -180,11 +193,17 @@
         }
     }
 
-    private async void HandleSubmit()
+    private async Task HandleSubmit()
     {
         districtModel.IdProvince = SelectedProvinceId;
         isModifiedDistrict = await DistrictManagementService.PutDistrict(districtModel);
-        errorMessage = isModifiedDistrict ? "District edition successful!" : "District edition fails";
+        errorMessage = isModifiedDistrict ? "Modyfikacja obwodu sie powiodła!" : "Niepowodzenie w modyfikowaniu obwodu!";
+        if(isModifiedDistrict)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private async Task FilterRegions()

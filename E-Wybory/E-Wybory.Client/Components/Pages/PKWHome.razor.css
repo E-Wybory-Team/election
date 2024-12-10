@@ -3,9 +3,9 @@
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
-    gap: 20px; /* Odstęp między przyciskami */
-    width: 100%; /* Pełna szerokość okna przeglądarki */
-    height: 90vh; /* Wysokość na 90% okna przeglądarki */
+    gap: 20px; 
+    width: 100%; 
+    height: 85vh; 
     background-color: #b9d4f3;
     box-sizing: border-box;
     padding: 10px;
@@ -27,8 +27,8 @@
     .page-content .div-wrapper,
     .page-content .button-conf-info,
     .page-content .button-conf-election {
-        width: 30%; /* Przycisk zajmuje 30% szerokości rodzica */
-        height: 25vh; /* Wysokość przycisku ustawiona na 25% wysokości okna */
+        width: 30%; 
+        height: 25vh; 
         background-color: #ffffff;
         border-radius: 10px;
         background-size: cover;
@@ -46,7 +46,6 @@
         transition: all 0.3s ease-in-out;
     }
 
-        /* Efekty hover */
         .page-content .button-informator:hover,
         .page-content .button-kandydaci:hover,
         .page-content .button-statystyki:hover,
@@ -62,7 +61,6 @@
             transition: all 0.3s ease-in-out;
         }
 
-    /* Tła przycisków */
     .page-content .button-informator {
         background-image: url('/images/InfoPhoto.png');
     }
@@ -99,7 +97,6 @@
         background-image: url('/images/EditElection.png');
     }
 
-    /* Tekst w przyciskach */
     .page-content .informator-wyborczy,
     .page-content .text-wrapper,
     .page-content .div,
@@ -116,7 +113,6 @@
         text-align: center;
     }
 
-/* Ukrycie paska przewijania */
 html, body {
     overflow: hidden;
     height: 100%;

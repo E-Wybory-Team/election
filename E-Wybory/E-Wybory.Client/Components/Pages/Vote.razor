@@ -3,6 +3,8 @@
 @using System.ComponentModel.DataAnnotations
 @using E_Wybory.Client.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IVoterManagementService VoterManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionManagementService ElectionManagementService
@@ -14,6 +16,7 @@
 @inject IVoteManagementService VoteManagementService
 @inject IElectionTypeManagementService ElectionTypeManagementService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <link href="forms.css" rel="stylesheet" />
 <div class="form-container">
     <h1>ODDAWANIE GŁOSU</h1>
@@ -34,6 +37,8 @@
 
                 <h2>Wybory @electionTypeName</h2>
 
+                @if(!voteModel.IsValid)
+                {
                 <div class="form-group">
                     <label for="kandydat">Kandydat</label>
                     <select @bind="@voteModel.IdCandidate" id="kandydat" class="form-select">
@@ -50,10 +55,16 @@
                     </select>
                     <ValidationMessage For="@(() => voteModel.IdCandidate)" />
                 </div>
+                }
 
                     <div class="checkbox-group">
                         <InputCheckbox class="checkbox" @bind-Value="@voteModel.IsValid" id="niewazny" />
                         <label for="niewazny" class="checkbox-label">Chcę oddać głos nieważny</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <InputCheckbox class="checkbox" @bind-Value="@sentConfirmation" id="confirmation" />
+                        <label for="confirmation" class="checkbox-label">Chcę otrzymać potwierdzenie głosowania na adres e-mail</label>
                     </div>
 
                 <button type="submit" class="submit-button">ZAGŁOSUJ</button>
@@ -86,22 +97,36 @@
     private string errorMessage = String.Empty;
     private int IdDistrict = 0;
     private int IdVoter = 0;
+    private bool sentConfirmation { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
         try
         {
             activeElections = await ElectionManagementService.GetActiveElections();
             if (activeElections == null || activeElections.Count() <= 0)
             {
                 errorMessageAtStart = "Nie ma żadnych trwających wyborów.";
-                //NavigationManager.NavigateTo("/");
+                StateHasChanged();
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
         }
         catch(Exception ex)
         {
             errorMessageAtStart = "Nie znaleziono aktualnych wyborów!";
-            //NavigationManager.NavigateTo("/");
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
 
 
@@ -113,12 +138,17 @@
             if(IdVoter == 0 || IdDistrict == 0)
             {
                 errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
+                StateHasChanged();
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
         }
         catch (Exception)
         {
             errorMessageAtStart = "Nie znaleziono przypisanego obwodu użytkownikowi bądź użytkownik nie ma przypisanej funkcji wyborcy!";
-            //NavigationManager.NavigateTo("/");
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
 
         try
@@ -127,24 +157,29 @@
             if (!is2faEnabled)
             {
                 errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
-                //NavigationManager.NavigateTo("/");
+                StateHasChanged();
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("/");
             }
         }
         catch(Exception)
         {
             errorMessageAtStart = "Użytkownik nie przeszedł dwuskładnikowego uwierzytelniania!";
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
         }
 
-            var committees = await PartyManagementService.Parties();
+        var committees = await PartyManagementService.Parties();
 
 
-            foreach (var activeElection in activeElections)
+        foreach (var activeElection in activeElections)
+        {
+            var hasVoted = await ElectionVoterManagementService.ElectionVoterExists(IdVoter, activeElection.IdElection);
+            if (!hasVoted)
             {
-                var hasVoted = await ElectionVoterManagementService.ElectionVoterExists(IdVoter, activeElection.IdElection);
-                if (!hasVoted)
-                {
-                    filteredElections.Add(activeElection);
-                    votesInElections.Add(activeElection.IdElection, new VoteViewModel()
+                filteredElections.Add(activeElection);
+                votesInElections.Add(activeElection.IdElection, new VoteViewModel()
                         {
                             IdDistrict = IdDistrict,
                             IdElection = activeElection.IdElection,
@@ -152,43 +187,43 @@
                             IdCandidate = 0
                         });
 
-                    // Initialize the dictionary entry
-                    var candidates = await CandidateManagementService.GetCandidatesByElectionDistrictId(activeElection.IdElection, IdDistrict);
-                    if (candidates != null && candidates.Any())
+                var candidates = await CandidateManagementService.GetCandidatesByElectionDistrictId(activeElection.IdElection, IdDistrict);
+                if (candidates != null && candidates.Any())
+                {
+
+                    electionCandidates[activeElection.IdElection] = candidates;
+
+                    foreach (var candidate in candidates)
                     {
-
-                        electionCandidates[activeElection.IdElection] = candidates;
-
-                        foreach (var candidate in candidates)
+                        if (!candidatesData.ContainsKey(candidate.IdCandidate))
                         {
-                            if (!candidatesData.ContainsKey(candidate.IdCandidate))
-                            {
 
-                                var person = await PersonManagementService.GetPersonNameSurnameById(candidate.IdPerson);
-                                if (candidate.IdParty != null)
-                                {
-                                    var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
-                                    Console.WriteLine($"Party name: {partyName}");
-                                    person += " - partia: " + partyName;
-                                }
-                                if (!string.IsNullOrEmpty(person))
-                                {
-                                    candidatesData[candidate.IdCandidate] = person;
-                                }
+                            var person = await PersonManagementService.GetPersonNameSurnameWithoutAgeById(candidate.IdPerson);
+                            if (candidate.IdParty != null)
+                            {
+                                var partyName = PartyManagementService.GetPartyNameById(candidate.IdParty.Value, committees);
+                                person += " - partia: " + partyName;
+                            }
+                            if (!string.IsNullOrEmpty(person))
+                            {
+                                candidatesData[candidate.IdCandidate] = person;
                             }
                         }
                     }
                 }
             }
+        }
 
-            activeElections = filteredElections;
+        activeElections = filteredElections;
 
-            if (!activeElections.Any())
-            {
-                errorMessageAtStart = "Nie ma dostępnych wyborów dla użytkownika.";
-                //NavigationManager.NavigateTo("/");
-            }
-            electionTypes = await ElectionTypeManagementService.ElectionTypes();
+        if (!activeElections.Any())
+        {
+            errorMessageAtStart = "Nie ma dostępnych wyborów dla użytkownika.";
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/");
+        }
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }
 
 
@@ -206,14 +241,20 @@
                         IdVoter = IdVoter,
                         VoteTime = DateTime.Now
                     };
-                var votingResult1 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
+                voteModel.IsValid = !voteModel.IsValid; //because user chose invalid vote(or did not choose)
+                var votingResult1 = await VoteManagementService.AddVote(voteModel);
                 errorMessage = "Głosowanie się nie powiodło!";
+                if (sentConfirmation)
+                {
+                    await AuthService.SendingConfirmation();
+                }
                 if (votingResult1)
                 {
-                    var votingResult2 = await VoteManagementService.AddVote(voteModel);
+                    var votingResult2 = await ElectionVoterManagementService.AddElectionVoter(electionVoter);
                     if (votingResult1 && votingResult2)
                     {
                         errorMessage = "Głosowanie się powiodło!";
+                        
                     }
                 }
                 else

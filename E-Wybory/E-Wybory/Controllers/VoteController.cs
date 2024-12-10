@@ -1,10 +1,12 @@
-﻿using E_Wybory.Client.Components.Pages;
+﻿using E_Wybory.Application.Wrappers;
+using E_Wybory.Client.Components.Pages;
 using E_Wybory.Client.ViewModels;
 using E_Wybory.Domain.Entities;
 using E_Wybory.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
 using static E_Wybory.Client.Components.Pages.Statistics;
 
@@ -47,18 +49,30 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Votes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "2FAveryfiedUser", Policy="2FAenabled")]
         public async Task<ActionResult<Domain.Entities.Vote>> PostVote([FromBody] VoteViewModel VoteModel)
         {
-            Console.WriteLine($"Value of candidate: {VoteModel.IdCandidate}");
-            Console.WriteLine($"Value of election: {VoteModel.IdElection}");
-            Console.WriteLine($"Value of District: {VoteModel.IdDistrict}");
             if (!EnteredRequiredData(VoteModel))
             {
                 return BadRequest("Not entered data to all required fields");
             }
+
+            UserWrapper user = new UserWrapper(User);
+            var voterId = 0;
+            var voter = await _context.Voters.Where(voter => voter.IdElectionUser == user.Id).FirstOrDefaultAsync();
+
+            if (voter == null)
+            {
+                return BadRequest("this user does not have set a voter row!");
+            }
+
+            var electionVoter = await _context.ElectionVoters.Where(elVoter => elVoter.IdVoter == voter.IdVoter && elVoter.IdElection == VoteModel.IdElection).FirstOrDefaultAsync();
+            if (electionVoter != null)
+            {
+                return Conflict("This user already voted in this election!");
+            }
+
 
             var Vote = new Domain.Entities.Vote();
             Vote.IdVote = VoteModel.IdVote;
@@ -72,27 +86,6 @@ namespace E_Wybory.Controllers
 
             return CreatedAtAction("GetVote", new { id = Vote.IdVote }, Vote);
         }
-
-        // DELETE: api/Votes/5
-        //[HttpDelete("{id}")]
-        //[Authorize(Roles = "Administratorzy")]
-        //public async Task<IActionResult> DeleteVote(int id)
-        //{
-        //    var Vote = await _context.Votes.FindAsync(id);
-        //    if (Vote == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _context.Votes.Remove(Vote);
-        //    await _context.SaveChangesAsync();
-
-        //    //_context.Votes.Remove(Vote);
-        //    //await _context.SaveChangesAsync();
-
-        //    return NoContent();
-        //}
-
         private bool VoteExists(int id)
         {
             return _context.Votes.Any(e => e.IdVote == id);
@@ -162,7 +155,7 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("VotesNumberDistrict/{districtId}/{electionId}")]
-        [AllowAnonymous]//[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
 
         public async Task<ActionResult<int>> GetVotesNumberByDistrictId(int districtId, int electionId)
         {
@@ -177,8 +170,7 @@ namespace E_Wybory.Controllers
 
         public async Task<ActionResult<int>> GetValidVotesNumberByDistrictId(int districtId, int electionId)
         {
-            //in database, valid is 0 and invalid is 1, so it's opposite
-            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
             return Votes.Count();
         }
 
@@ -188,20 +180,27 @@ namespace E_Wybory.Controllers
 
         public async Task<ActionResult<int>> GetInvalidVotesNumberByDistrictId(int districtId, int electionId)
         {
-            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+            var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
             return Votes.Count();
         }
 
 
         [HttpGet("VotesNumberDistrictCandidate/{districtId}/{electionId}/{candidateId}")]
-        [AllowAnonymous]//[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
 
         public async Task<ActionResult<int>> GetVotesNumberByDistrictCandidate(int districtId, int electionId, int candidateId)
         {
-            if (await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId).AnyAsync())
+            if (await _context.Candidates.Where(candidate => candidate.IdCandidate == candidateId && candidate.IdElection == electionId && (candidate.IdDistrict == districtId || candidate.IdDistrict == null)).AnyAsync())
             {
-                var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && !vote.IsValid).ToListAsync<Domain.Entities.Vote>();
-                return Votes.Count();
+                if (await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId).AnyAsync())
+                {
+                    var Votes = await _context.Votes.Where(vote => vote.IdDistrict == districtId && vote.IdElection == electionId && vote.IdCandidate == candidateId && vote.IsValid).ToListAsync<Domain.Entities.Vote>();
+                    return Votes.Count();
+                }
+                else
+                {
+                    return 0;
+                }
             }
             else
             {
@@ -212,7 +211,6 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("frequency/{districtId}/{electionId}/{hourMax}")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<double>> GetFrequencyByDistrictIdToHour(int districtId, int electionId, int hourMax)
         {
@@ -270,5 +268,6 @@ namespace E_Wybory.Controllers
                 return BadRequest("Entered incorrect hour");
             }
         }
+
     }
 }

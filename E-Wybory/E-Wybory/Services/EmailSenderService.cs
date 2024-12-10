@@ -42,6 +42,55 @@ namespace E_Wybory.Services
 
             return emailSendOperation;
         }
+
+        private int getUserIdFromFileName(string fileName)
+        {
+
+            int underscoreIndex = fileName.IndexOf('_');
+            int dotIndex = fileName.IndexOf('.');
+
+            string numberPart = fileName.Substring(underscoreIndex + 1, dotIndex - underscoreIndex - 1);
+            int number = int.Parse(numberPart);
+
+            Console.WriteLine($"Extracted number: {number}");
+            return number;
+        }
+
+        public async Task<EmailSendOperation> SendEmailWithPdfAttachmentAsync(string email, string subject, string message, string pdfFilePath)
+        {
+            BinaryData pdfContent = BinaryData.FromBytes(await File.ReadAllBytesAsync(pdfFilePath));
+            var userId = getUserIdFromFileName(pdfFilePath);
+
+            EmailAttachment pdfAttachment = new EmailAttachment(
+                name: $"generatedDocument_{userId}.pdf",
+                contentType: "application/pdf", 
+                content: pdfContent 
+            );
+
+            var emailClient = new EmailClient(_emailOptions.ConnectionString);
+
+            var emailMessage = new EmailMessage(
+                senderAddress: _emailOptions.SenderAddress,
+                content: new EmailContent(subject)
+                {
+                    PlainText = message,
+                    Html = $@"
+		            <html>
+			            <body>
+				            <h1>{message}</h1>
+			            </body>
+		            </html>"
+                },
+                recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(email) }));
+
+            emailMessage.Attachments.Add(pdfAttachment);
+
+            EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                WaitUntil.Completed,
+                emailMessage);
+
+            return emailSendOperation;
+        }
     }
 
     public class EmailOptions
@@ -51,7 +100,6 @@ namespace E_Wybory.Services
     }
     public static class BuilderExtensionMethods
     {
-        // Other methods...
 
         public static WebApplicationBuilder ConfigureEmailService(this WebApplicationBuilder builder)
         {

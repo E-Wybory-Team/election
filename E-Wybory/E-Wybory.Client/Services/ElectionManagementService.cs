@@ -1,4 +1,5 @@
 ﻿using E_Wybory.Client.ViewModels;
+using E_Wybory.Domain.Entities;
 using System.Net.Http.Json;
 
 namespace E_Wybory.Client.Services
@@ -9,9 +10,6 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<ElectionViewModel>> Elections()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
-            //register.idParty = 1;
             var response = await _httpClient.GetFromJsonAsync<List<ElectionViewModel>>("/api/Election");
 
             return await Task.FromResult(response);
@@ -117,6 +115,17 @@ namespace E_Wybory.Client.Services
             return new ElectionViewModel();
         }
 
+        public async Task<bool> ElectionOfTypeAtTimeExist(ElectionViewModel electionModel)
+        {
+            var response = await _httpClient.PutAsJsonAsync<ElectionViewModel>($"/api/Election/typeTime", electionModel);
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+
+        public async Task<bool> ElectionIsNotSetToCandidate(int electionId)
+        {
+            var response = await _httpClient.GetAsync($"/api/Election/candidateNotSet/{electionId}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
 
 
     }

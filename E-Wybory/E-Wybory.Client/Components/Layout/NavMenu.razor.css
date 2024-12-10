@@ -1,9 +1,14 @@
+.container-fluid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3.7rem; 
+    padding: 0 20px;
+}
+
 .nav-icon {
-    width: 47px;
+    width: 45px;
     height: 52px;
-    margin-right: 8px;
-    margin-left: 5px;
-    vertical-align: middle;
 }
 
 .nav-item-icon {
@@ -28,12 +33,14 @@
     height: 3.65rem;
     background-color: #1E5899;
     position: fixed;
+    padding: 0 20px;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .navbar-toggler:checked ~ .nav-scrollable {
@@ -80,13 +87,15 @@
 }
 
 
-.title {
-    margin-top: -4px;
-    margin-left: -15px;
+.site-title {
     font-size: 1.5rem;
     color: white;
-    font-style: revert;
-    font-weight:bold;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+    margin-left: -20px;
 }
 
 
@@ -96,7 +105,6 @@
     font-weight: bold;
     width: 100%;
     margin: 0;
-    /*display: block;*/
 }
 
     .nav-item:first-of-type {
@@ -149,37 +157,23 @@
 
 
 
-.top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    background-color: #003366; /* Kolor t?a: granatowy */
-    color: white; /* Kolor tekstu */
-    height: 60px; /* Wysoko?? paska */
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Subtelny cie? */
-}
 
 .left-text {
-    font-size: 20px;
+    font-size: 1.25rem; 
     font-weight: bold;
-    white-space: nowrap;
-    margin: 0 auto; 
-    text-align: center; 
-    position: absolute;
-    left: 22%; 
-    transform: translateX(-50%); 
-
-    
+    white-space: nowrap; 
+    margin-left: 10px;
+    color: white;
 }
 
-/* Styl dla przycisku konta */
 .account-button {
+    height: 40px;
+    line-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 8px 12px;
-    background-color: #0055a5; /* Jasny niebieski */
+    background-color: #0055a5;
     border: none;
     border-radius: 5px;
     color: white;
@@ -188,21 +182,21 @@
 }
 
     .account-button:hover {
-        background-color: #003d7a; /* Ciemniejszy niebieski po najechaniu */
+        background-color: #003d7a; 
     }
-    /* Styl ikony konta */
+
     .account-button img {
         width: 20px;
         height: 20px;
         margin-right: 8px;
     }
-/* Styl dla przycisku logowania */
+
 .login-button {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 8px 12px;
-    background-color: #0066cc; /* Kolor przycisku logowania */
+    background-color: #0066cc; 
     border: none;
     border-radius: 5px;
     color: white;
@@ -211,9 +205,9 @@
 }
 
     .login-button:hover {
-        background-color: #004d99; /* Ciemniejszy kolor po najechaniu */
+        background-color: #004d99; 
     }
-    /* Styl ikony logowania */
+    
     .login-button img {
         width: 20px;
         height: 20px;
@@ -223,26 +217,23 @@
 .user-controls {
     display: flex;
     align-items: center;
-    justify-content: flex-end; 
-    gap: 10px; 
-    flex-grow: 1; 
+    gap: 10px;
+    height: 100%; 
 }
 
 .user-greeting {
     font-size: 16px;
+    line-height: 1;
     font-weight: normal;
     margin-right: 16px;
     color: #f0f0f0;
 }
 
 .top-row {
-    background-color: #1E5899;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: space-between;
-    height: 3.7rem;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
+    margin: 0; 
+    padding: 0; 
+    line-height: normal; 
+    box-sizing: border-box; 
 }
 
 
@@ -295,5 +286,13 @@
     .account-button:hover {
         background-color: #003d7a;
     }
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
 
 

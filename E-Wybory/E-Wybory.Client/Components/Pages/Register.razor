@@ -5,102 +5,132 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@using CustomComponents = E_Wybory.Client.Components.Pages
 @inject IAuthService AuthService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
 @inject IDistrictManagementService DistrictManagementService
+@inject NavigationManager NavigationManager
 
-<div class="registration-form">
-    <div class="icon">
-        <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
-    </div>
-    
-    <EditForm FormName="Register" Model="@registrationModel" OnValidSubmit="HandleRegistration">
-        <DataAnnotationsValidator />
 
-        <div class="form-row">
-            <div class="input-group">
-                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
-                <InputText  @bind-Value="registrationModel.FirstName" placeholder="IMIĘ" />
-                <ValidationMessage For="@(() => registrationModel.FirstName)" />
+<CascadingAuthenticationState>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <div class="not-authorized-container">
+                <p class="not-authorized-message">
+                    Jesteś już zalogowany! Nie możesz się zarejestrować ponownie. Przejdź na stronę główną.
+                </p>
             </div>
-            <div class="input-group">
-                <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
-                <InputText @bind-Value="registrationModel.LastName" placeholder="NAZWISKO" />
-                <ValidationMessage For="@(() => registrationModel.LastName)" />
-            </div>
-        </div>
-         
-        <div class="form-row">
-            <div class="input-group">
-                <img src="images/cards.png" alt="Ikona identyfikacyjna" class="input-icon" />
-                <InputText @bind-Value="registrationModel.PESEL" placeholder="PESEL" @oninput="HandlePeselInput" />
-                <ValidationMessage For="@(() => registrationModel.PESEL)" />
-            </div>
-            <div class="input-group">
-                <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
-                <div class="input-content">
-                    <label for="birthdate" class="form-label">DATA URODZENIA</label>
-                    <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" id="birthdate" placeholder="DATA URODZENIA" />
-                    <ValidationMessage For="@(() => registrationModel.DateOfBirthString)" />
+        </Authorized>
+        <NotAuthorized Context="unauthContext">
+            <div class="registration-form">
+                <div class="icon">
+                    <img src="images/profile-add.png" alt="Ikona główna" width="400" height="400" />
                 </div>
-            </div>
-        </div>
-        @if (!string.IsNullOrEmpty(errorMessageAge))
-        {
-            <div class="alert alert-danger mt-3">@errorMessageAge</div>
-        }
 
-        <div class="form-row">
-            <div class="input-group">
-                <img src="images/envelope.png" alt="Ikona email" class="input-icon" />
-                <InputText @bind-Value="registrationModel.Email" type="email" placeholder="ADRES EMAIL" />
-                <ValidationMessage For="@(() => registrationModel.Email)" />
-            </div>
-            <div class="input-group">
-                <img src="images/phone.png" alt="Ikona telefonu" class="input-icon" />
-                <InputText @bind-Value="registrationModel.PhoneNumber" placeholder="NUMER TELEFONU" />
-                <ValidationMessage For="@(() => registrationModel.PhoneNumber)" />
-            </div>
-        </div>
+                <EditForm FormName="Register" Model="@registrationModel" OnValidSubmit="HandleRegistration">
+                    <DataAnnotationsValidator />
 
-        <div class="form-row">
-            <div class="input-group">
-                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
-                <InputText @bind-Value="registrationModel.Password" type="password" placeholder="HASŁO" />
-                <ValidationMessage For="@(() => registrationModel.Password)" />
-            </div>
-            <div class="input-group">
-                <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
-                <InputText @bind-Value="registrationModel.ConfirmPassword" type="password" placeholder="POTWIERDŹ HASŁO" />
-                <ValidationMessage For="@(() => registrationModel.ConfirmPassword)" />
-            </div>
-        </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.FirstName" placeholder="IMIĘ" />
+                            <ValidationMessage For="@(() => registrationModel.FirstName)" />
+                        </div>
+                        <div class="input-group">
+                            <img src="images/user.png" alt="Ikona użytkownika" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.LastName" placeholder="NAZWISKO" />
+                            <ValidationMessage For="@(() => registrationModel.LastName)" />
+                        </div>
+                    </div>
 
-        <div class="form-row double-column">
-            <div class="input-group">
-                <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
-                <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
-                    <option value="">Wybierz Obwód</option>
-                    @foreach (var district in districts)
+                    <div class="form-row">
+                        <div class="input-group">
+                            <img src="images/cards.png" alt="Ikona identyfikacyjna" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.PESEL" placeholder="PESEL" @oninput="HandlePeselInput" />
+                            <ValidationMessage For="@(() => registrationModel.PESEL)" />
+                        </div>
+                        <div class="input-group">
+                            <img src="images/calendar.png" alt="Ikona kalendarza" class="input-icon" />
+                            <div class="input-content">
+                                <label for="birthdate" class="form-label">DATA URODZENIA</label>
+                                <InputText @bind-Value="registrationModel.DateOfBirthString" type="date" id="birthdate" placeholder="DATA URODZENIA" readonly />
+                                <ValidationMessage For="@(() => registrationModel.DateOfBirthString)" />
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(errorMessageAge))
                     {
-                        <option value="@district.IdDistrict">
-                            @district.DistrictName - @district.DistrictHeadquarters
-                        </option>
+                        <div class="alert alert-danger mt-3">@errorMessageAge</div>
                     }
-                </select>
-                <ValidationMessage For="@(() => registrationModel.SelectedDistrictId)" />
-            </div>
-        </div>
 
-        <button type="submit" class="submit-button">ZAREJESTRUJ</button>
-    </EditForm>
-    @* same as for Login.razor *@
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
-</div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <img src="images/envelope.png" alt="Ikona email" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.Email" type="email" placeholder="ADRES EMAIL" />
+                            <ValidationMessage For="@(() => registrationModel.Email)" />
+                        </div>
+                        <div class="input-group">
+                            <img src="images/phone.png" alt="Ikona telefonu" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.PhoneNumber" placeholder="NUMER TELEFONU" />
+                            <ValidationMessage For="@(() => registrationModel.PhoneNumber)" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.Password" type="password" placeholder="HASŁO" />
+                            <ValidationMessage For="@(() => registrationModel.Password)" />
+                        </div>
+                        <div class="input-group">
+                            <img src="images/lock.png" alt="Ikona zamka" class="input-icon" />
+                            <InputText @bind-Value="registrationModel.ConfirmPassword" type="password" placeholder="POTWIERDŹ HASŁO" />
+                            <ValidationMessage For="@(() => registrationModel.ConfirmPassword)" />
+                        </div>
+                    </div>
+
+                    <div class="form-row double-column">
+                        <div class="input-group">
+                            <img src="images/District.png" alt="Ikona obwodu" class="input-icon" />
+                            <input type="text" class="form-control search-input"
+                                   placeholder="Szukaj Obwód..."
+                                   @oninput="(e => OnSearchChanged(e))" />
+                            <select @bind="registrationModel.SelectedDistrictId" class="dropdown">
+                                <option value="">Wybierz Obwód</option>
+                                @if (filteredDistricts != null && filteredDistricts.Count > 0)
+                                {
+                                    @foreach (var district in filteredDistricts)
+                                    {
+                                        <option value="@district.IdDistrict">
+                                            @district.DistrictName - @district.DistrictHeadquarters
+                                        </option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option disabled>Brak wyników</option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => registrationModel.SelectedDistrictId)" />
+                        </div>
+                    </div>
+
+
+
+                    <button type="submit" class="submit-button">ZAREJESTRUJ</button>
+                </EditForm>
+                @* same as for Login.razor *@
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+            </div>
+
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
 
 
 @code {
@@ -111,15 +141,23 @@
 
     bool formSubmitted = false;
 
+    private string searchQuery { get; set; } = string.Empty;
+    private List<DistrictViewModel> filteredDistricts = new List<DistrictViewModel>();
+
     protected override async Task OnInitializedAsync()
     {
         districts = await DistrictManagementService.Districts();
+        filteredDistricts = districts;
     }
 
 
     private async Task HandleRegistration()
     {
-        //Maybe it is the better plan to make it return HttpResponse with more verbose payload
+        if(registrationModel.SelectedDistrictId == 0)
+        {
+            errorMessage = "Proszę podać obwód!";
+            return;
+        }
         int index = await PersonManagementService.GetPersonIdByPeselAsync(registrationModel.PESEL);
 
         if (index != 0) //if person with this PESEL found
@@ -127,11 +165,12 @@
             var existingPerson = await PersonManagementService.GetPersonById(index);
 
             //check if data in form of person are the same as in database
-            if (existingPerson.Name != registrationModel.FirstName
-            || existingPerson.Surname != registrationModel.LastName
-                || existingPerson.DateOfBirthString != registrationModel.DateOfBirthString)
+            if (existingPerson.Name.Trim() != registrationModel.FirstName.Trim()
+            || existingPerson.Surname.Trim() != registrationModel.LastName.Trim()
+                || existingPerson.DateOfBirthString.Trim() != registrationModel.DateOfBirthString.Trim())
             {
                 errorMessage = "Podane dane dot. kandydata są niespójne z bazą danych(imię, nazwisko bądź data urodzenia). Należy je poprawić na prawidłowe!";
+                return;
             }
 
             if(await ElectionUserManagementService.UserPersonIdExists(existingPerson.IdPerson))
@@ -142,7 +181,13 @@
         }
         formSubmitted = await AuthService.Register(registrationModel);
         errorMessage = formSubmitted ? "Rejestracja udana!" : "Rejestracja nie doszła do skutku!";
-        //Console.WriteLine($"Zarejestrowano użytkownika: {registrationModel.FirstName} {registrationModel.LastName}");
+
+        if(formSubmitted)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/login");
+        }
 
     }
     private void HandlePeselInput(ChangeEventArgs e)
@@ -230,5 +275,15 @@
         return age >= 18;
     }
 
-
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        filteredDistricts = districts
+            .Where(d => d.DistrictName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+    public RegisterViewModel GetRegisterModel()
+    {
+        return registrationModel;
+    }
 }

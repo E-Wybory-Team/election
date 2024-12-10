@@ -21,8 +21,8 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election
         [HttpGet]
-        [AllowAnonymous] // ?? [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
-        public async Task<ActionResult<IEnumerable<Election>>> GetElection()
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Election>>> GetElections()
         {
             return await _context.Elections.ToListAsync();
         }
@@ -43,7 +43,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Election/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<IActionResult> PutElection(int id, ElectionViewModel electionModel)
@@ -82,7 +81,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Election
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<Election>> PostElection([FromBody] ElectionViewModel electionModel)
@@ -90,6 +88,11 @@ namespace E_Wybory.Controllers
             if (!EnteredRequiredData(electionModel))
             {
                 return BadRequest("Not entered data to all required fields");
+            }
+
+            if(await ElectionOfTypeAtTimeExists(electionModel.IdElection, electionModel.IdElectionType, electionModel.ElectionStartDate, electionModel.ElectionEndDate))
+            {
+                return Conflict("Election of this type in this time already exists!");
             }
 
             var election = new Election();
@@ -115,6 +118,11 @@ namespace E_Wybory.Controllers
                 return NotFound();
             }
 
+            if(await ElectionHasCandidate(id))
+            {
+                return Conflict("Cannot delete this election because at least one candidate is set to it!");
+            }
+
             _context.Elections.Remove(election);
             await _context.SaveChangesAsync();
 
@@ -124,7 +132,6 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/active
         [HttpGet("active")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
         {
@@ -152,7 +159,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/type
         [HttpGet("type/{electionTypeId}")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
 
         public async Task<ActionResult<List<ElectionViewModel>>> GetElectionsOfType(int electionTypeId)
         {
@@ -183,6 +190,56 @@ namespace E_Wybory.Controllers
             return _context.Elections.Any(e => e.IdElection == id);
         }
 
+        private async Task<bool> ElectionHasCandidate(int electionId)
+        {
+            if(await  _context.Candidates.AnyAsync(candidate => candidate.IdElection == electionId))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        [HttpGet("candidateNotSet/{electionId}")]
+        [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+        public async Task<ActionResult> ElectionIsNotSetToCandidate(int electionId)
+        {
+            if(await ElectionHasCandidate(electionId))
+            {
+                return Conflict();
+            }
+            else
+            {
+                return Ok();
+            }
+        }
+
+        private async Task<bool> ElectionOfTypeAtTimeExists(int electionId, int electionTypeId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.Elections.AnyAsync(e =>
+                        e.IdElection != electionId &&
+                        e.IdElectionType == electionTypeId && 
+                        ((startDate >= e.ElectionStartDate && startDate <= e.ElectionEndDate) || 
+                         (endDate >= e.ElectionStartDate && endDate <= e.ElectionEndDate) || 
+                         (startDate <= e.ElectionStartDate && endDate >= e.ElectionEndDate)));
+        }
+
+        [HttpPut("typeTime")]
+        [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
+        public async Task<ActionResult<bool>> ElectionOfTypeAtTimeAlreadyExists(ElectionViewModel election)
+        {
+            if(!(await ElectionOfTypeAtTimeExists(election.IdElection, election.IdElectionType, election.ElectionStartDate, election.ElectionEndDate)))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound("Not found election in this time of this type");
+            }
+        }
+
         private bool EnteredRequiredData(ElectionViewModel electionModel)
         {
             if (electionModel.ElectionStartDate == DateTime.MinValue || electionModel.ElectionEndDate == DateTime.MinValue
@@ -196,7 +253,7 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newest")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElections()
         {
             var now = DateTime.Now;
@@ -226,7 +283,6 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newestAllTypes")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElectionsOfAllTypes()
         {
@@ -236,7 +292,6 @@ namespace E_Wybory.Controllers
 
             foreach (var electionType in electionTypes)
             {
-                // Get all elections for this type that have started
                 var filteredElections = await _context.Elections
                     .Where(x => x.IdElectionType == electionType.IdElectionType && x.ElectionStartDate <= now)
                     .ToListAsync();
@@ -269,7 +324,6 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newest/{electionTypeId}")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<ElectionViewModel>> GetNewestElectionOfType(int electionTypeId)
         {
@@ -303,5 +357,6 @@ namespace E_Wybory.Controllers
                 return NotFound("Not found elections of this type which were started");
             }
         }
+
     }
 }

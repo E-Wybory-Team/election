@@ -34,18 +34,12 @@ namespace E_Wybory.Client.Validators
                 return new ValidationResult("Hasło musi zawierać co najmniej jedną cyfrę.");
             }
 
-            //if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
-            //{
-            //    return new ValidationResult("Hasło musi zawierać co najmniej jeden znak specjalny.");
-            //}
-
             var specialCharacters = "!@#$%^&*()_+-=[]{}|;:'\",.<>?/`~";
             if (!password.Any(ch => specialCharacters.Contains(ch)))
             {
                 return new ValidationResult("Hasło musi zawierać co najmniej jeden znak specjalny.");
             }
 
-            // Add more custom rules as needed
 
             return ValidationResult.Success!;
         }

@@ -43,7 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Client\Components\Pages\" />
     <Folder Include="Client\Utils\" />
     <Folder Include="Infrastructure\" />
     <Folder Include="Application\" />

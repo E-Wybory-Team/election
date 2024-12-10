@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using static E_Wybory.Client.Components.Pages.DetailedStats;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using E_Wybory.Client.Components.Pages;
 
 namespace E_Wybory.Controllers
 {
@@ -104,7 +105,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/ListsWrapper
         [HttpGet("ListsWrapper")]
-        [AllowAnonymous]//[Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+        [AllowAnonymous]
         public async Task<ActionResult<FilterListWrapper>> GetFilteredListsWrapper(
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
@@ -309,13 +310,23 @@ namespace E_Wybory.Controllers
                 var candidateProvinceId = candidate.IdDistrictNavigation?.IdProvince;
 
                 // Filter conditions
-                if ((electionTypeId != null && candidateElectionTypeId != electionTypeId) ||
-                    (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
-                    (countyId != null && candidateCountyId != countyId) ||
-                    (provinceId != null && candidateProvinceId != provinceId) ||
-                    (districtId != null && candidate.IdDistrict != districtId))
+                if (candidate.IdDistrict == null)
                 {
-                    continue; // Skip this candidate if it doesn't match the filter conditions
+                    if (electionTypeId != null && candidateElectionTypeId != electionTypeId)
+                    {
+                        continue; // Skip this candidate only if electionId doesn't match
+                    }
+                }
+                else
+                {
+                    if ((electionTypeId != null && candidateElectionTypeId != electionTypeId) ||
+                        (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
+                        (countyId != null && candidateCountyId != countyId) ||
+                        (provinceId != null && candidateProvinceId != provinceId) ||
+                        (districtId != null && candidate.IdDistrict != districtId))
+                    {
+                        continue; // Skip this candidate if it doesn't match the filter conditions
+                    }
                 }
 
                 // Retrieve person data for the current candidate
@@ -415,7 +426,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Candidates
         [HttpGet("CandidatesElectionRegions")]
-        [Authorize(Roles = "Komisja wyborcza, Administratorzy")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesFromElectionRegions(
             [FromQuery] int? electionId,
             [FromQuery] int? voivodeshipId,
@@ -439,16 +450,25 @@ namespace E_Wybory.Controllers
                 var candidateCountyId = candidate.IdDistrictNavigation?.IdProvinceNavigation?.IdCounty;
                 var candidateProvinceId = candidate.IdDistrictNavigation?.IdProvince;
 
-                if ((electionId != null && candidateElectionId != electionId) ||
-                    (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
-                    (countyId != null && candidateCountyId != countyId) ||
-                    (provinceId != null && candidateProvinceId != provinceId) ||
-                    (districtId != null && candidate.IdDistrict != districtId && candidate.IdDistrict != null))
+                if (candidate.IdDistrict == null)
                 {
-                    continue; // Skip this candidate if it doesn't match the filter conditions
+                    if (electionId != null && candidateElectionId != electionId)
+                    {
+                        continue; // Skip this candidate only if electionId doesn't match
+                    }
+                }
+                else
+                {
+                    if ((electionId != null && candidateElectionId != electionId) ||
+                        (voivodeshipId != null && candidateVoivodeshipId != voivodeshipId) ||
+                        (countyId != null && candidateCountyId != countyId) ||
+                        (provinceId != null && candidateProvinceId != provinceId) ||
+                        (districtId != null && candidate.IdDistrict != districtId))
+                    {
+                        continue; // Skip this candidate if it doesn't match the filter conditions
+                    }
                 }
 
-                // Retrieve person data for the current candidate
                 var personViewModel = await _context.People
                     .Where(p => p.IdPerson == candidate.IdPerson)
                     .Select(person => new PersonViewModel
@@ -461,7 +481,6 @@ namespace E_Wybory.Controllers
                     })
                     .FirstOrDefaultAsync();
 
-                // Add the candidate and their person data to the list
                 candidatePersonViewModels.Add(new CandidatePersonViewModel
                 {
                     candidateViewModel = new CandidateViewModel
@@ -489,7 +508,6 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Candidates
         [HttpGet("CandidatesWithoutRegions/{electionId}")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
 
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesWithoutRegions(
@@ -541,7 +559,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Districts
         [HttpGet("Districts")]
-        [AllowAnonymous]//[Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+        [AllowAnonymous]
 
         public async Task<ActionResult<List<DistrictViewModel>>> GetFilteredDistricts(
         [FromQuery] int? constituencyId,
@@ -593,7 +611,6 @@ namespace E_Wybory.Controllers
         // GET: api/FilterWrapper/Users
         [HttpGet("Users")]
         [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
-
         public async Task<ActionResult<List<UserPersonViewModel>>> GetFilteredUsers(
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
@@ -661,9 +678,10 @@ namespace E_Wybory.Controllers
         }
 
 
+
         // GET: api/FilterWrapper/PartiesCandidates
         [HttpGet("PartiesCandidates")]
-        [AllowAnonymous] //?
+        [AllowAnonymous] 
         public async Task<ActionResult<List<CandidateViewModel>>> GetFilteredCandidatesFromParties(
             [FromQuery] int? partyId,
             [FromQuery] int? electionId)
@@ -692,6 +710,45 @@ namespace E_Wybory.Controllers
                 });
             }
             return candidateViewModels;
+        }
+
+        [HttpGet("RegionsOfDistrict/{districtId}")]
+        public async Task<ActionResult<List<string>>> GetRegionsOfDistrict(int districtId)
+        {
+            var districts = await _context.Districts
+                            .Include(district => district.IdProvinceNavigation)
+                            .ThenInclude(province => province.IdCountyNavigation)
+                            .ThenInclude(county => county.IdVoivodeshipNavigation)
+                            .ToListAsync();
+
+            var regionList = new List<string>();
+
+            if(!(await _context.Districts.AnyAsync(district => district.IdDistrict == districtId)))
+            {
+                return NotFound();
+            }
+
+            var district = districts.Where(district => district.IdDistrict == districtId).FirstOrDefault();
+            var districtName = district.DistrictName;
+            regionList.Add(districtName);
+
+            if (district.IdProvince != null)
+            {
+                var provinceName = district.IdProvinceNavigation.ProvinceName;
+                var countyName = district.IdProvinceNavigation.IdCountyNavigation.CountyName;
+                var voivodeshipname = district.IdProvinceNavigation.IdCountyNavigation.IdVoivodeshipNavigation.VoivodeshipName;
+                regionList.Add(provinceName);
+                regionList.Add(countyName);
+                regionList.Add(voivodeshipname);
+                
+            }
+            else
+            {
+                regionList.Add(String.Empty);
+                regionList.Add(String.Empty);
+                regionList.Add(String.Empty);
+            }
+            return regionList;
         }
     }
 }

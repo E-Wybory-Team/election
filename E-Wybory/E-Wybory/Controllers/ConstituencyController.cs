@@ -55,6 +55,11 @@ namespace E_Wybory.Controllers
                 return Conflict("Incorrect id");
             }
 
+            if (ConstituencyNameExists(constituencyModel.constituencyName))
+            {
+                return Conflict("Constituency with this name already exists");
+            }
+
             var constituency = await _context.Constituences.FindAsync(id);
 
             if (constituency == null)
@@ -77,7 +82,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Constituency
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Constituence>> PostConstituency([FromBody] ConstituencyViewModel constituencyModel)
         {
@@ -85,6 +89,13 @@ namespace E_Wybory.Controllers
             {
                 return BadRequest("Not entered data to all required fields");
             }
+
+            if(ConstituencyNameExists(constituencyModel.constituencyName))
+            {
+                return Conflict("Constituency with this name already exists");
+            }
+
+
 
             var constituency = new Constituence();
 
@@ -115,6 +126,11 @@ namespace E_Wybory.Controllers
         private bool ConstituencyExists(int id)
         {
             return _context.Constituences.Any(e => e.IdConstituency == id);
+        }
+
+        private bool ConstituencyNameExists(string name)
+        {
+            return _context.Constituences.Any(e => e.ConstituencyName == name);
         }
 
         // GET: api/Constituency/exist/5
@@ -152,6 +168,7 @@ namespace E_Wybory.Controllers
 
             return relatedCounties;
         }
+
 
     }
 }

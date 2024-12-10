@@ -18,14 +18,11 @@ namespace E_Wybory.Services
 {
     public class TokenService : IJWTService
     {
-        const int JWT_TOKEN_VALIDATION_MINS = 10;//1;
+        const int JWT_TOKEN_VALIDATION_MINS = 10;
         const string privateKeyFileName = "../key";
         private readonly TokenValidationParameters _validationParameters;
 
         public static RSA rsaKey { get; set; }
-
-        //IServiceScopeFactory sopeFactory
-        //https://stackoverflow.com/questions/36332239/use-dbcontext-in-asp-net-singleton-injected-class
 
         public TokenService(RSA key, TokenValidationParameters tokenValidationParameters)
         {
@@ -58,17 +55,14 @@ namespace E_Wybory.Services
             var key = new RsaSecurityKey(rsaPrivateKey);
             var token = handler.CreateToken(new SecurityTokenDescriptor()
             {
-                Issuer = "e-wybory.gov.pl",//"https://localhost:8443",
+                Issuer = "e-wybory.gov.pl",
                 Subject = await claimsIdentity,
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256),
                 Expires = DateTime.UtcNow.AddMinutes(JWT_TOKEN_VALIDATION_MINS),
                 IssuedAt = DateTime.UtcNow
-            }); //as JwtSecurityToken;
-            //return token?.RawData ?? string.Empty;
+            }); 
             return token;
         }
-
-
 
 
         private async Task<ClaimsIdentity> GenerateClaims(string username, ElectionDbContext context, int? idUserType = null, bool? twoFaVeryfied = null)
@@ -81,8 +75,6 @@ namespace E_Wybory.Services
             {
                 new Claim("sub", Guid.NewGuid().ToString()),
                 new Claim("name", username),
-                //new Claim("OrgName", "E-Wybory"),
-                //new Claim("Roles", "Wyborca"), //By default
                 electionUser.Is2Faenabled ? new Claim("2FAenabled", "true") : new Claim("2FAdisabled", "true"),
                 new Claim("IdElectionUser", electionUser.IdElectionUser.ToString()),
                 new Claim("IdDistrict", electionUser.IdDistrict.ToString()),
@@ -112,7 +104,7 @@ namespace E_Wybory.Services
                 .Include(u => u.IdUserTypeNavigation.IdUserTypesGroupNavigation)
                 .Where(u => u.IdElectionUser == idElectionUser && (idUserType == null || 
                         u.IdUserTypeNavigation.IdUserType == idUserType))
-                .OrderBy(u => u.IdUserTypeSet) //How to get default user role? "Wyborca" by deafult?
+                .OrderBy(u => u.IdUserTypeSet)
                 .FirstOrDefaultAsync();
 
             return userTypeSet;

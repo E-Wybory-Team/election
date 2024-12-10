@@ -56,7 +56,7 @@
             </div>
             <div class="form-group">
                 <label for="campaign">OPIS KAMPANII</label>
-                <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" readonlyplaceholder="Wprowadź opis kampanii wyborczej kandydata" />
+                <InputText id="campaign" @bind-Value="candidateModel.candidateViewModel.CampaignDescription" readonly placeholder="Wprowadź opis kampanii wyborczej kandydata" />
             </div>
             <div class="form-group">
                 <label for="listNumber">NUMER NA LIŚCIE</label>
@@ -156,7 +156,9 @@
     {
         if (!await CandidateManagementService.CandidateExists(candidateId))
         {
-            errorMessage = "Candidate not found";
+            errorMessage = "Nie znaleziono takiego kandydata!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -174,10 +176,11 @@
     private async void HandleDeleteCandidate()
     {
         formSubmitted = await CandidateManagementService.DeleteCandidate(candidateId);
-        //formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
-        errorMessage = formSubmitted ? "Candidate deleted successful!" : "Candidate deletion fails";
+        errorMessage = formSubmitted ? "Kandydat usunięty pomyślnie!" : "Nie udało się usunąć kandydata!";
         if(formSubmitted)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

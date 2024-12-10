@@ -22,7 +22,6 @@ using E_Wybory.Application.Wrappers;
 using OtpNet;
 using Microsoft.AspNetCore.Identity.Data;
 using System.Net.Mail;
-//using MimeKit; ???
 using System.Collections.Generic;
 using Azure.Communication.Email;
 using System.Net;
@@ -39,12 +38,16 @@ namespace E_Wybory.Controllers
         private readonly ElectionDbContext _context;
         private readonly IJWTService _tokenService;
         private readonly IEmailSenderService _emailSenderService;
+        private readonly ILogger<AuthController> _logger;
+        private IPdfGeneratorService pdfGeneratorService = new PdfGenerateService();
         private static readonly ElectionPasswordPolicyAttribute _policyAttribute = new ElectionPasswordPolicyAttribute();
-        public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService)
+
+        public AuthController(ElectionDbContext context, IJWTService tokenService, IEmailSenderService emailSenderService, ILogger<AuthController> logger)
         {
             this._context = context;
             this._tokenService = tokenService;
-            this._emailSenderService = emailSenderService; 
+            this._emailSenderService = emailSenderService;
+            _logger = logger;   
         }
 
 
@@ -54,12 +57,12 @@ namespace E_Wybory.Controllers
         }
 
 
-        //For now for this endpoints use viewmodels, maybe the better options are DTO
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginViewModel request)
         {
+            _logger.LogInformation("Login attempt with username: {0}", request.Username);
             if (request.Username == String.Empty || request.Password == String.Empty)
                 return BadRequest("Not entered data to all required fields");
 
@@ -72,15 +75,10 @@ namespace E_Wybory.Controllers
 
         [HttpPost]
         [Route("register")]
-        //[ElectionPasswordPolicy(Password = request.Password)]
         public async Task<IActionResult> Register([FromBody] RegisterViewModel request)
         {
             if (!CheckPasswordyPolicy(request.Password)) return BadRequest("Password does not meet the policy requirements");
             if (!ModelState.IsValid) return BadRequest("Not entered data to all required fields");
-            //if (request.FirstName == String.Empty || request.LastName == String.Empty || request.PESEL == String.Empty
-            //    || request.DateOfBirth == DateTime.MinValue || request.Email == String.Empty
-            //    || request.PhoneNumber == String.Empty || request.Password == String.Empty
-            //    || request.SelectedDistrictId == 0)
 
 
             bool registerResult = await RegisterUser(request.FirstName, request.LastName, request.PESEL, request.DateOfBirth, request.Email,
@@ -96,7 +94,6 @@ namespace E_Wybory.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            //Now just checking if header is empty, maybe flag in database?
             var authorizationHeader = Request.Headers["Authorization"].ToString();
 
             return string.IsNullOrEmpty(authorizationHeader) ? Ok() : BadRequest("Auth token was not cleared properly");
@@ -162,10 +159,9 @@ namespace E_Wybory.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return verResult ? Ok("") : Unauthorized("Wrong TOTP code");
+            return verResult ? Ok("") : BadRequest("Wrong TOTP code");
         }
 
-        [HttpPost]
         [HttpPost]
         [Route("verify-2fa")]
         [Authorize(Policy = "2FAenabled")]
@@ -191,35 +187,11 @@ namespace E_Wybory.Controllers
         {
             UserWrapper user = new(User);
             if (userId == 0 || user.Id == 0 || user.Id != userId) return NotFound("Wrong user identification compared claim to model!");
-            
-            //Do sth with recovery codes here
-            
+                        
             return Ok(new CountResponse { Count = 0});
         }
 
-
-        //póki co zostawiam może się przydać
-        //[HttpPost()]
-        //[Route("enable-2fa")]
-        //[Authorize]
-        //public async Task<IActionResult> EnableTwoFactorAuth([FromBody] TwoFactorEnabledRequest enabledRequest)
-        //{
-        //    UserWrapper user = new(User);
-        //    if (enabledRequest.UserId == 0 || user.Id == 0 || user.Id != enabledRequest.UserId) return NotFound("Wrong user identification compared claim to model!");
-
-        //    var electionUser = await _context.ElectionUsers.FirstOrDefaultAsync(e => e.IdElectionUser == user.Id);
-
-        //    if (electionUser is null || string.IsNullOrEmpty(electionUser.UserSecret)) return NotFound("User with UserSecret does not exists!");
-
-
-        //    _context.ElectionUsers.Update(electionUser);
-        //    await _context.SaveChangesAsync();  
-
-        //    return  Ok();
-
-
-        //}
-
+       //????
         private const int maxRecoveryCodes = 6;
 
         [HttpGet("gen-rec-codes/{userId}")]
@@ -231,7 +203,6 @@ namespace E_Wybory.Controllers
             {
                 codes.Add(Guid.NewGuid().ToString().Substring(0, 8));
             }
-            //userRecoveryCodes[userId] = codes;
             return Ok(codes);
         }
 
@@ -321,12 +292,11 @@ namespace E_Wybory.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 60);
-            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez jedną minutę.";
+            var totpCode = GenerateTotpCode(user.UserSecret, timeWindow: 120);
+            var emailMessage = $"Twój jednorazowy kod do resetowania hasła to: {totpCode}. Jest ważny przez dwie minuty.";
 
             var emailOperationResult =  await _emailSenderService.SendEmailAsync(user.Email, "E-wybory: Reset hasła", emailMessage);
 
-            //do sth to validate emailOperationResult.Value
 
             IActionResult result = emailOperationResult is not null && emailOperationResult.HasCompleted ? 
                 Ok("Password reset code sent to your email.") : StatusCode(500, "Failed to send email");
@@ -353,7 +323,7 @@ namespace E_Wybory.Controllers
                 return BadRequest("User has not requested password reset code");
             }
 
-            var isCodeValid = VerifyTotpCode(user.UserSecret, request.ResetCode, timeWindow: 60);
+            var isCodeValid = VerifyTotpCode(user.UserSecret, request.ResetCode, timeWindow: 120);
             if (!isCodeValid)
             {
                 return BadRequest("Invalid reset code");
@@ -368,7 +338,6 @@ namespace E_Wybory.Controllers
 
             user.Password = hashedNewPassword;
 
-            // do we reset 2FA?
             user.UserSecret = null;
             user.Is2Faenabled = false;
 
@@ -384,11 +353,7 @@ namespace E_Wybory.Controllers
             var key = Base32Encoding.ToBytes(userSecret);
             var totp = new Totp(key, step: timeWindow);
             return totp.ComputeTotp(DateTime.UtcNow);
-        }
-
-        //Rather this
-       // https://learn.microsoft.com/en-us/azure/communication-services/quickstarts/email/send-email-smtp/send-email-smtp?pivots=smtp-method-smtpclient
-        
+        }        
 
         private async Task<string> AuthenticateUser(string email, string password)
         {
@@ -401,7 +366,6 @@ namespace E_Wybory.Controllers
                 .FirstOrDefaultAsync() == hexString
                 )
             {
-                //CreateRSAPrivateKey();
                 var rsaKey = RSA.Create();
                 rsaKey.ImportRSAPrivateKey(System.IO.File.ReadAllBytes("key"), out _);
                 return await _tokenService.CreateToken(rsaKey, email, _context);
@@ -415,7 +379,6 @@ namespace E_Wybory.Controllers
             UTF8Encoding objUtf8 = new UTF8Encoding();
             byte[] hashedPassword = sha.ComputeHash(objUtf8.GetBytes(password));
 
-            //convert hashed password from byte[] to string to store as string in db
             StringBuilder hexString = new StringBuilder(hashedPassword.Length * 2);
             foreach (byte b in hashedPassword)
             {
@@ -448,7 +411,6 @@ namespace E_Wybory.Controllers
                 person.Pesel = PESEL;
                 person.BirthDate = birthdate;
 
-                //Console.Write(idDistrict);
                 await _context.People.AddAsync(person);
                 await _context.SaveChangesAsync();
                 newPersonId = person.IdPerson; //save to use in user
@@ -466,7 +428,6 @@ namespace E_Wybory.Controllers
             user.Password = hashedPassword;
             user.IdPerson = newPersonId;
 
-            //idDistrict = 1;
             user.IdDistrict = idDistrict;
 
             await _context.ElectionUsers.AddAsync(user);
@@ -543,6 +504,43 @@ namespace E_Wybory.Controllers
 
             return user.TwoFAveryfied;
 
+        }
+
+        [HttpGet("voteConfirmation")]
+        public async Task<ActionResult<bool>> CreatePdfOfVotingConfirmation()
+        {
+            UserWrapper user = new(User);
+            var electionUser = await _context.ElectionUsers.FindAsync(user.Id);
+            if (electionUser == null)
+            {
+                return NotFound("Not found user set to this id");
+            }
+            var person = await _context.People.FindAsync(electionUser.IdPerson);
+
+            try
+            {
+                var pdfPath = await pdfGeneratorService.GeneratePdfWithImage_Syncfusion("Zaświadczenie o głosowaniu", $"Potwierdzamy oddanie " +
+                    $"głosu przez użytkownika " + $"{person.Name} {person.Surname} posługującego się numerem PESEL: {person.Pesel} \n " +
+                    $"Pozdrawiamy, \n" +
+                    $"Twórcy aplikacji E-Wybory", $"generatedDocument_{user.Id}.pdf");
+
+                var emailOperationResult = await _emailSenderService.SendEmailWithPdfAttachmentAsync(electionUser.Email, "E-wybory: Potwierdzenie głosowania", "Dzień dobry,\n " +
+                                                                    "W załączeniu przesyłamy zaświadczenie potwierdzające uczestnictwo w wyborach na platformie E-Wybory. \n " +
+                                                                    "Pozdrawiamy,\nTwórcy aplikacji E-Wybory", pdfPath);
+
+                if (System.IO.File.Exists(pdfPath))
+                {
+                    System.IO.File.Delete(pdfPath);
+                }
+                IActionResult result = emailOperationResult is not null && emailOperationResult.HasCompleted ?
+                Ok("Pdf file sent in email correctly.") : StatusCode(500, "Failed to send email");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+
+            return Ok();
         }
 
     }

@@ -6,6 +6,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <link href="forms.css" rel="stylesheet" />
 
 <CascadingAuthenticationState>
@@ -51,15 +53,26 @@
     public int constituencyId { get; set; }
 
     bool isModifiedConstituency = false;
-    string errorMessage;
+    private string errorMessage = String.Empty;
 
     private ConstituencyViewModel constituencyModel = new ConstituencyViewModel();
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         if (! await ConstituencyManagementService.ConstituencyExists(constituencyId))
         {
-            errorMessage = "Constituency not found";
+            errorMessage = "Nie znaleziono okręgu!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -68,12 +81,14 @@
         }
     }
 
-    private async void HandleModifySubmit()
+    private async Task HandleModifySubmit()
     {
         isModifiedConstituency = await ConstituencyManagementService.PutConstituency(constituencyModel);
-        errorMessage = isModifiedConstituency ? "Constituency modified successful!" : "Constituency modified fails";
+        errorMessage = isModifiedConstituency ? "Modyfikacja okręgu się powiodła!" : "Podano istniejącą nazwę okręgu!";
         if (isModifiedConstituency)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             NavigationManager.NavigateTo("/constituencylist");
         }
     }

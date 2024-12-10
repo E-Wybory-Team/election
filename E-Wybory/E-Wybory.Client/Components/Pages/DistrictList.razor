@@ -7,6 +7,7 @@
 @inject IDistrictManagementService DistrictManagementService
 @inject IConstituencyManagementService ConstituencyManagementService
 @inject IFilterWrapperManagementService FilterWrapperService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 <link href="tables.css" rel="stylesheet" />
 <link href="forms.css" rel="stylesheet" />
@@ -81,7 +82,6 @@
             <th>Siedziba</th>
             <th><img src="images/Accessibility.png" alt="Accessibility" class="icon-accessibility" /></th>
             <th>Nazwa okręgu</th>
-            <th>Skład komisji</th>
             <th>Opcje konfiguracji</th>
         </tr>
     </thead>
@@ -107,7 +107,6 @@
                 <td>@district.DistrictHeadquarters</td>
                 <td>@forDisabled</td>
                 <td>@constituencyName</td>
-                <td><img src="images/CommitteeMembers.png" alt="Committee" class="icon" title="Skład komisji" /></td> @* tutaj jeszcze przekierowanie do składu wybranej komisji *@
                 <td>
                     <a href="/modifydistrict/@district.IdDistrict">
                         <img src="images/modify.png" alt="Modify" class="icon" title="Modyfikuj" />
@@ -144,6 +143,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.Identity.IsAuthenticated || (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         filteredDistricts = await FilterWrapperService.GetFilteredDistricts(SelectedConstituencyId, SelectedVoivodeshipId, SelectedCountyId, SelectedProvinceId);
         wrapper.ConstituencyFilter = await ConstituencyManagementService.Constituences();
         constituences = await ConstituencyManagementService.Constituences();

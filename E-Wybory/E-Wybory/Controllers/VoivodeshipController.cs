@@ -13,7 +13,7 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+    [Authorize(Roles = "Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
     public class VoivodeshipController : ControllerBase
     {
         private readonly ElectionDbContext _context;
@@ -45,7 +45,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Voivodeships/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutVoivodeship(int id, Voivodeship voivodeship)
         {
@@ -77,7 +76,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Voivodeships
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Voivodeship>> PostVoivodeship(Voivodeship voivodeship)
         {

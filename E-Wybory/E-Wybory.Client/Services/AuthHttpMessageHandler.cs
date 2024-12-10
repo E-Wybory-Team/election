@@ -1,4 +1,6 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 
 namespace E_Wybory.Client.Services
@@ -6,17 +8,15 @@ namespace E_Wybory.Client.Services
     public class AuthHttpMessageHandler : DelegatingHandler
     {
         private readonly IJSRuntime _jsRuntime;
+        private readonly IServiceProvider _serviceProvider;
         private const string TokenKey = "authToken";
 
-        //      private readonly IMemoryCache _memoryCache; //check ? not really
+        private readonly static bool shouldRedirect = true;
 
-        //https://referbruv.com/blog/using-imemorycache-for-token-caching-in-an-aspnet-core-application/
-        //https://stackoverflow.com/questions/72519590/blazor-and-oauth-jwt-bearer-token-storage
-        //redis???
-        //registering IJSRuntime on Home page
-        public AuthHttpMessageHandler(IJSRuntime jsRuntime)
+        public AuthHttpMessageHandler(IJSRuntime jsRuntime, IServiceProvider serviceProvider)
         {
             _jsRuntime = jsRuntime;
+            _serviceProvider = serviceProvider;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -30,6 +30,7 @@ namespace E_Wybory.Client.Services
 
             var response = await base.SendAsync(request, cancellationToken);
 
+
             if (response.Headers.TryGetValues("Authorization", out var authHeaders))
             {
                 var authHeaderValue = authHeaders.FirstOrDefault();
@@ -37,9 +38,34 @@ namespace E_Wybory.Client.Services
                 {
                     var newToken = authHeaderValue.Substring("Bearer ".Length).Trim();
 
-                    if(token != newToken)
+                    if (token != newToken)
                         await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", TokenKey, newToken);
                 }
+            }
+
+            if (shouldRedirect && (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden))
+            {
+                bool wasLoggedOut = false;
+
+                using (var scope = _serviceProvider.CreateScope())
+                {
+
+                    var scopedAuthService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+                    var scopedAuthStateProvider = scope.ServiceProvider.GetRequiredService<AuthenticationStateProvider>();
+                    if (scopedAuthService is not null && scopedAuthStateProvider is not null)
+                    {
+                        var user = (await scopedAuthStateProvider.GetAuthenticationStateAsync()).User;
+                        if (user?.Identity?.IsAuthenticated ?? false)
+                        {
+                            wasLoggedOut = await scopedAuthService.Logout();
+                        }
+                    }
+
+                    var navigationManager = _serviceProvider.GetRequiredService<NavigationManager>();
+                    if (navigationManager is not null) navigationManager.NavigateTo("/login");
+                }
+                if (wasLoggedOut)
+                    await _jsRuntime.InvokeVoidAsync("location.reload");
             }
 
             return response;

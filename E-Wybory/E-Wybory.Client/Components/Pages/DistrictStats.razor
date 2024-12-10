@@ -91,7 +91,6 @@
         {
             errorMessage = "Nie znaleziono przypisanego obwodu użytkownikowi!";
             return;
-            //NavigationManager.NavigateTo("/");
         }
 
         eligibleCount = await VoterManagementService.GetNumberVotersByDistrictId(IdDistrict);

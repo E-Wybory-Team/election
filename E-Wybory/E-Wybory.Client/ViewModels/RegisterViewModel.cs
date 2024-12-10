@@ -36,9 +36,11 @@ namespace E_Wybory.Client.ViewModels
         public string ConfirmPassword { get; set; } = String.Empty;
 
         [Required(ErrorMessage = "Obwód wyborczy jest obowiązkowy!")]
+        [Range(1, int.MaxValue, ErrorMessage = "Proszę wybrać obwód!")]
         public int SelectedDistrictId { get; set; } = 0;
 
         [ValidateDateOfBirthWithPesel]
+        [Required(ErrorMessage = "Niepoprawny pesel!")]
         public string DateOfBirthString
         {
             get => DateOfBirth != DateTime.MinValue ? DateOfBirth.ToString("yyyy-MM-dd") : string.Empty;
@@ -46,9 +48,7 @@ namespace E_Wybory.Client.ViewModels
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    //The specified value "DaAa Uro24+2enia" does not conform to the required format, "yyyy-MM-dd".
                     DateOfBirth = DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                    //DateOfBirth = new DateTime(2001, 1, 24);
                 }
                 else
                 {

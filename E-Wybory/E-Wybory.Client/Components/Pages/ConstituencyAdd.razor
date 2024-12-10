@@ -7,6 +7,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject IConstituencyManagementService ConstituencyManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
@@ -51,11 +53,28 @@
     bool isAddedConstituency = false;
     string errorMessage;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-    private async void HandleSubmit()
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Pracownicy PKW") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+    }
+
+    private async Task HandleSubmit()
     {
         isAddedConstituency = await ConstituencyManagementService.AddConstituency(constituencyModel);
-        errorMessage = isAddedConstituency ? "Adding constituency successful!" : "Adding constituency fails";
+        errorMessage = isAddedConstituency ? "Dodawanie okręgu się udało!" : "Podano istniejącą już nazwę okręgu";
+        if(isAddedConstituency)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

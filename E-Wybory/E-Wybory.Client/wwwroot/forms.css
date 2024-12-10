@@ -40,6 +40,7 @@
 
 
     .candidate-form-container h1 {
+        margin-top:4rem;
         text-align: center;
         font-size: 40px;
         font-variant-caps: titling-caps;
@@ -55,10 +56,8 @@ form {
     align-items: center;
     gap: 15px;
     width: 70vh;
-    /*background-color: #fff;*/
     padding: 20px;
     border-radius: 10px;
-    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
 }
 
 .candidate-form {
@@ -67,10 +66,8 @@ form {
     align-items: center;
     gap: 15px;
     width: auto;
-    /*background-color: #fff;*/
     padding: 20px;
     border-radius: 10px;
-    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);*/
 }
 
 .form-group {
@@ -125,7 +122,6 @@ form {
     transition: background-color 0.3s ease, color 0.3s ease;
     text-decoration: none;
     text-align: center;
-    /*transition: background-color 0.3s ease;*/
 }
 
     .submit-button:hover {
@@ -178,27 +174,17 @@ input, select {
     box-sizing: border-box;
 }
 
-.status-alert {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.status-alert-blue {
-    background-color: white;
-    color: #1E5899;
-}
-
-.status-alert-red {
-    background-color: white;
-    color: #e60000;
+.status-message-blue {
+    background-color: #1E5899; 
+    color: white; 
+    border: 1px solid #164f7c; 
+    padding: 10px 15px; 
+    border-radius: 5px; 
+    text-align: center; 
+    font-size: 14px; 
+    font-weight: bold; 
+    width: fit-content; 
+    margin: 10px auto; 
 }
 
 .status-icon {
@@ -248,6 +234,7 @@ input, select {
     margin-left: 10px;
     font-weight: bold;
     font-size: 20px;
+    inline-size: inherit;
 }
 
 .add-button {
@@ -277,7 +264,7 @@ input, select {
     align-items: center;
     height: 100vh; 
     text-align: center;
-    background-color: #b9d4f3;
+    background-color: #b9d4f3 !important;
 }
 
 .alert-icon {
@@ -289,51 +276,53 @@ input, select {
 .not-authorized-message {
     font-size: 2rem;
     font-weight: bold;
-    color: #e60000; 
+    color: #e60000;
     margin: 0;
+    background-color: #b9d4f3;
+    border-color: #b9d4f3;
 }
 
-/* Kontener formularza */
+
 .account-form-container {
-    max-width: 500px; /* Zmniejszenie szerokości formularza */
-    margin: 0 auto; /* Wyśrodkowanie formularza */
+    max-width: 500px; 
+    margin: 0 auto; 
     padding: 20px;
-    background-color: #ffffff; /* Białe tło */
-    border-radius: 10px; /* Zaokrąglone rogi */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Lekki cień */
+    background-color: #ffffff; 
+    border-radius: 10px; 
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Odstęp między sekcjami */
+    gap: 20px; 
 }
 
-    /* Pola formularza */
+    
     .account-form-container .form-group {
         display: flex;
-        flex-direction: row; /* Ustawianie etykiet i pól obok siebie */
+        flex-direction: row; 
         justify-content: space-between;
-        align-items: center; /* Wyrównanie etykiet i pól */
+        align-items: center; 
         gap: 10px;
     }
 
     .account-form-container label {
         font-size: 14px;
-        font-weight: bold; /* Pogrubienie etykiet */
+        font-weight: bold; 
         color: #333;
-        min-width: 120px; /* Minimalna szerokość etykiet */
-        text-align: right; /* Wyrównanie etykiety do prawej */
+        min-width: 120px; 
+        text-align: right; 
     }
 
     .account-form-container .form-input {
         width: 100%;
-        max-width: 300px; /* Szerokość pól */
+        max-width: 300px; 
         padding: 10px;
         font-size: 14px;
         border-radius: 5px;
         border: 1px solid #ccc;
-        background-color: #f9f9f9; /* Lekko szare tło */
+        background-color: #f9f9f9; 
     }
 
-    /* Sekcja przycisków */
+    
     .account-form-container .two-factor-section,
     .account-form-container .password-section {
         display: flex;
@@ -348,8 +337,8 @@ input, select {
         font-weight: bold;
         padding: 10px 15px;
         border-radius: 5px;
-        background-color: #ffe6e6; /* Domyślne czerwone tło */
-        color: #e60000; /* Domyślnie czerwony tekst */
+        background-color: #ffe6e6; 
+        color: #e60000; 
     }
 
     .account-form-container .two-factor-status-blue {
@@ -357,14 +346,14 @@ input, select {
         color: #1E5899;
     }
 
-    /* Styl przycisków */
+
     .account-form-container .submit-button,
     .account-form-container .change-password-button {
         padding: 10px 20px;
         font-size: 14px;
         font-weight: bold;
         color: #ffffff;
-        background-color: #1E5899; /* Domyślne niebieskie tło */
+        background-color: #1E5899; 
         border: none;
         border-radius: 5px;
         cursor: pointer;
@@ -376,5 +365,201 @@ input, select {
         .account-form-container .change-password-button:hover {
             background-color: #ffffff;
             color: #1E5899;
-            border: 1px solid #1E5899; /* Dodanie obramowania przy najechaniu */
+            border: 1px solid #1E5899; 
         }
+
+.search-input {
+    border: none;
+    width: 90%;
+    padding: 5px;
+    margin: 5px auto;
+    box-sizing: border-box;
+}
+
+.active-button {
+    background-color: #1E5899;
+    color: white;
+    cursor: pointer;
+}
+
+    .active-button:hover {
+        background-color: #164f7c;
+    }
+
+
+.disabled-button {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.authenticator-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.authenticator-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0px;
+    width: 100%;
+}
+
+.authenticator-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%; 
+    max-width: 400px; 
+    margin-left: auto; 
+    margin-right: auto; 
+    box-sizing: border-box;
+}
+
+.authenticator-steps {
+    background-color: transparent;
+    list-style: none;
+    padding: 0;
+    margin: 0px 0;
+    font-size: 16px;
+    color: #333;
+    border: none;
+    text-align: left;
+}
+
+    .authenticator-steps li {
+        margin-bottom: 15px;
+        font-weight: normal;
+        line-height: 1.5;
+    }
+
+.authenticator-header {
+    font-size: 28px;
+    color: #000000;
+    text-align: center;
+    font-weight: bold;
+}
+
+.authenticator-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #1E5899;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+    align-items:center;
+}
+
+    .authenticator-button:hover {
+        background-color: #164f7c;
+    }
+
+.authenticator-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.authenticator-instructions {
+    background: none;
+    color: #333;
+    font-size: 16px;
+    border: none;
+    margin-left: 50px;
+}
+
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.reset-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 400px;
+}
+
+.wide-password-button {
+    width: calc(100% - 20px); 
+    padding: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #1E5899;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+    .wide-password-button:hover {
+        background-color: #ffffff;
+        color: #1E5899;
+        border: 1px solid #1E5899;
+    }
+
+.label-left {
+    text-align:left;
+}
+
+.centered-input {
+    width: 100%; 
+    max-width: 400px; 
+    margin: 0px auto; 
+    display: block; 
+    padding: 10px;
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    font-size: 16px; 
+    box-sizing: border-box; 
+    background-color: #f9f9f9; 
+    margin-top: -30px;
+    margin-bottom: -20px;
+}
+
+.centered-button {
+    width: 100%; 
+    max-width: 400px; 
+    margin: 20px auto; 
+    display: block;
+    padding: 10px 15px;
+    background-color: #1E5899; 
+    color: white; 
+    font-size: 16px; 
+    font-weight: bold; 
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .centered-button:hover {
+        background-color: #164f7c; 
+        transform: scale(1.02); 
+    }
+
+

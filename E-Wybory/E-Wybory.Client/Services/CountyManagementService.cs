@@ -11,8 +11,6 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<CountyViewModel>> Counties()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
             var response = await _httpClient.GetFromJsonAsync<List<CountyViewModel>>("/api/County");
 
             return await Task.FromResult(response);

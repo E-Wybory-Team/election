@@ -16,5 +16,7 @@ namespace E_Wybory.Client.Services
         Task<ElectionViewModel> GetNewestElectionOfElectionType(int electionTypeId);
         Task<List<ElectionViewModel>> GetNewestElectionsOfAllTypes();
         ElectionViewModel GetElectionOfTypeOfSingleElection(int electionTypeId, List<ElectionViewModel> elections);
+        Task<bool> ElectionOfTypeAtTimeExist(ElectionViewModel electionModel);
+        Task<bool> ElectionIsNotSetToCandidate(int electionId);
     }
 }

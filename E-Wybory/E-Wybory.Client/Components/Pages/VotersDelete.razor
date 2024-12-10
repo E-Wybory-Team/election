@@ -9,6 +9,8 @@
 @inject IVoterManagementService VoterManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionUserManagementService ElectionUserManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <link href="forms.css" rel="stylesheet" />
 <CascadingAuthenticationState>
     <AuthorizeView Roles="Urzędnicy wyborczy, Administratorzy" Context="authContext">
@@ -67,9 +69,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated ||
+            (!user.IsInRole("Urzędnicy wyborczy") && !user.IsInRole("Administratorzy")))
+        {
+            return;
+        }
+
         if (!await VoterManagementService.VoterExists(voterId))
         {
-            errorMessage = "Voter not found";
+            errorMessage = "Nie znaleziono wyborcy!";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -90,6 +103,9 @@
             catch (Exception ex)
             {
                 errorMessage = "Nie ma powiązanego użytkownika w bazie!";
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
             }
         }
     }
@@ -97,8 +113,13 @@
     private async Task HandleDeleteSubmit()
     {
         isDeletedVoter = await VoterManagementService.DeleteVoter(voterId);
-        errorMessage = isDeletedVoter ? "Updating voter successful!" : "Updating voter fails";
-        Cancel();
+        errorMessage = isDeletedVoter ? "Usunięto wyborcę pomyślnie!" : "Nie udało się usunąć wyborcy!";
+        if (isDeletedVoter)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
 
     private void Cancel()

@@ -62,6 +62,16 @@ namespace E_Wybory.Controllers
                 return Conflict("Incorrect district's id");
             }
 
+            if (DistrictNameInConstituencyExists(districtModel.IdConstituency, districtModel.DistrictName))
+            {
+                return Conflict("District with this name already exists!");
+            }
+
+            if(DistrictHeadquartersExists(districtModel.DistrictHeadquarters))
+            {
+                return Conflict("District with this headquarters exists!");
+            }
+
             var district = await _context.Districts.FindAsync(id);
 
             if (district == null)
@@ -87,13 +97,22 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Districts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<District>> PostDistrict([FromBody] DistrictViewModel districtModel)
         {
             if (!EnteredRequiredData(districtModel))
             {
                 return BadRequest("Not entered data to all required fields");
+            }
+
+            if (DistrictNameInConstituencyExists(districtModel.IdConstituency, districtModel.DistrictName))
+            {
+                return Conflict("District with this name already exists!");
+            }
+
+            if (DistrictHeadquartersExists(districtModel.DistrictHeadquarters))
+            {
+                return Conflict("District with this headquarters exists!");
             }
 
             var district = new District();
@@ -132,15 +151,26 @@ namespace E_Wybory.Controllers
             _context.Districts.Remove(district);
             await _context.SaveChangesAsync();
 
-            //_context.Districts.Remove(district);
-            //await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
         private bool DistrictExists(int id)
         {
             return _context.Districts.Any(e => e.IdDistrict == id);
+        }
+
+        private bool DistrictNameInConstituencyExists(int? idConstituency, string name)
+        {
+            if (idConstituency == null)
+            {
+                return _context.Districts.Any(e => e.DistrictName == name);
+            }
+            return _context.Districts.Any(e => e.IdConstituency == idConstituency && e.DistrictName == name);
+        }
+
+        private bool DistrictHeadquartersExists(string headquarters)
+        {
+            return _context.Districts.Any(e => e.DistrictHeadquarters == headquarters);
         }
 
         // GET: api/District/exist/5

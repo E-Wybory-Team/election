@@ -13,9 +13,7 @@ namespace E_Wybory.Client.Services
 
         public async Task<List<PersonViewModel>> People()
         {
-            //Properly validate model before that 
-            //All properties must be innitialize
-            //register.idDistrict = 1;
+
             var response = await _httpClient.GetFromJsonAsync<List<PersonViewModel>>("/api/Person");
 
             return await Task.FromResult(response);
@@ -54,7 +52,12 @@ namespace E_Wybory.Client.Services
             return await Task.FromResult($"{person.Name} {person.Surname} - wiek: {CountPersonAge(person.BirthDate)}");
         }
 
-        
+        public async Task<String> GetPersonNameSurnameWithoutAgeById(int id)
+        {
+            var person = await GetPersonById(id);
+            return await Task.FromResult($"{person.Name} {person.Surname}");
+        }
+
 
         public async Task<PersonViewModel> GetPersonIdByIdElectionUser(int electionUserId)
         {

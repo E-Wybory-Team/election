@@ -18,8 +18,6 @@ namespace E_Wybory.Client.Services
 
         Task<int> CountRecoveryCodesAsync(int userId);
 
-       //Task<bool> SetTwoFactorEnabledAsync(int userId, bool enabled);
-
         Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(int userId);
 
         Task<string> GetAuthenticatorKeyAsync(int userId);
@@ -27,6 +25,7 @@ namespace E_Wybory.Client.Services
         Task<bool> Reset2FAasync(int userId);
 
         public Task<bool> ForgetPassword(ForgetPasswordViewModel forgetPassword);
+        public Task<bool> SendingConfirmation();
 
         public Task<bool> ResetPassword(ResetPasswordViewModel resetPassword);
         Task<int> GetCurrentUserIdDistrict();

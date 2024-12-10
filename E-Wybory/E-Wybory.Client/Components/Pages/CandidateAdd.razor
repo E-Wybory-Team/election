@@ -12,6 +12,7 @@
 @inject IDistrictManagementService DistrictManagementService
 @inject IPartyManagementService PartyManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 @inject NavigationManager NavigationManager
 
 <link href="forms.css" rel="stylesheet" />
@@ -39,7 +40,7 @@
             </div>
             <div class="form-group">
                 <label for="birthDate">DATA URODZENIA</label>
-                <InputText @bind-Value="candidatePersonModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź datę urodzenia kandydata" />
+                <InputText id="birthDate" @bind-Value="candidatePersonModel.personViewModel.DateOfBirthString" type="date" placeholder="Wprowadź datę urodzenia kandydata" />
                 <ValidationMessage For="@(() => candidatePersonModel.personViewModel.DateOfBirthString)" />
             </div>
         </div>
@@ -101,8 +102,9 @@
                     <option value="">Wybierz wybory</option>
                     @foreach (var election in elections)
                     {
+                        var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
                         <option value="@election.IdElection">
-                            @election.ElectionStartDate - @election.ElectionEndDate;
+                            @electionTypeName - @election.ElectionStartDate;
                         </option>
                     }
                 </InputSelect>
@@ -155,6 +157,7 @@
     private List<DistrictViewModel> districts = new List<DistrictViewModel>();
     private List<PartyViewModel> parties = new List<PartyViewModel>();
     private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
 
     private CandidatePersonViewModel candidatePersonModel = new CandidatePersonViewModel();
 
@@ -168,13 +171,13 @@
         districts = await DistrictManagementService.Districts();
         parties = await PartyManagementService.Parties();
         elections = await ElectionManagementService.Elections();
+        electionTypes = await ElectionTypeManagementService.ElectionTypes();
     }
 
 
     private async Task HandleAddCandidate()
     {
         int index = await PersonManagementService.GetPersonIdByPeselAsync(candidatePersonModel.personViewModel.PESEL); //check if person exists
-        //Console.WriteLine("Index of person: " + index);
 
         if(index == 0) //if person with this PESEL not found
         {
@@ -197,14 +200,20 @@
         }
         candidatePersonModel.candidateViewModel.IdPerson = index;
         isAddedCandidate = await CandidateManagementService.AddCandidate(candidatePersonModel.candidateViewModel);
-        errorMessage = isAddedCandidate ? "Candidate added successful!" : "Adding of candidate fails";
+        errorMessage = isAddedCandidate ? "Dodawanie kandydata sie powiodło!" : "Niepowodzenie w dodawaniu kandydata!";
+        if(isAddedCandidate)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            Cancel();
+        }
     }
     private void Cancel()
     {
         NavigationManager.NavigateTo("/candidatelist");
     }
 
-    private void HandlePeselInput(ChangeEventArgs e)
+    public void HandlePeselInput(ChangeEventArgs e)
     {
         var pesel = e.Value?.ToString();
 

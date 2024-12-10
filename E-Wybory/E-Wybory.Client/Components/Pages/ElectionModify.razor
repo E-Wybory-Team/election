@@ -35,7 +35,7 @@
 
         <div class="form-group">
             <label for="rodzaj">RODZAJ</label>
-            <InputSelect @bind-Value="electionModel.IdElectionType">
+            <InputSelect @bind-Value="electionModel.IdElectionType" id="rodzaj">
                 <option value="">Wybierz rodzaj</option>
                 @foreach (var electionType in electionTypes)
                 {
@@ -50,7 +50,7 @@
         <div class="form-group">
             <label for="dzien-wyborow">ROZPOCZĘCIE WYBORÓW</label>
             <InputText @bind-Value="electionModel.DateOfStartString" id="dzien-wyborow" type="datetime-local" placeholder="Wprowadź datę rozpoczęcia wyborów" />
-            <ValidationMessage For="@(() => electionModel.ElectionStartDate)" />
+            <ValidationMessage For="@(() => electionModel.DateOfEndString)" />
         </div>
 
         <div class="form-group">
@@ -59,13 +59,19 @@
             <ValidationMessage For="@(() => electionModel.ElectionEndDate)" />
         </div>
 
+        @if (!string.IsNullOrEmpty(errorMessageDate))
+        {
+            <div class="alert alert-danger mt-3">@errorMessageDate</div>
+        }
+
         <div class="form-group">
             <label for="tura">TURA WYBORÓW</label>
             <InputNumber @bind-Value="electionModel.ElectionTour" id="tura" />
+            <ValidationMessage For="@(() => electionModel.ElectionTour)" />
         </div>
 
          <div class="form-row">
-            <button type="submit" class="submit-button">MODYFIKUJ WYBORY</button>
+            <button type="submit" class="submit-button" @onclick="ValidateDates">MODYFIKUJ WYBORY</button>
             <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
         </div>
     </EditForm>
@@ -92,6 +98,7 @@
     private int SelectedElectionId { get; set; } = 0;
     bool isModifiedElection = false;
     string errorMessage;
+    string errorMessageDate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,13 +108,26 @@
 
     private async Task HandleValidSubmit()
     {
+        if(electionModel.IdElectionType == 0)
+        {
+            errorMessage = "Proszę wybrać typ wyborów!";
+            return;
+        }
+
         if (SelectedElectionId != 0) //only if selected
         {
             electionModel.IdElection = SelectedElectionId;
+            if (!(await ElectionManagementService.ElectionOfTypeAtTimeExist(electionModel)))
+            {
+                errorMessage = "Wybory tego typu w podanym czasie już istnieją!";
+                return;
+            }
             isModifiedElection = await ElectionManagementService.PutElection(electionModel);
-            errorMessage = isModifiedElection ? "Modified election successful!" : "Modified election fails";
+            errorMessage = isModifiedElection ? "Zmodyfikowano wybory pomyślnie!" : "Nie udało się zmodyfikować wyborów";
             if (isModifiedElection)
             {
+                StateHasChanged();
+                await Task.Delay(1000);
                 NavigationManager.NavigateTo("/configure-election");
             }
         }
@@ -116,6 +136,27 @@
     private void Cancel()
     {
         NavigationManager.NavigateTo("/configure-election");
+    }
+
+    private void ValidateDates()
+    {
+        if (electionModel.ElectionStartDate >= electionModel.ElectionEndDate)
+        {
+            errorMessageDate = "Data zakończenia wyborów nie może być wcześniejsza niż data rozpoczęcia wyborów";
+        }
+        else
+        {
+            errorMessageDate = string.Empty;
+        }
+    }
+    public ElectionViewModel GetElectionModel()
+    {
+        return electionModel;
+    }
+
+    public int GetSelectedElectionId()
+    {
+        return SelectedElectionId;
     }
 
 }

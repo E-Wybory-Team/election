@@ -81,7 +81,9 @@
     {
         if (!await PartyManagementService.PartyExists(committeeId))
         {
-            errorMessage = "Committee not found";
+            errorMessage = "Nie znaleziono takiego komitetu";
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
         else
@@ -93,9 +95,11 @@
     private async void HandleAddSubmit()
     {
         isDeletedCommittee = await PartyManagementService.DeleteParty(committeeId);
-        errorMessage = isDeletedCommittee ? "Committee deleted successful!" : "Committee deletion fails";
+        errorMessage = isDeletedCommittee ? "Usunięto komitet pomyślnie!" : "Nie udało sie usunąć komitetu!";
         if (isDeletedCommittee)
         {
+            StateHasChanged();
+            await Task.Delay(1000);
             Cancel();
         }
     }

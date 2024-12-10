@@ -12,6 +12,7 @@
 @inject ICandidateManagementService CandidateManagementService
 @inject IPersonManagementService PersonManagementService
 @inject IElectionManagementService ElectionManagementService
+@inject IElectionTypeManagementService ElectionTypeManagementService
 
 
 <link href="forms.css" rel="stylesheet" />
@@ -100,8 +101,9 @@
                                 <option value="">Wybierz instancję wyborów</option>
                                 @foreach (var election in elections)
                                 {
+                                    var electionTypeName = ElectionTypeManagementService.GetElectionTypeNameById(election.IdElectionType, electionTypes);
                                     <option value="@election.IdElection">
-                                        Od:  @election.ElectionStartDate  do:  @election.ElectionEndDate
+                                       @electionTypeName - @election.ElectionStartDate
                                     </option>
                                 }
                             </InputSelect>
@@ -131,7 +133,7 @@
                     </div>
                     <div class="form-row">
                         <button type="submit" class="submit-button">ZATWIERDŹ ZMIANY</button>
-                        <button type="button" class="cancel-button" @onclick="Cancel">ANULUJ</button>
+                        <button type="button" class="cancel-button" id="anuluj" @onclick="Cancel">ANULUJ</button>
                     </div>
                 </EditForm>
                 }
@@ -160,6 +162,7 @@
     private List<PartyViewModel> parties = new List<PartyViewModel>();
     private List<CandidateViewModel> candidates = new List<CandidateViewModel>();
     private List<ElectionViewModel> elections = new List<ElectionViewModel>();
+    private List<ElectionTypeViewModel> electionTypes = new List<ElectionTypeViewModel>();
     private Dictionary<int, string> candidateNames = new();
     string errorMessage;
     bool formSubmitted = false;
@@ -170,11 +173,14 @@
     {
         if (!await CandidateManagementService.CandidateExists(candidateId))
         {
-            errorMessage = "Candidate not found";
+            errorMessage = "Nie znaleziono kandydata!";
+            StateHasChanged();
+            await Task.Delay(1000);
             NavigationManager.NavigateTo("/candidatelist");
         }
         else
         {
+            electionTypes = await ElectionTypeManagementService.ElectionTypes();
             candidateModel.candidateViewModel = await CandidateManagementService.GetCandidateById(candidateId);
             candidateModel.personViewModel = await PersonManagementService.GetPersonById(candidateModel.candidateViewModel.IdPerson);
             districts = await DistrictManagementService.Districts();
@@ -220,11 +226,17 @@
         {
             formSubmitted = await PersonManagementService.PutPerson(candidateModel.personViewModel);
             formSubmitted = formSubmitted && await CandidateManagementService.PutCandidate(candidateModel.candidateViewModel);
-            errorMessage = formSubmitted ? "Candidate modified successful!" : "Candidate modification fails";
+            errorMessage = formSubmitted ? "Zmodyfikowano kandydata pomyślnie!" : "Nie udało się zmodyfikować kandydata";
+            if(formSubmitted)
+            {
+                StateHasChanged();
+                await Task.Delay(1000);
+                Cancel();
+            }
         }
         else
         {
-            errorMessage = "Please fix the validation errors.";
+            errorMessage = "Proszę uzupełnić wszystkie pola zgodnie z ich przeznaczeniem.";
         }
     }
     private void Cancel()
