@@ -97,7 +97,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Districts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<District>> PostDistrict([FromBody] DistrictViewModel districtModel)
         {
@@ -151,9 +150,6 @@ namespace E_Wybory.Controllers
 
             _context.Districts.Remove(district);
             await _context.SaveChangesAsync();
-
-            //_context.Districts.Remove(district);
-            //await _context.SaveChangesAsync();
 
             return NoContent();
         }

@@ -59,9 +59,8 @@ namespace E_Wybory.Controllers
 
 
         // POST: api/ElectionVoters
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "2FAveryfiedUser, Administratorzy, Komisja wyborcza")] //Policy ="2FAenabled"
+        [Authorize(Roles = "2FAveryfiedUser, Administratorzy, Komisja wyborcza")]
 
         public async Task<ActionResult<ElectionVoter>> PostElectionVoter(ElectionVoterViewModel electionVoterViewModel)
         {

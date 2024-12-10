@@ -35,7 +35,6 @@ namespace E_Wybory.Controllers
 
         // GET: api/ElectionUsers/5
         [HttpGet("{id}")]
-        //[Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
         [Authorize]
 
         public async Task<ActionResult<ElectionUserViewModel>> GetElectionUser(int id)
@@ -160,7 +159,6 @@ namespace E_Wybory.Controllers
 
 
         // PUT: api/ElectionUsers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
 
@@ -216,7 +214,6 @@ namespace E_Wybory.Controllers
 
 
         // POST: api/ElectionUsers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
         public async Task<ActionResult<ElectionUser>> PostElectionUser(ElectionUser user)

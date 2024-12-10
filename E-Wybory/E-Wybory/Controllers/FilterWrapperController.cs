@@ -105,7 +105,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/ListsWrapper
         [HttpGet("ListsWrapper")]
-        [AllowAnonymous]//[Authorize(Roles = "Urzędnicy wyborczy, Administratorzy")]
+        [AllowAnonymous]
         public async Task<ActionResult<FilterListWrapper>> GetFilteredListsWrapper(
             [FromQuery] int? voivodeshipId,
             [FromQuery] int? countyId,
@@ -426,7 +426,6 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Candidates
         [HttpGet("CandidatesElectionRegions")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesFromElectionRegions(
             [FromQuery] int? electionId,
@@ -509,7 +508,6 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Candidates
         [HttpGet("CandidatesWithoutRegions/{electionId}")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
 
         public async Task<ActionResult<List<CandidatePersonViewModel>>> GetFilteredCandidatesWithoutRegions(
@@ -561,7 +559,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/Districts
         [HttpGet("Districts")]
-        [AllowAnonymous]//[Authorize(Roles = "Pracownicy PKW, Administratorzy")]
+        [AllowAnonymous]
 
         public async Task<ActionResult<List<DistrictViewModel>>> GetFilteredDistricts(
         [FromQuery] int? constituencyId,
@@ -683,7 +681,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/FilterWrapper/PartiesCandidates
         [HttpGet("PartiesCandidates")]
-        [AllowAnonymous] //?
+        [AllowAnonymous] 
         public async Task<ActionResult<List<CandidateViewModel>>> GetFilteredCandidatesFromParties(
             [FromQuery] int? partyId,
             [FromQuery] int? electionId)

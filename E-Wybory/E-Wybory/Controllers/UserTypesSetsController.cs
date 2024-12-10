@@ -127,7 +127,6 @@ namespace E_Wybory.Controllers
 
 
         // POST: api/UserTypeSets
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<UserTypeSet>> PostUserTypeSet(UserTypeSetViewModel userTypeSetViewModel)
         {
@@ -157,7 +156,6 @@ namespace E_Wybory.Controllers
 
 
         // PUT: api/UserTypeSets/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUserTypeSet(int id, [FromBody] UserTypeSetViewModel userTypeSetViewModel)
         {

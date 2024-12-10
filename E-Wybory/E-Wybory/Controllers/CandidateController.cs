@@ -29,11 +29,6 @@ namespace E_Wybory.Controllers
         public async Task<ActionResult<IEnumerable<Candidate>>> GetCandidates()
         {
 
-            //Use Mapster or map manually 
-            // _context.Candidates.Select(c => new CandidateViewModel() { IdCandidate = c.IdCandidate /*...*/ });
-
-
-
             return await _context.Candidates.ToListAsync();
         }
 
@@ -54,7 +49,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Candidates/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
 
@@ -100,7 +94,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/candidates
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Pracownicy PKW, Administratorzy")]
 

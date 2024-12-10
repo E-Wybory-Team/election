@@ -46,7 +46,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Provinces/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProvince(int id, Province Province)
         {
@@ -77,7 +76,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Provinces
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Province>> PostProvince(Province Province)
         {

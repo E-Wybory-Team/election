@@ -34,14 +34,11 @@ namespace E_Wybory.ExtensionMethods {
                     var certPath = Environment.GetEnvironmentVariable("CERTIFICATE_PATH_VOTING");
                     var certKeyPath = Environment.GetEnvironmentVariable("CERTIFICATE_KEY_PATH_VOTING");
 
-                    // Check if certificate path and key path are configured
                     if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certKeyPath))
                     {
-                        //Added X509Certificate2 conversion
                         var certPem = System.IO.File.ReadAllText(certPath);
                         var keyPem = System.IO.File.ReadAllText(certKeyPath);
 
-                        // Create the X509Certificate2 from both
                         var certWithKey = X509Certificate2.CreateFromPem(certPem, keyPem);
 
 
@@ -60,22 +57,18 @@ namespace E_Wybory.ExtensionMethods {
         {
             var environment = builder.Environment;
 
-            // Get the connection string from the configuration
             var connectionString = builder.Configuration.GetConnectionString("ElectionDbConnection");
 
             if (connectionString == null) throw new ArgumentNullException("Cannot localize the connection string");
 
             string dbPassword;
 
-            // Check if the environment is Production
             if (environment.IsProduction())
             {
-                // Get the password from the environment variable DB_PASSWORD
                 dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
             } else
             {
-                //Get the password from users secret
                 dbPassword = builder.Configuration["ConnectionStrings:ElectionDbConnection:DbPassword"];
             }
 
@@ -83,9 +76,7 @@ namespace E_Wybory.ExtensionMethods {
             {
                 connectionString = connectionString.Replace("{DbPassword}", dbPassword);
             }
-            //else throw new ArgumentException($"Cannot obtain password from source: {(environment.IsProduction() ? "PRODUCTION" : "DEVELOPMENT")}");  KOMENTARZ
 
-            // Add the DbContext to the service collection using the (possibly) modified connection string
             builder.Services.AddDbContext<ElectionDbContext>(options =>
                 options.UseMySQL(connectionString));
 

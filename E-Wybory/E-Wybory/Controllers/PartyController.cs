@@ -50,7 +50,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Parties/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutParty(int id, [FromBody] PartyViewModel partyModel)
         {
@@ -100,7 +99,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/parties
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Party>> PostParty([FromBody] PartyViewModel partyModel)
         {

@@ -10,7 +10,6 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
     [Authorize]
     public class PersonController : ControllerBase
     {
@@ -33,7 +32,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/5
         [HttpGet("{id}")]
-        [AllowAnonymous] //    [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+        [AllowAnonymous]
 
 
         public async Task<ActionResult<Person>> GetPerson(int id)
@@ -93,7 +92,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/People
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
 
@@ -137,7 +135,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/People/idFromPesel/3
         [HttpGet("idFromPesel/{pesel}")]
-        [AllowAnonymous] // [Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+        [AllowAnonymous]
 
         public async Task<ActionResult<int>> GetPersonIdByPeselAsync(string pesel)
         {

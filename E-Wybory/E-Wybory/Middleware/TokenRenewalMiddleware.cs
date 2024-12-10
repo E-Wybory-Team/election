@@ -29,7 +29,7 @@ namespace E_Wybory.Middleware
                 if (_handler.CanReadToken(token))
                 {
                     var jwtToken = _handler.ReadJsonWebToken(token);
-                    var expirationTime = jwtToken.ValidTo; //Are datetime.min
+                    var expirationTime = jwtToken.ValidTo; 
                     var issuedAtTime = jwtToken.ValidFrom;
 
                     if (expirationTime > DateTime.UtcNow)
@@ -45,17 +45,9 @@ namespace E_Wybory.Middleware
                             // Add the renewed token to the response header
                             context.Response.Headers["Authorization"] = $"Bearer {newToken}";
                         } 
-                        else
-                        {
-                            //context.Response.Redirect("/login"); //Does it work?
-                        }
                     }
                 }
             }
-
-            
-
-            // Call the next middleware in the pipeline
             await _next(context);
         }
     }

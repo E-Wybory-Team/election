@@ -21,7 +21,7 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election
         [HttpGet]
-        [AllowAnonymous] // ?? [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Election>>> GetElections()
         {
             return await _context.Elections.ToListAsync();
@@ -43,7 +43,6 @@ namespace E_Wybory.Controllers
         }
 
         // PUT: api/Election/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<IActionResult> PutElection(int id, ElectionViewModel electionModel)
@@ -82,7 +81,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Election
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Administratorzy, Pracownicy PKW")]
         public async Task<ActionResult<Election>> PostElection([FromBody] ElectionViewModel electionModel)
@@ -134,7 +132,6 @@ namespace E_Wybory.Controllers
 
         // GET: api/Election/active
         [HttpGet("active")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy, Pracownicy PKW")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetActiveElections()
         {
@@ -256,7 +253,6 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newest")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElections()
         {
@@ -287,7 +283,6 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newestAllTypes")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ElectionViewModel>>> GetNewestElectionsOfAllTypes()
         {
@@ -297,7 +292,6 @@ namespace E_Wybory.Controllers
 
             foreach (var electionType in electionTypes)
             {
-                // Get all elections for this type that have started
                 var filteredElections = await _context.Elections
                     .Where(x => x.IdElectionType == electionType.IdElectionType && x.ElectionStartDate <= now)
                     .ToListAsync();
@@ -330,7 +324,6 @@ namespace E_Wybory.Controllers
 
 
         [HttpGet("newest/{electionTypeId}")]
-        //[Authorize(Roles = "Komisja wyborcza, Administratorzy")]
         [AllowAnonymous]
         public async Task<ActionResult<ElectionViewModel>> GetNewestElectionOfType(int electionTypeId)
         {

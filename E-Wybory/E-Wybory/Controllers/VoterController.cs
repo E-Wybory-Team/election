@@ -89,7 +89,6 @@ namespace E_Wybory.Controllers
         }
 
         // POST: api/Voters
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Administratorzy, Urzędnicy wyborczy")]
 
@@ -129,9 +128,6 @@ namespace E_Wybory.Controllers
 
             _context.Voters.Remove(Voter);
             await _context.SaveChangesAsync();
-
-            //_context.Voters.Remove(Voter);
-            //await _context.SaveChangesAsync();
 
             return NoContent();
         }
