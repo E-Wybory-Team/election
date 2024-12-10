@@ -15,9 +15,9 @@
     <AuthorizeView Context="authContext">
         <Authorized>
             <div class="center-content">
-                <h3>Zweryfikuj kod 2FA</h3>
                 <div class="row">
                     <div class="form-container">
+                        <h3>Zweryfikuj kod 2FA</h3>
                         <EditForm Model="Input" FormName="verify-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                             <DataAnnotationsValidator />
                             <div class="form-group">
