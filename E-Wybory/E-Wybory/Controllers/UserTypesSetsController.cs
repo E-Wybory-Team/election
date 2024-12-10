@@ -17,6 +17,8 @@ namespace E_Wybory.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Administratorzy, Pracownicy PKW, Urzędnicy wyborczy")]
+
     public class UserTypesSetsController : ControllerBase
     {
         private readonly ElectionDbContext _context;
