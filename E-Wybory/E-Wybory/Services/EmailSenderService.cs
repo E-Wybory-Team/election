@@ -46,13 +46,13 @@ namespace E_Wybory.Services
         private int getUserIdFromFileName(string fileName)
         {
 
-            int underscoreIndex = fileName.IndexOf('_');
-            int dotIndex = fileName.IndexOf('.');
+            int underscoreIndex = fileName.LastIndexOf('_');
+            int dotIndex = fileName.LastIndexOf('.');
 
             string numberPart = fileName.Substring(underscoreIndex + 1, dotIndex - underscoreIndex - 1);
             int number = int.Parse(numberPart);
 
-            Console.WriteLine($"Extracted number: {number}");
+            //Console.WriteLine($"Extracted number: {number}");
             return number;
         }
 

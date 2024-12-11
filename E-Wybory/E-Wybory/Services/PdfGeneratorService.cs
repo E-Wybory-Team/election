@@ -15,8 +15,8 @@ namespace E_Wybory.Services
         public async Task<string> GeneratePdfWithImage_Syncfusion(string title, string content, string fileName)
         {
             var currentPath = Directory.GetCurrentDirectory();
-            var imagePath = currentPath + "\\wwwroot\\logo_ewybory.png";
-            Console.WriteLine($"Image path: {imagePath}");
+            var imagePath = Path.Combine(currentPath, "wwwroot", "logo_ewybory.png");
+            //Console.WriteLine($"Image path: {imagePath}");
             if (!File.Exists(imagePath))
             {
                 Console.WriteLine("Image file not found at the specified path.");
@@ -32,8 +32,8 @@ namespace E_Wybory.Services
 
                     try
                     {
-                        var titleFontPath = currentPath + "\\PdfElements\\arialbd.ttf";
-                        var contentFontPath = currentPath + "\\PdfElements\\arial.ttf";
+                        var titleFontPath = Path.Combine(currentPath, "PdfElements", "arialbd.ttf");
+                        var contentFontPath = Path.Combine(currentPath, "PdfElements", "arial.ttf");
                         PdfFont titleFont = new PdfTrueTypeFont(titleFontPath, 32);
                         PdfFont contentFont = new PdfTrueTypeFont(contentFontPath, 20);
                         graphics.DrawString(title, titleFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(30, 160));
@@ -62,7 +62,7 @@ namespace E_Wybory.Services
 
                 }
 
-                var pdfPath = currentPath + $"\\PdfElements\\{fileName}";
+                var pdfPath = Path.Combine(currentPath, "PdfElements", fileName);
                 await File.WriteAllBytesAsync(pdfPath, memoryStream.ToArray());
 
                 return pdfPath;
